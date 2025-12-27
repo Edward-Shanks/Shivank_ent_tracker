@@ -6,15 +6,16 @@ import { eq, and } from 'drizzle-orm';
 // GET /api/anime/[id] - Get single anime
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1'; // Placeholder - replace with actual auth
     
     const result = await db
       .select()
       .from(anime)
-      .where(and(eq(anime.id, params.id), eq(anime.userId, userId)))
+      .where(and(eq(anime.id, id), eq(anime.userId, userId)))
       .limit(1);
     
     if (result.length === 0) {
@@ -41,13 +42,14 @@ export async function GET(
 // PATCH /api/anime/[id] - Update anime
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const userId = '1'; // Placeholder - replace with actual auth
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.titleJapanese !== undefined) updateData.titleJapanese = body.titleJapanese;
     if (body.animeOtherName !== undefined) updateData.animeOtherName = body.animeOtherName;
@@ -74,12 +76,12 @@ export async function PATCH(
     await db
       .update(anime)
       .set(updateData)
-      .where(and(eq(anime.id, params.id), eq(anime.userId, userId)));
+      .where(and(eq(anime.id, id), eq(anime.userId, userId)));
     
     const updated = await db
       .select()
       .from(anime)
-      .where(and(eq(anime.id, params.id), eq(anime.userId, userId)))
+      .where(and(eq(anime.id, id), eq(anime.userId, userId)))
       .limit(1);
     
     if (updated.length === 0) {
@@ -106,14 +108,15 @@ export async function PATCH(
 // DELETE /api/anime/[id] - Delete anime
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1'; // Placeholder - replace with actual auth
     
     await db
       .delete(anime)
-      .where(and(eq(anime.id, params.id), eq(anime.userId, userId)));
+      .where(and(eq(anime.id, id), eq(anime.userId, userId)));
     
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -124,4 +127,3 @@ export async function DELETE(
     );
   }
 }
-

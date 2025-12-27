@@ -5,12 +5,13 @@ import { eq, and } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     const result = await db.select().from(kdrama)
-      .where(and(eq(kdrama.id, params.id), eq(kdrama.userId, userId))).limit(1);
+      .where(and(eq(kdrama.id, id), eq(kdrama.userId, userId))).limit(1);
     if (result.length === 0) {
       return NextResponse.json({ error: 'K-Drama not found' }, { status: 404 });
     }
@@ -28,12 +29,13 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const userId = '1';
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.titleKorean !== undefined) updateData.titleKorean = body.titleKorean;
     if (body.posterImage !== undefined) updateData.posterImage = body.posterImage;
@@ -50,10 +52,10 @@ export async function PATCH(
     updateData.updatedAt = new Date().toISOString();
     
     await db.update(kdrama).set(updateData)
-      .where(and(eq(kdrama.id, params.id), eq(kdrama.userId, userId)));
+      .where(and(eq(kdrama.id, id), eq(kdrama.userId, userId)));
     
     const updated = await db.select().from(kdrama)
-      .where(and(eq(kdrama.id, params.id), eq(kdrama.userId, userId))).limit(1);
+      .where(and(eq(kdrama.id, id), eq(kdrama.userId, userId))).limit(1);
     
     if (updated.length === 0) {
       return NextResponse.json({ error: 'K-Drama not found' }, { status: 404 });
@@ -73,16 +75,16 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     await db.delete(kdrama)
-      .where(and(eq(kdrama.id, params.id), eq(kdrama.userId, userId)));
+      .where(and(eq(kdrama.id, id), eq(kdrama.userId, userId)));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting k-drama:', error);
     return NextResponse.json({ error: 'Failed to delete k-drama' }, { status: 500 });
   }
 }
-

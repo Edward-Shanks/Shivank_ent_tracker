@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { genshinCharacters, genshinAccounts } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 // PATCH /api/genshin/characters/[id] - Update character
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const userId = '1';
     
     // Verify character belongs to user's account
     const character = await db.select().from(genshinCharacters)
-      .where(eq(genshinCharacters.id, params.id)).limit(1);
+      .where(eq(genshinCharacters.id, id)).limit(1);
     
     if (character.length === 0) {
       return NextResponse.json({ error: 'Character not found' }, { status: 404 });
@@ -27,7 +28,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.element !== undefined) updateData.element = body.element;
     if (body.weapon !== undefined) updateData.weapon = body.weapon;
@@ -44,10 +45,10 @@ export async function PATCH(
     updateData.updatedAt = new Date().toISOString();
     
     await db.update(genshinCharacters).set(updateData)
-      .where(eq(genshinCharacters.id, params.id));
+      .where(eq(genshinCharacters.id, id));
     
     const updated = await db.select().from(genshinCharacters)
-      .where(eq(genshinCharacters.id, params.id)).limit(1);
+      .where(eq(genshinCharacters.id, id)).limit(1);
     
     return NextResponse.json({
       ...updated[0],
@@ -62,13 +63,14 @@ export async function PATCH(
 // DELETE /api/genshin/characters/[id] - Delete character
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     
     const character = await db.select().from(genshinCharacters)
-      .where(eq(genshinCharacters.id, params.id)).limit(1);
+      .where(eq(genshinCharacters.id, id)).limit(1);
     
     if (character.length === 0) {
       return NextResponse.json({ error: 'Character not found' }, { status: 404 });
@@ -81,7 +83,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     
-    await db.delete(genshinCharacters).where(eq(genshinCharacters.id, params.id));
+    await db.delete(genshinCharacters).where(eq(genshinCharacters.id, id));
     
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -89,4 +91,3 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete character' }, { status: 500 });
   }
 }
-

@@ -5,12 +5,13 @@ import { eq, and } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     const result = await db.select().from(websites)
-      .where(and(eq(websites.id, params.id), eq(websites.userId, userId))).limit(1);
+      .where(and(eq(websites.id, id), eq(websites.userId, userId))).limit(1);
     if (result.length === 0) {
       return NextResponse.json({ error: 'Website not found' }, { status: 404 });
     }
@@ -26,12 +27,13 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const userId = '1';
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.category !== undefined) updateData.category = body.category;
@@ -42,10 +44,10 @@ export async function PATCH(
     updateData.updatedAt = new Date().toISOString();
     
     await db.update(websites).set(updateData)
-      .where(and(eq(websites.id, params.id), eq(websites.userId, userId)));
+      .where(and(eq(websites.id, id), eq(websites.userId, userId)));
     
     const updated = await db.select().from(websites)
-      .where(and(eq(websites.id, params.id), eq(websites.userId, userId))).limit(1);
+      .where(and(eq(websites.id, id), eq(websites.userId, userId))).limit(1);
     
     if (updated.length === 0) {
       return NextResponse.json({ error: 'Website not found' }, { status: 404 });
@@ -63,16 +65,16 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     await db.delete(websites)
-      .where(and(eq(websites.id, params.id), eq(websites.userId, userId)));
+      .where(and(eq(websites.id, id), eq(websites.userId, userId)));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting website:', error);
     return NextResponse.json({ error: 'Failed to delete website' }, { status: 500 });
   }
 }
-

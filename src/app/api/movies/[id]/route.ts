@@ -5,14 +5,15 @@ import { eq, and } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     const result = await db
       .select()
       .from(movies)
-      .where(and(eq(movies.id, params.id), eq(movies.userId, userId)))
+      .where(and(eq(movies.id, id), eq(movies.userId, userId)))
       .limit(1);
     if (result.length === 0) {
       return NextResponse.json({ error: 'Movie not found' }, { status: 404 });
@@ -31,12 +32,13 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const userId = '1';
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.posterImage !== undefined) updateData.posterImage = body.posterImage;
     if (body.backdropImage !== undefined) updateData.backdropImage = body.backdropImage;
@@ -52,10 +54,10 @@ export async function PATCH(
     updateData.updatedAt = new Date().toISOString();
     
     await db.update(movies).set(updateData)
-      .where(and(eq(movies.id, params.id), eq(movies.userId, userId)));
+      .where(and(eq(movies.id, id), eq(movies.userId, userId)));
     
     const updated = await db.select().from(movies)
-      .where(and(eq(movies.id, params.id), eq(movies.userId, userId))).limit(1);
+      .where(and(eq(movies.id, id), eq(movies.userId, userId))).limit(1);
     
     if (updated.length === 0) {
       return NextResponse.json({ error: 'Movie not found' }, { status: 404 });
@@ -75,16 +77,16 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const userId = '1';
     await db.delete(movies)
-      .where(and(eq(movies.id, params.id), eq(movies.userId, userId)));
+      .where(and(eq(movies.id, id), eq(movies.userId, userId)));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting movie:', error);
     return NextResponse.json({ error: 'Failed to delete movie' }, { status: 500 });
   }
 }
-

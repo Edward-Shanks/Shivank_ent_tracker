@@ -4,6 +4,7 @@
  * Usage: pnpm tsx src/lib/db/seed.ts
  */
 
+import 'dotenv/config';
 import { db } from './index';
 import { users, anime, movies, kdrama, games, genshinAccounts, genshinCharacters, credentials, websites } from './schema';
 import { nanoid } from 'nanoid';
