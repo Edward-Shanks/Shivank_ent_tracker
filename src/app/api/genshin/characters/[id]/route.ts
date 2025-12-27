@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { genshinCharacters, genshinAccounts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 // PATCH /api/genshin/characters/[id] - Update character
 export async function PATCH(
@@ -9,9 +10,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
-    const userId = '1';
     
     // Verify character belongs to user's account
     const character = await db.select().from(genshinCharacters)
@@ -24,7 +29,7 @@ export async function PATCH(
     const account = await db.select().from(genshinAccounts)
       .where(eq(genshinAccounts.id, character[0].accountId)).limit(1);
     
-    if (account[0].userId !== userId) {
+    if (account[0].userId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     
@@ -66,8 +71,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
-    const userId = '1';
     
     const character = await db.select().from(genshinCharacters)
       .where(eq(genshinCharacters.id, id)).limit(1);
@@ -79,7 +88,7 @@ export async function DELETE(
     const account = await db.select().from(genshinAccounts)
       .where(eq(genshinAccounts.id, character[0].accountId)).limit(1);
     
-    if (account[0].userId !== userId) {
+    if (account[0].userId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     

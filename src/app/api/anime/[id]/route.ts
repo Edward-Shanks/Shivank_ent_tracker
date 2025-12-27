@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { anime } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/anime/[id] - Get single anime
 export async function GET(
@@ -9,13 +10,17 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
-    const userId = '1'; // Placeholder - replace with actual auth
     
     const result = await db
       .select()
       .from(anime)
-      .where(and(eq(anime.id, id), eq(anime.userId, userId)))
+      .where(and(eq(anime.id, id), eq(anime.userId, user.id)))
       .limit(1);
     
     if (result.length === 0) {
@@ -45,9 +50,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
-    const userId = '1'; // Placeholder - replace with actual auth
     
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
@@ -76,12 +85,12 @@ export async function PATCH(
     await db
       .update(anime)
       .set(updateData)
-      .where(and(eq(anime.id, id), eq(anime.userId, userId)));
+      .where(and(eq(anime.id, id), eq(anime.userId, user.id)));
     
     const updated = await db
       .select()
       .from(anime)
-      .where(and(eq(anime.id, id), eq(anime.userId, userId)))
+      .where(and(eq(anime.id, id), eq(anime.userId, user.id)))
       .limit(1);
     
     if (updated.length === 0) {
@@ -111,12 +120,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
-    const userId = '1'; // Placeholder - replace with actual auth
     
     await db
       .delete(anime)
-      .where(and(eq(anime.id, id), eq(anime.userId, userId)));
+      .where(and(eq(anime.id, id), eq(anime.userId, user.id)));
     
     return NextResponse.json({ success: true });
   } catch (error) {

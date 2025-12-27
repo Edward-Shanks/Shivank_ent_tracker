@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { credentials } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
-    const userId = '1';
     const result = await db.select().from(credentials)
-      .where(and(eq(credentials.id, id), eq(credentials.userId, userId))).limit(1);
+      .where(and(eq(credentials.id, id), eq(credentials.userId, user.id))).limit(1);
     if (result.length === 0) {
       return NextResponse.json({ error: 'Credential not found' }, { status: 404 });
     }
@@ -27,9 +32,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
-    const userId = '1';
     const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.category !== undefined) updateData.category = body.category;
@@ -42,10 +51,10 @@ export async function PATCH(
     updateData.lastUpdated = new Date().toISOString();
     
     await db.update(credentials).set(updateData)
-      .where(and(eq(credentials.id, id), eq(credentials.userId, userId)));
+      .where(and(eq(credentials.id, id), eq(credentials.userId, user.id)));
     
     const updated = await db.select().from(credentials)
-      .where(and(eq(credentials.id, id), eq(credentials.userId, userId))).limit(1);
+      .where(and(eq(credentials.id, id), eq(credentials.userId, user.id))).limit(1);
     
     if (updated.length === 0) {
       return NextResponse.json({ error: 'Credential not found' }, { status: 404 });
@@ -63,10 +72,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
-    const userId = '1';
     await db.delete(credentials)
-      .where(and(eq(credentials.id, id), eq(credentials.userId, userId)));
+      .where(and(eq(credentials.id, id), eq(credentials.userId, user.id)));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting credential:', error);

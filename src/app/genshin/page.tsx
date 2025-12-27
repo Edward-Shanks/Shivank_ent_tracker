@@ -104,18 +104,28 @@ export default function GenshinPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedCharacter && window.confirm(`Are you sure you want to delete ${selectedCharacter.name}?`)) {
-      deleteGenshinCharacter(selectedCharacter.id);
-      setIsDetailModalOpen(false);
-      setSelectedCharacter(null);
+      try {
+        await deleteGenshinCharacter(selectedCharacter.id);
+        setIsDetailModalOpen(false);
+        setSelectedCharacter(null);
+      } catch (error) {
+        console.error('Error deleting character:', error);
+        alert('Failed to delete character. Please try again.');
+      }
     }
   };
 
-  const handleSaveEdit = (updates: Partial<import('@/types').GenshinCharacter>) => {
+  const handleSaveEdit = async (updates: Partial<import('@/types').GenshinCharacter>) => {
     if (selectedCharacter) {
-      updateGenshinCharacter(selectedCharacter.id, updates);
-      setSelectedCharacter({ ...selectedCharacter, ...updates });
+      try {
+        await updateGenshinCharacter(selectedCharacter.id, updates);
+        setSelectedCharacter({ ...selectedCharacter, ...updates });
+      } catch (error) {
+        console.error('Error updating character:', error);
+        alert('Failed to update character. Please try again.');
+      }
     }
   };
 
@@ -562,7 +572,14 @@ export default function GenshinPage() {
           isOpen={isAccountEditModalOpen}
           onClose={() => setIsAccountEditModalOpen(false)}
           account={genshinAccount}
-          onSave={(updates) => updateGenshinAccount(updates)}
+          onSave={async (updates) => {
+            try {
+              await updateGenshinAccount(updates);
+            } catch (error) {
+              console.error('Error updating account:', error);
+              alert('Failed to update account. Please try again.');
+            }
+          }}
         />
       )}
     </div>

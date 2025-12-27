@@ -35,29 +35,34 @@ export default function AddCredentialModal({ isOpen, onClose }: AddCredentialMod
     notes: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addCredential({
-      name: formData.name,
-      category: formData.category,
-      email: formData.email || undefined,
-      username: formData.username || undefined,
-      password: formData.password,
-      url: formData.url || undefined,
-      notes: formData.notes || undefined,
-      lastUpdated: new Date().toISOString(),
-    });
-    // Reset form
-    setFormData({
-      name: '',
-      category: 'other',
-      email: '',
-      username: '',
-      password: '',
-      url: '',
-      notes: '',
-    });
-    onClose();
+    try {
+      await addCredential({
+        name: formData.name,
+        category: formData.category,
+        email: formData.email || undefined,
+        username: formData.username || undefined,
+        password: formData.password,
+        url: formData.url || undefined,
+        notes: formData.notes || undefined,
+        lastUpdated: new Date().toISOString(),
+      });
+      // Reset form
+      setFormData({
+        name: '',
+        category: 'other',
+        email: '',
+        username: '',
+        password: '',
+        url: '',
+        notes: '',
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding credential:', error);
+      alert('Failed to add credential. Please try again.');
+    }
   };
 
   return (

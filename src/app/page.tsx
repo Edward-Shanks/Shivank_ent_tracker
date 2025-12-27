@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Tv,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { NavCard, StatCard, MediaCard } from '@/components/ui/Card';
+import { DashboardStats } from '@/types';
 
 const container = {
   hidden: { opacity: 0 },
@@ -34,7 +35,16 @@ const item = {
 
 export default function Dashboard() {
   const { getDashboardStats, anime, movies, kdrama, games } = useData();
-  const stats = getDashboardStats();
+  const [stats, setStats] = useState<DashboardStats>({
+    anime: { total: 0, watching: 0 },
+    movies: { total: 0, watched: 0 },
+    kdrama: { total: 0, watching: 0 },
+    games: { total: 0, playing: 0 },
+  });
+
+  useEffect(() => {
+    getDashboardStats().then(setStats).catch(console.error);
+  }, [getDashboardStats]);
 
   // Get currently watching/playing items
   const currentlyWatching = [

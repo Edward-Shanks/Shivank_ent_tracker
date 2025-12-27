@@ -52,41 +52,46 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
     notes: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.platform.length === 0) {
       alert('Please select at least one platform');
       return;
     }
-    addGame({
-      title: formData.title,
-      coverImage: formData.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
-      platform: formData.platform,
-      status: formData.status,
-      hoursPlayed: formData.hoursPlayed,
-      score: formData.score ? parseInt(formData.score) : undefined,
-      genres: formData.genres,
-      developer: formData.developer || undefined,
-      publisher: formData.publisher || undefined,
-      releaseDate: formData.releaseDate || undefined,
-      notes: formData.notes || undefined,
-    });
+    try {
+      await addGame({
+        title: formData.title,
+        coverImage: formData.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
+        platform: formData.platform,
+        status: formData.status,
+        hoursPlayed: formData.hoursPlayed,
+        score: formData.score ? parseInt(formData.score) : undefined,
+        genres: formData.genres,
+        developer: formData.developer || undefined,
+        publisher: formData.publisher || undefined,
+        releaseDate: formData.releaseDate || undefined,
+        notes: formData.notes || undefined,
+      });
 
-    // Reset form
-    setFormData({
-      title: '',
-      coverImage: '',
-      platform: [],
-      status: 'planning',
-      hoursPlayed: 0,
-      score: '',
-      genres: [],
-      developer: '',
-      publisher: '',
-      releaseDate: '',
-      notes: '',
-    });
-    onClose();
+      // Reset form
+      setFormData({
+        title: '',
+        coverImage: '',
+        platform: [],
+        status: 'planning',
+        hoursPlayed: 0,
+        score: '',
+        genres: [],
+        developer: '',
+        publisher: '',
+        releaseDate: '',
+        notes: '',
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding game:', error);
+      alert('Failed to add game. Please try again.');
+    }
   };
 
   return (

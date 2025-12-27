@@ -42,39 +42,44 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
     notes: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addMovie({
-      title: formData.title,
-      posterImage: formData.posterImage || 'https://via.placeholder.com/300x450?text=No+Image',
-      backdropImage: formData.backdropImage || undefined,
-      releaseDate: formData.releaseDate,
-      runtime: formData.runtime,
-      status: formData.status,
-      score: formData.score ? parseInt(formData.score) : undefined,
-      genres: formData.genres,
-      synopsis: formData.synopsis || undefined,
-      director: formData.director || undefined,
-      cast: formData.cast ? formData.cast.split(',').map((c) => c.trim()) : undefined,
-      notes: formData.notes || undefined,
-    });
+    try {
+      await addMovie({
+        title: formData.title,
+        posterImage: formData.posterImage || 'https://via.placeholder.com/300x450?text=No+Image',
+        backdropImage: formData.backdropImage || undefined,
+        releaseDate: formData.releaseDate,
+        runtime: formData.runtime,
+        status: formData.status,
+        score: formData.score ? parseInt(formData.score) : undefined,
+        genres: formData.genres,
+        synopsis: formData.synopsis || undefined,
+        director: formData.director || undefined,
+        cast: formData.cast ? formData.cast.split(',').map((c) => c.trim()) : undefined,
+        notes: formData.notes || undefined,
+      });
 
-    // Reset form
-    setFormData({
-      title: '',
-      posterImage: '',
-      backdropImage: '',
-      releaseDate: '',
-      runtime: 0,
-      status: 'planning',
-      score: '',
-      genres: [],
-      synopsis: '',
-      director: '',
-      cast: '',
-      notes: '',
-    });
-    onClose();
+      // Reset form
+      setFormData({
+        title: '',
+        posterImage: '',
+        backdropImage: '',
+        releaseDate: '',
+        runtime: 0,
+        status: 'planning',
+        score: '',
+        genres: [],
+        synopsis: '',
+        director: '',
+        cast: '',
+        notes: '',
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding movie:', error);
+      alert('Failed to add movie. Please try again.');
+    }
   };
 
   return (

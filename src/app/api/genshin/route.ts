@@ -3,13 +3,18 @@ import { db } from '@/lib/db';
 import { genshinAccounts, genshinCharacters } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/genshin - Get genshin account with characters
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const account = await db.select().from(genshinAccounts)
-      .where(eq(genshinAccounts.userId, userId)).limit(1);
+      .where(eq(genshinAccounts.userId, user.id)).limit(1);
     
     if (account.length === 0) {
       return NextResponse.json(null);
@@ -39,17 +44,21 @@ export async function GET(request: NextRequest) {
 // PATCH /api/genshin - Update genshin account
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     
     const account = await db.select().from(genshinAccounts)
-      .where(eq(genshinAccounts.userId, userId)).limit(1);
+      .where(eq(genshinAccounts.userId, user.id)).limit(1);
     
     if (account.length === 0) {
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.uid !== undefined) updateData.uid = body.uid;
     if (body.adventureRank !== undefined) updateData.adventureRank = body.adventureRank;
     if (body.worldLevel !== undefined) updateData.worldLevel = body.worldLevel;
@@ -84,4 +93,3 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update genshin account' }, { status: 500 });
   }
 }
-

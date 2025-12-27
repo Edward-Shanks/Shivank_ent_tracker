@@ -65,7 +65,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
     imageUrl: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Map watchStatus to status
@@ -78,37 +78,42 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
       'Dropped': 'dropped',
     };
 
-    addAnime({
-      title: formData.title,
-      animeOtherName: formData.animeOtherName || undefined,
-      animeType: formData.animeType,
-      airingStatus: formData.airingStatus,
-      watchStatus: formData.watchStatus,
-      websiteLink: formData.websiteLink || undefined,
-      episodeOn: formData.episodeOn || undefined,
-      genres: formData.genres,
-      season: formData.season || undefined,
-      episodes: formData.episodes,
-      episodesWatched: 0,
-      coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
-      status: statusMap[formData.watchStatus],
-    });
+    try {
+      await addAnime({
+        title: formData.title,
+        animeOtherName: formData.animeOtherName || undefined,
+        animeType: formData.animeType,
+        airingStatus: formData.airingStatus,
+        watchStatus: formData.watchStatus,
+        websiteLink: formData.websiteLink || undefined,
+        episodeOn: formData.episodeOn || undefined,
+        genres: formData.genres,
+        season: formData.season || undefined,
+        episodes: formData.episodes,
+        episodesWatched: 0,
+        coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
+        status: statusMap[formData.watchStatus],
+      });
 
-    // Reset form
-    setFormData({
-      title: '',
-      animeOtherName: '',
-      animeType: 'Anime',
-      airingStatus: 'Airing',
-      watchStatus: 'YTW',
-      websiteLink: '',
-      genres: [],
-      season: '',
-      episodeOn: '',
-      episodes: 0,
-      imageUrl: '',
-    });
-    onClose();
+      // Reset form
+      setFormData({
+        title: '',
+        animeOtherName: '',
+        animeType: 'Anime',
+        airingStatus: 'Airing',
+        watchStatus: 'YTW',
+        websiteLink: '',
+        genres: [],
+        season: '',
+        episodeOn: '',
+        episodes: 0,
+        imageUrl: '',
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding anime:', error);
+      alert('Failed to add anime. Please try again.');
+    }
   };
 
   return (

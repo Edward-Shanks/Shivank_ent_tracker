@@ -3,11 +3,16 @@ import { db } from '@/lib/db';
 import { games } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
-    const allGames = await db.select().from(games).where(eq(games.userId, userId));
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const allGames = await db.select().from(games).where(eq(games.userId, user.id));
     const parsed = allGames.map(item => ({
       ...item,
       platform: JSON.parse(item.platform || '[]'),
@@ -22,11 +27,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     const newGame = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       title: body.title,
       coverImage: body.coverImage,
       platform: JSON.stringify(body.platform || []),
@@ -50,4 +59,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create game' }, { status: 500 });
   }
 }
-

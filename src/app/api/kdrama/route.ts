@@ -3,11 +3,16 @@ import { db } from '@/lib/db';
 import { kdrama } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
-    const allKDrama = await db.select().from(kdrama).where(eq(kdrama.userId, userId));
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const allKDrama = await db.select().from(kdrama).where(eq(kdrama.userId, user.id));
     const parsed = allKDrama.map(item => ({
       ...item,
       genres: JSON.parse(item.genres || '[]'),
@@ -22,11 +27,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     const newKDrama = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       title: body.title,
       titleKorean: body.titleKorean,
       posterImage: body.posterImage,
@@ -52,4 +61,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create k-drama' }, { status: 500 });
   }
 }
-

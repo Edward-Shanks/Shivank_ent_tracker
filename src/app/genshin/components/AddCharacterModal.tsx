@@ -67,36 +67,41 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
     image: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addGenshinCharacter({
-      name: formData.name,
-      element: formData.element,
-      weapon: formData.weapon,
-      rarity: formData.rarity,
-      tier: formData.tier || undefined,
-      type: formData.type || undefined,
-      type2: formData.type2 || undefined,
-      level: formData.level,
-      obtained: formData.obtained === 'yes',
-      constellation: formData.constellation,
-      image: formData.image,
-    });
-    // Reset form
-    setFormData({
-      name: '',
-      element: 'Pyro',
-      weapon: 'Polearm',
-      rarity: 5,
-      tier: '',
-      type: '',
-      type2: '',
-      level: 1,
-      obtained: 'yes',
-      constellation: 0,
-      image: '',
-    });
-    onClose();
+    try {
+      await addGenshinCharacter({
+        name: formData.name,
+        element: formData.element,
+        weapon: formData.weapon,
+        rarity: formData.rarity,
+        tier: formData.tier || undefined,
+        type: formData.type || undefined,
+        type2: formData.type2 || undefined,
+        level: formData.level,
+        obtained: formData.obtained === 'yes',
+        constellation: formData.constellation,
+        image: formData.image,
+      });
+      // Reset form
+      setFormData({
+        name: '',
+        element: 'Pyro',
+        weapon: 'Polearm',
+        rarity: 5,
+        tier: '',
+        type: '',
+        type2: '',
+        level: 1,
+        obtained: 'yes',
+        constellation: 0,
+        image: '',
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding character:', error);
+      alert('Failed to add character. Please try again.');
+    }
   };
 
   return (

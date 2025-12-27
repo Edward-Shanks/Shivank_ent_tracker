@@ -3,12 +3,17 @@ import { db } from '@/lib/db';
 import { credentials } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const allCredentials = await db.select().from(credentials)
-      .where(eq(credentials.userId, userId));
+      .where(eq(credentials.userId, user.id));
     return NextResponse.json(allCredentials);
   } catch (error) {
     console.error('Error fetching credentials:', error);
@@ -18,11 +23,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     const newCredential = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       name: body.name,
       category: body.category,
       username: body.username,
@@ -39,4 +48,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create credential' }, { status: 500 });
   }
 }
-

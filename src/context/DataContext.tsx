@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   Anime,
   Movie,
@@ -12,287 +12,387 @@ import {
   AnimeStats,
   DashboardStats,
 } from '@/types';
-import {
-  mockAnime,
-  mockMovies,
-  mockKDrama,
-  mockGames,
-  mockGenshinAccount,
-  mockCredentials,
-  mockWebsites,
-} from '@/data/mockData';
-import { nanoid } from 'nanoid';
+import { apiClient } from '@/lib/api-client';
 
 interface DataContextType {
   // Anime
   anime: Anime[];
-  addAnime: (anime: Omit<Anime, 'id'>) => void;
-  updateAnime: (id: string, updates: Partial<Anime>) => void;
-  deleteAnime: (id: string) => void;
-  getAnimeStats: () => AnimeStats;
+  addAnime: (anime: Omit<Anime, 'id'>) => Promise<void>;
+  updateAnime: (id: string, updates: Partial<Anime>) => Promise<void>;
+  deleteAnime: (id: string) => Promise<void>;
+  getAnimeStats: () => Promise<AnimeStats>;
   
   // Movies
   movies: Movie[];
-  addMovie: (movie: Omit<Movie, 'id'>) => void;
-  updateMovie: (id: string, updates: Partial<Movie>) => void;
-  deleteMovie: (id: string) => void;
+  addMovie: (movie: Omit<Movie, 'id'>) => Promise<void>;
+  updateMovie: (id: string, updates: Partial<Movie>) => Promise<void>;
+  deleteMovie: (id: string) => Promise<void>;
   
   // K-Drama
   kdrama: KDrama[];
-  addKDrama: (drama: Omit<KDrama, 'id'>) => void;
-  updateKDrama: (id: string, updates: Partial<KDrama>) => void;
-  deleteKDrama: (id: string) => void;
+  addKDrama: (drama: Omit<KDrama, 'id'>) => Promise<void>;
+  updateKDrama: (id: string, updates: Partial<KDrama>) => Promise<void>;
+  deleteKDrama: (id: string) => Promise<void>;
   
   // Games
   games: Game[];
-  addGame: (game: Omit<Game, 'id'>) => void;
-  updateGame: (id: string, updates: Partial<Game>) => void;
-  deleteGame: (id: string) => void;
+  addGame: (game: Omit<Game, 'id'>) => Promise<void>;
+  updateGame: (id: string, updates: Partial<Game>) => Promise<void>;
+  deleteGame: (id: string) => Promise<void>;
   
   // Genshin
   genshinAccount: GenshinAccount | null;
-  updateGenshinAccount: (updates: Partial<GenshinAccount>) => void;
-  addGenshinCharacter: (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => void;
-  updateGenshinCharacter: (id: string, updates: Partial<import('@/types').GenshinCharacter>) => void;
-  deleteGenshinCharacter: (id: string) => void;
+  updateGenshinAccount: (updates: Partial<GenshinAccount>) => Promise<void>;
+  addGenshinCharacter: (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => Promise<void>;
+  updateGenshinCharacter: (id: string, updates: Partial<import('@/types').GenshinCharacter>) => Promise<void>;
+  deleteGenshinCharacter: (id: string) => Promise<void>;
   
   // Credentials
   credentials: Credential[];
-  addCredential: (credential: Omit<Credential, 'id'>) => void;
-  updateCredential: (id: string, updates: Partial<Credential>) => void;
-  deleteCredential: (id: string) => void;
+  addCredential: (credential: Omit<Credential, 'id'>) => Promise<void>;
+  updateCredential: (id: string, updates: Partial<Credential>) => Promise<void>;
+  deleteCredential: (id: string) => Promise<void>;
   
   // Websites
   websites: Website[];
-  addWebsite: (website: Omit<Website, 'id'>) => void;
-  updateWebsite: (id: string, updates: Partial<Website>) => void;
-  deleteWebsite: (id: string) => void;
+  addWebsite: (website: Omit<Website, 'id'>) => Promise<void>;
+  updateWebsite: (id: string, updates: Partial<Website>) => Promise<void>;
+  deleteWebsite: (id: string) => Promise<void>;
   
   // Dashboard
-  getDashboardStats: () => DashboardStats;
+  getDashboardStats: () => Promise<DashboardStats>;
   
   // Loading states
   isLoading: boolean;
+  error: string | null;
+  refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-function generateId(): string {
-  return nanoid();
-}
-
 export function DataProvider({ children }: { children: ReactNode }) {
-  // Initialize with static mock data
-  const [anime, setAnime] = useState<Anime[]>(mockAnime);
-  const [movies, setMovies] = useState<Movie[]>(mockMovies);
-  const [kdrama, setKDrama] = useState<KDrama[]>(mockKDrama);
-  const [games, setGames] = useState<Game[]>(mockGames);
-  const [genshinAccount, setGenshinAccount] = useState<GenshinAccount | null>(mockGenshinAccount);
-  const [credentials, setCredentials] = useState<Credential[]>(mockCredentials);
-  const [websites, setWebsites] = useState<Website[]>(mockWebsites);
-  const [isLoading] = useState(false); // No loading needed for static data
+  const [anime, setAnime] = useState<Anime[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [kdrama, setKDrama] = useState<KDrama[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [genshinAccount, setGenshinAccount] = useState<GenshinAccount | null>(null);
+  const [credentials, setCredentials] = useState<Credential[]>([]);
+  const [websites, setWebsites] = useState<Website[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch all data on mount
+  const fetchAllData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const [animeData, moviesData, kdramaData, gamesData, genshinData, credentialsData, websitesData] = await Promise.all([
+        apiClient.get<Anime[]>('/anime').catch(() => []),
+        apiClient.get<Movie[]>('/movies').catch(() => []),
+        apiClient.get<KDrama[]>('/kdrama').catch(() => []),
+        apiClient.get<Game[]>('/games').catch(() => []),
+        apiClient.get<GenshinAccount | null>('/genshin').catch(() => null),
+        apiClient.get<Credential[]>('/credentials').catch(() => []),
+        apiClient.get<Website[]>('/websites').catch(() => []),
+      ]);
+      
+      setAnime(animeData);
+      setMovies(moviesData);
+      setKDrama(kdramaData);
+      setGames(gamesData);
+      setGenshinAccount(genshinData);
+      setCredentials(credentialsData);
+      setWebsites(websitesData);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
 
   // ===== ANIME FUNCTIONS =====
-  const addAnime = (newAnime: Omit<Anime, 'id'>) => {
-    setAnime((prev) => [...prev, { ...newAnime, id: generateId() }]);
+  const addAnime = async (newAnime: Omit<Anime, 'id'>) => {
+    try {
+      const created = await apiClient.post<Anime>('/anime', newAnime);
+      setAnime((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding anime:', err);
+      throw err;
+    }
   };
 
-  const updateAnime = (id: string, updates: Partial<Anime>) => {
-    setAnime((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateAnime = async (id: string, updates: Partial<Anime>) => {
+    try {
+      const updated = await apiClient.patch<Anime>(`/anime/${id}`, updates);
+      setAnime((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating anime:', err);
+      throw err;
+    }
   };
 
-  const deleteAnime = (id: string) => {
-    setAnime((prev) => prev.filter((item) => item.id !== id));
+  const deleteAnime = async (id: string) => {
+    try {
+      await apiClient.delete(`/anime/${id}`);
+      setAnime((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting anime:', err);
+      throw err;
+    }
   };
 
-  const getAnimeStats = (): AnimeStats => {
-    const totalEpisodes = anime.reduce((acc, a) => acc + (a.episodesWatched || 0), 0);
-    const scoresArray = anime.filter((a) => a.score).map((a) => a.score!);
-    const meanScore = scoresArray.length > 0
-      ? scoresArray.reduce((a, b) => a + b, 0) / scoresArray.length
-      : 0;
-
-    const statusCounts = {
-      watching: anime.filter((a) => a.status === 'watching').length,
-      completed: anime.filter((a) => a.status === 'completed').length,
-      planning: anime.filter((a) => a.status === 'planning').length,
-      dropped: anime.filter((a) => a.status === 'dropped').length,
-      onHold: anime.filter((a) => a.status === 'on-hold').length,
-    };
-
-    const genreMap = new Map<string, number>();
-    anime.forEach((a) => {
-      a.genres.forEach((genre) => {
-        genreMap.set(genre, (genreMap.get(genre) || 0) + 1);
-      });
-    });
-    const genreDistribution = Array.from(genreMap.entries())
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-
-    const scoreDistribution = Array.from({ length: 10 }, (_, i) => ({
-      score: i + 1,
-      count: anime.filter((a) => a.score === i + 1).length,
-    }));
-
-    const monthlyActivity = [
-      { month: 'Jan', count: 12 },
-      { month: 'Feb', count: 8 },
-      { month: 'Mar', count: 15 },
-      { month: 'Apr', count: 10 },
-      { month: 'May', count: 18 },
-      { month: 'Jun', count: 14 },
-    ];
-
-    return {
-      totalAnime: anime.length,
-      totalEpisodes,
-      meanScore: Math.round(meanScore * 10) / 10,
-      ...statusCounts,
-      genreDistribution,
-      scoreDistribution,
-      monthlyActivity,
-    };
+  const getAnimeStats = async (): Promise<AnimeStats> => {
+    try {
+      return await apiClient.get<AnimeStats>('/anime/stats');
+    } catch (err) {
+      console.error('Error fetching anime stats:', err);
+      throw err;
+    }
   };
 
   // ===== MOVIE FUNCTIONS =====
-  const addMovie = (newMovie: Omit<Movie, 'id'>) => {
-    setMovies((prev) => [...prev, { ...newMovie, id: generateId() }]);
+  const addMovie = async (newMovie: Omit<Movie, 'id'>) => {
+    try {
+      const created = await apiClient.post<Movie>('/movies', newMovie);
+      setMovies((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding movie:', err);
+      throw err;
+    }
   };
 
-  const updateMovie = (id: string, updates: Partial<Movie>) => {
-    setMovies((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateMovie = async (id: string, updates: Partial<Movie>) => {
+    try {
+      const updated = await apiClient.patch<Movie>(`/movies/${id}`, updates);
+      setMovies((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating movie:', err);
+      throw err;
+    }
   };
 
-  const deleteMovie = (id: string) => {
-    setMovies((prev) => prev.filter((item) => item.id !== id));
+  const deleteMovie = async (id: string) => {
+    try {
+      await apiClient.delete(`/movies/${id}`);
+      setMovies((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting movie:', err);
+      throw err;
+    }
   };
 
   // ===== K-DRAMA FUNCTIONS =====
-  const addKDrama = (newDrama: Omit<KDrama, 'id'>) => {
-    setKDrama((prev) => [...prev, { ...newDrama, id: generateId() }]);
+  const addKDrama = async (newDrama: Omit<KDrama, 'id'>) => {
+    try {
+      const created = await apiClient.post<KDrama>('/kdrama', newDrama);
+      setKDrama((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding k-drama:', err);
+      throw err;
+    }
   };
 
-  const updateKDrama = (id: string, updates: Partial<KDrama>) => {
-    setKDrama((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateKDrama = async (id: string, updates: Partial<KDrama>) => {
+    try {
+      const updated = await apiClient.patch<KDrama>(`/kdrama/${id}`, updates);
+      setKDrama((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating k-drama:', err);
+      throw err;
+    }
   };
 
-  const deleteKDrama = (id: string) => {
-    setKDrama((prev) => prev.filter((item) => item.id !== id));
+  const deleteKDrama = async (id: string) => {
+    try {
+      await apiClient.delete(`/kdrama/${id}`);
+      setKDrama((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting k-drama:', err);
+      throw err;
+    }
   };
 
   // ===== GAME FUNCTIONS =====
-  const addGame = (newGame: Omit<Game, 'id'>) => {
-    setGames((prev) => [...prev, { ...newGame, id: generateId() }]);
+  const addGame = async (newGame: Omit<Game, 'id'>) => {
+    try {
+      const created = await apiClient.post<Game>('/games', newGame);
+      setGames((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding game:', err);
+      throw err;
+    }
   };
 
-  const updateGame = (id: string, updates: Partial<Game>) => {
-    setGames((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateGame = async (id: string, updates: Partial<Game>) => {
+    try {
+      const updated = await apiClient.patch<Game>(`/games/${id}`, updates);
+      setGames((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating game:', err);
+      throw err;
+    }
   };
 
-  const deleteGame = (id: string) => {
-    setGames((prev) => prev.filter((item) => item.id !== id));
+  const deleteGame = async (id: string) => {
+    try {
+      await apiClient.delete(`/games/${id}`);
+      setGames((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting game:', err);
+      throw err;
+    }
   };
 
   // ===== GENSHIN FUNCTIONS =====
-  const updateGenshinAccount = (updates: Partial<GenshinAccount>) => {
-    if (genshinAccount) {
-      setGenshinAccount({ ...genshinAccount, ...updates });
+  const updateGenshinAccount = async (updates: Partial<GenshinAccount>) => {
+    try {
+      const updated = await apiClient.patch<GenshinAccount>('/genshin', updates);
+      setGenshinAccount(updated);
+    } catch (err) {
+      console.error('Error updating genshin account:', err);
+      throw err;
     }
   };
 
-  const addGenshinCharacter = (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => {
-    if (genshinAccount) {
-      const newCharacter: import('@/types').GenshinCharacter = {
+  const addGenshinCharacter = async (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => {
+    try {
+      const created = await apiClient.post<import('@/types').GenshinCharacter>('/genshin/characters', {
         ...character,
-        id: generateId(),
         friendship: 0,
-      };
-      setGenshinAccount({
-        ...genshinAccount,
-        characters: [...genshinAccount.characters, newCharacter],
       });
+      if (genshinAccount) {
+        setGenshinAccount({
+          ...genshinAccount,
+          characters: [...genshinAccount.characters, created],
+        });
+      }
+    } catch (err) {
+      console.error('Error adding genshin character:', err);
+      throw err;
     }
   };
 
-  const updateGenshinCharacter = (id: string, updates: Partial<import('@/types').GenshinCharacter>) => {
-    if (genshinAccount) {
-      setGenshinAccount({
-        ...genshinAccount,
-        characters: genshinAccount.characters.map((char) =>
-          char.id === id ? { ...char, ...updates } : char
-        ),
-      });
+  const updateGenshinCharacter = async (id: string, updates: Partial<import('@/types').GenshinCharacter>) => {
+    try {
+      const updated = await apiClient.patch<import('@/types').GenshinCharacter>(`/genshin/characters/${id}`, updates);
+      if (genshinAccount) {
+        setGenshinAccount({
+          ...genshinAccount,
+          characters: genshinAccount.characters.map((char) =>
+            char.id === id ? updated : char
+          ),
+        });
+      }
+    } catch (err) {
+      console.error('Error updating genshin character:', err);
+      throw err;
     }
   };
 
-  const deleteGenshinCharacter = (id: string) => {
-    if (genshinAccount) {
-      setGenshinAccount({
-        ...genshinAccount,
-        characters: genshinAccount.characters.filter((char) => char.id !== id),
-      });
+  const deleteGenshinCharacter = async (id: string) => {
+    try {
+      await apiClient.delete(`/genshin/characters/${id}`);
+      if (genshinAccount) {
+        setGenshinAccount({
+          ...genshinAccount,
+          characters: genshinAccount.characters.filter((char) => char.id !== id),
+        });
+      }
+    } catch (err) {
+      console.error('Error deleting genshin character:', err);
+      throw err;
     }
   };
 
   // ===== CREDENTIAL FUNCTIONS =====
-  const addCredential = (newCredential: Omit<Credential, 'id'>) => {
-    setCredentials((prev) => [...prev, { ...newCredential, id: generateId() }]);
+  const addCredential = async (newCredential: Omit<Credential, 'id'>) => {
+    try {
+      const created = await apiClient.post<Credential>('/credentials', newCredential);
+      setCredentials((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding credential:', err);
+      throw err;
+    }
   };
 
-  const updateCredential = (id: string, updates: Partial<Credential>) => {
-    setCredentials((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateCredential = async (id: string, updates: Partial<Credential>) => {
+    try {
+      const updated = await apiClient.patch<Credential>(`/credentials/${id}`, updates);
+      setCredentials((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating credential:', err);
+      throw err;
+    }
   };
 
-  const deleteCredential = (id: string) => {
-    setCredentials((prev) => prev.filter((item) => item.id !== id));
+  const deleteCredential = async (id: string) => {
+    try {
+      await apiClient.delete(`/credentials/${id}`);
+      setCredentials((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting credential:', err);
+      throw err;
+    }
   };
 
   // ===== WEBSITE FUNCTIONS =====
-  const addWebsite = (newWebsite: Omit<Website, 'id'>) => {
-    setWebsites((prev) => [...prev, { ...newWebsite, id: generateId() }]);
+  const addWebsite = async (newWebsite: Omit<Website, 'id'>) => {
+    try {
+      const created = await apiClient.post<Website>('/websites', newWebsite);
+      setWebsites((prev) => [...prev, created]);
+    } catch (err) {
+      console.error('Error adding website:', err);
+      throw err;
+    }
   };
 
-  const updateWebsite = (id: string, updates: Partial<Website>) => {
-    setWebsites((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+  const updateWebsite = async (id: string, updates: Partial<Website>) => {
+    try {
+      const updated = await apiClient.patch<Website>(`/websites/${id}`, updates);
+      setWebsites((prev) =>
+        prev.map((item) => (item.id === id ? updated : item))
+      );
+    } catch (err) {
+      console.error('Error updating website:', err);
+      throw err;
+    }
   };
 
-  const deleteWebsite = (id: string) => {
-    setWebsites((prev) => prev.filter((item) => item.id !== id));
+  const deleteWebsite = async (id: string) => {
+    try {
+      await apiClient.delete(`/websites/${id}`);
+      setWebsites((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting website:', err);
+      throw err;
+    }
   };
 
   // ===== DASHBOARD STATS =====
-  const getDashboardStats = (): DashboardStats => ({
-    anime: {
-      total: anime.length,
-      watching: anime.filter((a) => a.status === 'watching').length,
-    },
-    movies: {
-      total: movies.length,
-      watched: movies.filter((m) => m.status === 'watched').length,
-    },
-    kdrama: {
-      total: kdrama.length,
-      watching: kdrama.filter((k) => k.status === 'watching').length,
-    },
-    games: {
-      total: games.length,
-      playing: games.filter((g) => g.status === 'playing').length,
-    },
-  });
+  const getDashboardStats = async (): Promise<DashboardStats> => {
+    try {
+      return await apiClient.get<DashboardStats>('/dashboard/stats');
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      throw err;
+    }
+  };
 
   return (
     <DataContext.Provider
@@ -329,6 +429,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteWebsite,
         getDashboardStats,
         isLoading,
+        error,
+        refreshData: fetchAllData,
       }}
     >
       {children}

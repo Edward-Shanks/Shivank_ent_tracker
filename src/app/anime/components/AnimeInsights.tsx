@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   PieChart,
@@ -32,9 +32,27 @@ const COLORS = {
 
 const PIE_COLORS = ['#e50914', '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#06b6d4', '#eab308'];
 
+const defaultStats: AnimeStats = {
+  totalAnime: 0,
+  totalEpisodes: 0,
+  meanScore: 0,
+  watching: 0,
+  completed: 0,
+  planning: 0,
+  dropped: 0,
+  onHold: 0,
+  genreDistribution: [],
+  scoreDistribution: [],
+  monthlyActivity: [],
+};
+
 export default function AnimeInsights() {
   const { getAnimeStats } = useData();
-  const stats = getAnimeStats();
+  const [stats, setStats] = useState<AnimeStats>(defaultStats);
+
+  useEffect(() => {
+    getAnimeStats().then(setStats).catch(console.error);
+  }, [getAnimeStats]);
 
   const statusData = [
     { name: 'Watching', value: stats.watching, color: COLORS.watching },

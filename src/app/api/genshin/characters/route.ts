@@ -3,15 +3,19 @@ import { db } from '@/lib/db';
 import { genshinAccounts, genshinCharacters } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 // POST /api/genshin/characters - Add character
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const userId = '1';
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
+    const body = await request.json();
     const account = await db.select().from(genshinAccounts)
-      .where(eq(genshinAccounts.userId, userId)).limit(1);
+      .where(eq(genshinAccounts.userId, user.id)).limit(1);
     
     if (account.length === 0) {
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
@@ -46,4 +50,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create character' }, { status: 500 });
   }
 }
-

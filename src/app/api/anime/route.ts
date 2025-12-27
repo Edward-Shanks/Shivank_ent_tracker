@@ -3,14 +3,17 @@ import { db } from '@/lib/db';
 import { anime } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/anime - Get all anime for current user
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get userId from session/auth
-    const userId = '1'; // Placeholder - replace with actual auth
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
-    const allAnime = await db.select().from(anime).where(eq(anime.userId, userId));
+    const allAnime = await db.select().from(anime).where(eq(anime.userId, user.id));
     
     // Parse JSON fields
     const parsedAnime = allAnime.map(item => ({
@@ -31,12 +34,16 @@ export async function GET(request: NextRequest) {
 // POST /api/anime - Create new anime
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1'; // Placeholder - replace with actual auth
     
     const newAnime = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       title: body.title,
       titleJapanese: body.titleJapanese,
       animeOtherName: body.animeOtherName,
@@ -74,4 +81,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

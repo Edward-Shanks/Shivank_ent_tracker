@@ -330,30 +330,30 @@ export default function ReportsPage() {
       
       switch (selectedCategory) {
         case 'anime':
-          filteredData.forEach((item: any) => deleteAnime(item.id));
+          await Promise.all(filteredData.map((item: any) => deleteAnime(item.id)));
           break;
         case 'shows':
-          filteredData.forEach((item: any) => {
+          await Promise.all(filteredData.map((item: any) => {
             if ('year' in item) {
-              deleteKDrama(item.id);
+              return deleteKDrama(item.id);
             } else {
-              deleteMovie(item.id);
+              return deleteMovie(item.id);
             }
-          });
+          }));
           break;
         case 'games':
-          filteredData.forEach((item: any) => deleteGame(item.id));
+          await Promise.all(filteredData.map((item: any) => deleteGame(item.id)));
           break;
         case 'genshin':
           if (genshinAccount) {
-            filteredData.forEach((item: any) => deleteGenshinCharacter(item.id));
+            await Promise.all(filteredData.map((item: any) => deleteGenshinCharacter(item.id)));
           }
           break;
         case 'credentials':
-          filteredData.forEach((item: any) => deleteCredential(item.id));
+          await Promise.all(filteredData.map((item: any) => deleteCredential(item.id)));
           break;
         case 'websites':
-          filteredData.forEach((item: any) => deleteWebsite(item.id));
+          await Promise.all(filteredData.map((item: any) => deleteWebsite(item.id)));
           break;
       }
 
@@ -505,7 +505,7 @@ export default function ReportsPage() {
   };
 
   // Step 3: Confirm upload with field mapping
-  const handleConfirmUpload = () => {
+  const handleConfirmUpload = async () => {
     if (!uploadCategory || !uploadFileData.length) return;
 
     setIsUploading(true);
@@ -516,7 +516,7 @@ export default function ReportsPage() {
 
       switch (uploadCategory) {
         case 'anime':
-          uploadFileData.forEach((row: any) => {
+          await Promise.all(uploadFileData.map(async (row: any) => {
             try {
               const mappedRow: any = {};
               Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -525,7 +525,7 @@ export default function ReportsPage() {
                 }
               });
 
-              addAnime({
+              await addAnime({
                 title: mappedRow.title || '',
                 animeOtherName: mappedRow.animeOtherName,
                 animeType: mappedRow.animeType as any,
@@ -546,11 +546,11 @@ export default function ReportsPage() {
             } catch (err) {
               console.error('Error adding anime:', err);
             }
-          });
+          }));
           break;
 
         case 'shows':
-          uploadFileData.forEach((row: any) => {
+          await Promise.all(uploadFileData.map(async (row: any) => {
             try {
               const mappedRow: any = {};
               Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -561,7 +561,7 @@ export default function ReportsPage() {
 
               const type = mappedRow.type || 'Movie';
               if (type === 'K-Drama' || mappedRow.year) {
-                addKDrama({
+                await addKDrama({
                   title: mappedRow.title || '',
                   episodes: parseInt(mappedRow.episodes || '0'),
                   episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
@@ -573,7 +573,7 @@ export default function ReportsPage() {
                   posterImage: '',
                 });
               } else {
-                addMovie({
+                await addMovie({
                   title: mappedRow.title || '',
                   releaseDate: mappedRow.releaseDate || new Date().toISOString(),
                   runtime: parseInt(mappedRow.runtime || '0'),
@@ -588,11 +588,11 @@ export default function ReportsPage() {
             } catch (err) {
               console.error('Error adding show:', err);
             }
-          });
+          }));
           break;
 
         case 'games':
-          uploadFileData.forEach((row: any) => {
+          await Promise.all(uploadFileData.map(async (row: any) => {
             try {
               const mappedRow: any = {};
               Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -601,7 +601,7 @@ export default function ReportsPage() {
                 }
               });
 
-              addGame({
+              await addGame({
                 title: mappedRow.title || '',
                 platform: mappedRow.platform ? (Array.isArray(mappedRow.platform) ? mappedRow.platform : [mappedRow.platform]) : ['PC'],
                 status: (mappedRow.status || 'playing') as GameStatus,
@@ -617,12 +617,12 @@ export default function ReportsPage() {
             } catch (err) {
               console.error('Error adding game:', err);
             }
-          });
+          }));
           break;
 
         case 'genshin':
           if (genshinAccount) {
-            uploadFileData.forEach((row: any) => {
+            await Promise.all(uploadFileData.map(async (row: any) => {
               try {
                 const mappedRow: any = {};
                 Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -631,7 +631,7 @@ export default function ReportsPage() {
                   }
                 });
 
-                addGenshinCharacter({
+                await addGenshinCharacter({
                   name: mappedRow.name || '',
                   element: (mappedRow.element || 'Pyro') as GenshinElement,
                   weapon: (mappedRow.weapon || 'Sword') as GenshinWeapon,
@@ -648,12 +648,12 @@ export default function ReportsPage() {
               } catch (err) {
                 console.error('Error adding character:', err);
               }
-            });
+            }));
           }
           break;
 
         case 'credentials':
-          uploadFileData.forEach((row: any) => {
+          await Promise.all(uploadFileData.map(async (row: any) => {
             try {
               const mappedRow: any = {};
               Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -662,7 +662,7 @@ export default function ReportsPage() {
                 }
               });
 
-              addCredential({
+              await addCredential({
                 name: mappedRow.name || '',
                 category: (mappedRow.category || 'other') as CredentialCategory,
                 username: mappedRow.username,
@@ -676,11 +676,11 @@ export default function ReportsPage() {
             } catch (err) {
               console.error('Error adding credential:', err);
             }
-          });
+          }));
           break;
 
         case 'websites':
-          uploadFileData.forEach((row: any) => {
+          await Promise.all(uploadFileData.map(async (row: any) => {
             try {
               const mappedRow: any = {};
               Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
@@ -689,7 +689,7 @@ export default function ReportsPage() {
                 }
               });
 
-              addWebsite({
+              await addWebsite({
                 name: mappedRow.name || '',
                 url: mappedRow.url || '',
                 category: (mappedRow.category || 'other') as WebsiteCategory,
@@ -702,7 +702,7 @@ export default function ReportsPage() {
             } catch (err) {
               console.error('Error adding website:', err);
             }
-          });
+          }));
           break;
       }
 

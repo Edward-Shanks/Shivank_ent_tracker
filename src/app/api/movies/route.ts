@@ -3,11 +3,16 @@ import { db } from '@/lib/db';
 import { movies } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
-    const allMovies = await db.select().from(movies).where(eq(movies.userId, userId));
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const allMovies = await db.select().from(movies).where(eq(movies.userId, user.id));
     const parsed = allMovies.map(item => ({
       ...item,
       genres: JSON.parse(item.genres || '[]'),
@@ -22,11 +27,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     const newMovie = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       title: body.title,
       posterImage: body.posterImage,
       backdropImage: body.backdropImage,
@@ -51,4 +60,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create movie' }, { status: 500 });
   }
 }
-

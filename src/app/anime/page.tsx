@@ -371,10 +371,15 @@ export default function AnimePage() {
               setIsDetailModalOpen(false);
               setIsEditModalOpen(true);
             }}
-            onDelete={() => {
-              deleteAnime(selectedAnime.id);
-              setIsDetailModalOpen(false);
-              setSelectedAnime(null);
+            onDelete={async () => {
+              try {
+                await deleteAnime(selectedAnime.id);
+                setIsDetailModalOpen(false);
+                setSelectedAnime(null);
+              } catch (error) {
+                console.error('Error deleting anime:', error);
+                alert('Failed to delete anime. Please try again.');
+              }
             }}
           />
           <EditAnimeModal
@@ -384,10 +389,15 @@ export default function AnimePage() {
               setSelectedAnime(null);
             }}
             anime={selectedAnime}
-            onSave={(updates) => {
-              updateAnime(selectedAnime.id, updates);
-              setIsEditModalOpen(false);
-              setSelectedAnime(null);
+            onSave={async (updates) => {
+              try {
+                await updateAnime(selectedAnime.id, updates);
+                setIsEditModalOpen(false);
+                setSelectedAnime(null);
+              } catch (error) {
+                console.error('Error updating anime:', error);
+                alert('Failed to update anime. Please try again.');
+              }
             }}
           />
         </>

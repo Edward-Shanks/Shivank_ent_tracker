@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { anime, movies, kdrama, games } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/dashboard/stats - Get dashboard statistics
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     const [allAnime, allMovies, allKDrama, allGames] = await Promise.all([
-      db.select().from(anime).where(eq(anime.userId, userId)),
-      db.select().from(movies).where(eq(movies.userId, userId)),
-      db.select().from(kdrama).where(eq(kdrama.userId, userId)),
-      db.select().from(games).where(eq(games.userId, userId)),
+      db.select().from(anime).where(eq(anime.userId, user.id)),
+      db.select().from(movies).where(eq(movies.userId, user.id)),
+      db.select().from(kdrama).where(eq(kdrama.userId, user.id)),
+      db.select().from(games).where(eq(games.userId, user.id)),
     ]);
     
     return NextResponse.json({
@@ -41,4 +45,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { anime } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/anime/stats - Get anime statistics
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1'; // Placeholder - replace with actual auth
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
-    const allAnime = await db.select().from(anime).where(eq(anime.userId, userId));
+    const allAnime = await db.select().from(anime).where(eq(anime.userId, user.id));
     
     const parsedAnime = allAnime.map(item => ({
       ...item,
@@ -71,4 +75,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

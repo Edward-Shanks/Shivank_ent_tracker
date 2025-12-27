@@ -35,26 +35,31 @@ export default function AddWebsiteModal({ isOpen, onClose }: AddWebsiteModalProp
     isFavorite: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addWebsite({
-      name: formData.name,
-      url: formData.url,
-      category: formData.category,
-      description: formData.description || undefined,
-      favicon: formData.favicon || undefined,
-      isFavorite: formData.isFavorite,
-    });
-    // Reset form
-    setFormData({
-      name: '',
-      url: '',
-      category: 'other',
-      description: '',
-      favicon: '',
-      isFavorite: false,
-    });
-    onClose();
+    try {
+      await addWebsite({
+        name: formData.name,
+        url: formData.url,
+        category: formData.category,
+        description: formData.description || undefined,
+        favicon: formData.favicon || undefined,
+        isFavorite: formData.isFavorite,
+      });
+      // Reset form
+      setFormData({
+        name: '',
+        url: '',
+        category: 'other',
+        description: '',
+        favicon: '',
+        isFavorite: false,
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding website:', error);
+      alert('Failed to add website. Please try again.');
+    }
   };
 
   return (

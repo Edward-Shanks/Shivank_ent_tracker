@@ -3,12 +3,17 @@ import { db } from '@/lib/db';
 import { websites } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = '1';
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const allWebsites = await db.select().from(websites)
-      .where(eq(websites.userId, userId));
+      .where(eq(websites.userId, user.id));
     const parsed = allWebsites.map(item => ({
       ...item,
       isFavorite: Boolean(item.isFavorite),
@@ -22,11 +27,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const userId = '1';
     const newWebsite = {
       id: nanoid(),
-      userId,
+      userId: user.id,
       name: body.name,
       url: body.url,
       category: body.category,
@@ -45,4 +54,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create website' }, { status: 500 });
   }
 }
-
