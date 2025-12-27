@@ -1166,7 +1166,6 @@ export default function ReportsPage() {
                         {/* Pulse Effect for Active Step */}
                         {status === 'active' && (
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2"
                             className="absolute inset-0 rounded-full border-2 dark:border-cyan-400/40"
                             style={{
                               borderColor: '#EBFFFB',
