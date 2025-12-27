@@ -6,19 +6,22 @@
 
 import 'dotenv/config';
 import { db } from './index';
-import { users, anime, movies, kdrama, games, genshinAccounts, genshinCharacters, credentials, websites } from './schema';
+import { users, genshinAccounts } from './schema';
 import { nanoid } from 'nanoid';
+import bcrypt from 'bcryptjs';
 
 async function seed() {
   try {
     console.log('Seeding database...');
 
-    // Create default user
+    // Create default user with hashed password
     const userId = nanoid();
+    const hashedPassword = await bcrypt.hash('password123', 12);
     await db.insert(users).values({
       id: userId,
       username: 'EntertainmentFan',
       email: 'user@example.com',
+      password: hashedPassword,
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
     });
 

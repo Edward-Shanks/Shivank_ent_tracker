@@ -10,8 +10,8 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't redirect if still loading or already on login page
-    if (isLoading || pathname === '/login') {
+    // Don't redirect if still loading or on public pages (login/register)
+    if (isLoading || pathname === '/login' || pathname === '/register') {
       return;
     }
 
@@ -33,8 +33,8 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // Allow access to login page when not authenticated
-  if (!isAuthenticated && pathname === '/login') {
+  // Allow access to login and register pages when not authenticated
+  if (!isAuthenticated && (pathname === '/login' || pathname === '/register')) {
     return <>{children}</>;
   }
 

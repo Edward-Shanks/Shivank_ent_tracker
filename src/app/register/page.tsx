@@ -8,15 +8,18 @@ import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react';
 import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
 import { useAuth } from '@/context/AuthContext';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isFocused, setIsFocused] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -64,23 +67,44 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
 
-    if (!email || !password) {
-      setError('Email and password are required');
+    // Validation
+    if (!email || !password || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const result = await login(email, password);
+      const result = await register(email, password);
       if (result.success) {
+        setSuccess(true);
+        // Redirect immediately after successful registration (user is already logged in via cookies)
         router.push('/');
       } else {
-        setError(result.error || 'Login failed');
+        setError(result.error || 'Registration failed. Please try again.');
       }
     } catch {
-      setError('An error occurred during login');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +115,7 @@ export default function LoginPage() {
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"
+          className="absolute top-20 left-20 w-72 h-72 bg-accent-cyan/10 rounded-full blur-3xl"
           animate={{
             x: [0, 100, 0],
             y: [0, 50, 0],
@@ -104,7 +128,7 @@ export default function LoginPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-20 right-20 w-96 h-96 bg-accent-cyan/10 rounded-full blur-3xl"
+          className="absolute bottom-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
           animate={{
             x: [0, -100, 0],
             y: [0, -50, 0],
@@ -150,7 +174,7 @@ export default function LoginPage() {
         {/* Logo and Title */}
         <motion.div variants={itemVariants} className="text-center mb-8">
           <motion.div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary mb-6 shadow-lg"
+            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-cyan via-primary to-accent-purple mb-6 shadow-lg"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -163,7 +187,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            Welcome to{' '}
+            Join{' '}
             <span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-purple bg-clip-text text-transparent">
               EntTracker
             </span>
@@ -174,11 +198,11 @@ export default function LoginPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            Sign in to continue your entertainment journey
+            Create your account and start tracking your entertainment
           </motion.p>
         </motion.div>
 
-        {/* Login Card */}
+        {/* Register Card */}
         <motion.div
           variants={cardVariants}
           className="glass-strong rounded-2xl p-8 shadow-2xl border border-foreground/10"
@@ -225,6 +249,7 @@ export default function LoginPage() {
                   />
                 )}
               </div>
+              <p className="text-xs text-foreground-muted">Your username will be derived from your email</p>
             </motion.div>
 
             {/* Password Input */}
@@ -255,7 +280,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused(null)}
-                  placeholder="Enter your password"
+                  placeholder="Create a password (min. 6 characters)"
                   className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
@@ -283,27 +308,60 @@ export default function LoginPage() {
               </div>
             </motion.div>
 
-            {/* Remember Me & Forgot Password */}
+            {/* Confirm Password Input */}
             <motion.div
               variants={itemVariants}
-              className="flex items-center justify-between text-sm"
+              className="space-y-2"
             >
-              <label className="flex items-center cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-foreground/20 text-primary focus:ring-primary/50 focus:ring-offset-0 cursor-pointer"
-                />
-                <span className="ml-2 text-foreground-muted group-hover:text-foreground transition-colors">
-                  Remember me
-                </span>
-              </label>
-              <motion.a
-                href="#"
-                className="text-primary hover:text-primary-hover font-medium transition-colors"
-                whileHover={{ x: 2 }}
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-foreground-muted"
               >
-                Forgot password?
-              </motion.a>
+                Confirm Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock
+                    className={`w-5 h-5 transition-colors ${
+                      isFocused === 'confirmPassword'
+                        ? 'text-primary'
+                        : 'text-foreground-muted'
+                    }`}
+                  />
+                </div>
+                <motion.input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => setIsFocused('confirmPassword')}
+                  onBlur={() => setIsFocused(null)}
+                  placeholder="Confirm your password"
+                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  whileFocus={{ scale: 1.02 }}
+                />
+                <motion.button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-foreground-muted hover:text-foreground transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </motion.button>
+                {isFocused === 'confirmPassword' && (
+                  <motion.div
+                    className="absolute inset-0 rounded-lg border-2 border-primary/50 pointer-events-none"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                  />
+                )}
+              </div>
             </motion.div>
 
             {/* Error Message */}
@@ -317,18 +375,29 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            {/* Login Button */}
+            {/* Success Message */}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-sm"
+              >
+                Account created successfully! Redirecting...
+              </motion.div>
+            )}
+
+            {/* Register Button */}
             <motion.div variants={itemVariants}>
               <motion.button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-primary via-primary-hover to-primary-muted shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-                whileHover={!isSubmitting && !isLoading ? { scale: 1.02, boxShadow: '0 10px 30px rgba(229, 9, 20, 0.4)' } : {}}
+                className="w-full py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-cyan via-primary to-accent-purple shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={!isSubmitting && !isLoading ? { scale: 1.02, boxShadow: '0 10px 30px rgba(0, 240, 255, 0.4)' } : {}}
                 whileTap={!isSubmitting && !isLoading ? { scale: 0.98 } : {}}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary-hover via-primary to-primary-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute inset-0 bg-gradient-to-r from-primary-hover via-accent-cyan to-primary-muted opacity-0 group-hover:opacity-100 transition-opacity"
                   initial={false}
                 />
                 <span className="relative flex items-center justify-center gap-2">
@@ -339,11 +408,11 @@ export default function LoginPage() {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}
                       />
-                      Signing In...
+                      Creating Account...
                     </>
                   ) : (
                     <>
-                      Sign In
+                      Create Account
                       <motion.div
                         initial={{ x: -5, opacity: 0 }}
                         whileHover={{ x: 0, opacity: 1 }}
@@ -367,18 +436,18 @@ export default function LoginPage() {
               <div className="flex-1 border-t border-foreground/20" />
             </motion.div>
 
-            {/* Sign Up Link */}
+            {/* Sign In Link */}
             <motion.div
               variants={itemVariants}
               className="text-center"
             >
               <p className="text-foreground-muted text-sm">
-                Don't have an account?{' '}
+                Already have an account?{' '}
                 <Link
-                  href="/register"
-                  className="text-primary hover:text-primary-hover font-semibold transition-colors inline-block"
+                  href="/login"
+                  className="text-primary hover:text-primary-hover font-semibold transition-colors"
                 >
-                  Sign up
+                  Sign in
                 </Link>
               </p>
             </motion.div>
@@ -391,7 +460,7 @@ export default function LoginPage() {
           className="text-center mt-8"
         >
           <p className="text-foreground-muted text-sm">
-            By signing in, you agree to our{' '}
+            By creating an account, you agree to our{' '}
             <a href="#" className="text-primary hover:underline">
               Terms of Service
             </a>{' '}
@@ -405,4 +474,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

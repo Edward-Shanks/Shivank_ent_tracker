@@ -1,79 +1,141 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (updates: Partial<User>) => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user for demonstration
-const mockUser: User = {
-  id: '1',
-  username: 'EntertainmentFan',
-  email: 'user@example.com',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-  createdAt: '2024-01-01T00:00:00Z',
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate checking for existing session
-    const checkAuth = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Check for stored session (in a real app, this would check localStorage/cookies)
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          // Invalid stored user, clear it
-          localStorage.removeItem('user');
-        }
+  // Fetch current user from /api/auth/me
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          username: data.user.username,
+          avatar: data.user.avatar,
+          createdAt: data.user.createdAt || new Date().toISOString(),
+        });
+      } else {
+        setUser(null);
       }
-      setIsLoading(false);
-    };
-    checkAuth();
+    } catch {
+      setUser(null);
+    }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Mock validation
-      if (email && password) {
-        const userData = { ...mockUser, email };
-        setUser(userData);
-        // Store user in localStorage to persist session
-        localStorage.setItem('user', JSON.stringify(userData));
-        return true;
-      }
-      return false;
-    } finally {
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      setIsLoading(true);
+      await fetchUser();
       setIsLoading(false);
+    };
+
+    checkAuth();
+  }, [fetchUser]);
+
+  // Refresh user data
+  const refreshUser = async () => {
+    await fetchUser();
+  };
+
+  // Login function
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Login failed' };
+      }
+
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username,
+        avatar: data.user.avatar,
+        createdAt: data.user.createdAt || new Date().toISOString(),
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'An error occurred during login' };
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  // Register function
+  const register = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username,
+        avatar: data.user.avatar,
+        createdAt: data.user.createdAt || new Date().toISOString(),
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, error: 'An error occurred during registration' };
+    }
   };
 
-  const updateProfile = (updates: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...updates });
+  // Logout function
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
     }
   };
 
@@ -84,8 +146,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        register,
         logout,
-        updateProfile,
+        refreshUser,
       }}
     >
       {children}
@@ -100,4 +163,3 @@ export function useAuth() {
   }
   return context;
 }
-

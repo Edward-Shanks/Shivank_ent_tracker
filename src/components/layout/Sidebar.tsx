@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
@@ -36,8 +36,14 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
 
   return (
     <aside
@@ -174,7 +180,10 @@ export default function Sidebar() {
               <div className="flex-1">
                 <AnimatedThemeToggler className="w-full" />
               </div>
-              <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-muted hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/15 transition-all duration-200">
+              <button 
+                onClick={handleLogout}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-muted hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/15 transition-all duration-200"
+              >
                 <LogOut className="w-4 h-4" />
                 Logout
               </button>
