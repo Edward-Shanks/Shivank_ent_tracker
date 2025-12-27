@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   PieChart,
@@ -31,60 +31,66 @@ const PIE_COLORS = ['#e50914', '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ec4
 export default function GamesInsights() {
   const { games } = useData();
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: games.length,
     playing: games.filter((g) => g.status === 'playing').length,
     completed: games.filter((g) => g.status === 'completed').length,
     planning: games.filter((g) => g.status === 'planning').length,
     onHold: games.filter((g) => g.status === 'on-hold').length,
     dropped: games.filter((g) => g.status === 'dropped').length,
-    totalHours: games.reduce((acc, g) => acc + g.hoursPlayed, 0),
-    avgScore: games.filter((g) => g.score).reduce((acc, g, _, arr) => acc + (g.score || 0) / arr.length, 0),
-  };
+    totalHours: games.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0),
+    avgScore: games.filter((g) => g.score).length > 0
+      ? games.filter((g) => g.score).reduce((acc, g) => acc + (g.score || 0), 0) / games.filter((g) => g.score).length
+      : 0,
+  }), [games]);
 
   // Status distribution
-  const statusData = [
+  const statusData = useMemo(() => [
     { name: 'Playing', value: stats.playing, color: COLORS.playing },
     { name: 'Completed', value: stats.completed, color: COLORS.completed },
     { name: 'Planning', value: stats.planning, color: COLORS.planning },
     { name: 'On Hold', value: stats.onHold, color: COLORS['on-hold'] },
     { name: 'Dropped', value: stats.dropped, color: COLORS.dropped },
-  ].filter((item) => item.value > 0);
+  ].filter((item) => item.value > 0), [stats]);
 
   // Platform distribution
-  const platformMap = new Map<string, number>();
-  games.forEach((game) => {
-    game.platform.forEach((platform) => {
-      platformMap.set(platform, (platformMap.get(platform) || 0) + 1);
+  const platformDistribution = useMemo(() => {
+    const platformMap = new Map<string, number>();
+    games.forEach((game) => {
+      (game.platform || []).forEach((platform) => {
+        platformMap.set(platform, (platformMap.get(platform) || 0) + 1);
+      });
     });
-  });
-  const platformDistribution = Array.from(platformMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    return Array.from(platformMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [games]);
 
   // Genre distribution
-  const genreMap = new Map<string, number>();
-  games.forEach((game) => {
-    game.genres.forEach((genre) => {
-      genreMap.set(genre, (genreMap.get(genre) || 0) + 1);
+  const genreDistribution = useMemo(() => {
+    const genreMap = new Map<string, number>();
+    games.forEach((game) => {
+      (game.genres || []).forEach((genre) => {
+        genreMap.set(genre, (genreMap.get(genre) || 0) + 1);
+      });
     });
-  });
-  const genreDistribution = Array.from(genreMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
+    return Array.from(genreMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [games]);
 
   // Score distribution
-  const scoreDistribution = Array.from({ length: 10 }, (_, i) => ({
+  const scoreDistribution = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
     score: i + 1,
     count: games.filter((g) => g.score === i + 1).length,
-  }));
+  })), [games]);
 
   // Hours played distribution (top games)
-  const topHoursGames = [...games]
-    .sort((a, b) => b.hoursPlayed - a.hoursPlayed)
+  const topHoursGames = useMemo(() => [...games]
+    .sort((a, b) => (b.hoursPlayed || 0) - (a.hoursPlayed || 0))
     .slice(0, 8)
-    .map((g) => ({ name: g.title, hours: g.hoursPlayed }));
+    .map((g) => ({ name: g.title, hours: g.hoursPlayed || 0 })), [games]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -180,28 +186,34 @@ export default function GamesInsights() {
               Platform Distribution
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={platformDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis type="number" stroke="#666" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={80}
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 12 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {platformDistribution.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {platformDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={platformDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {platformDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No platform data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -221,28 +233,34 @@ export default function GamesInsights() {
               Top Genres
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={genreDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis type="number" stroke="#666" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={100}
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 12 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {genreDistribution.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {genreDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={genreDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={100}
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {genreDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No genre data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -259,19 +277,25 @@ export default function GamesInsights() {
               Score Distribution
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={scoreDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis
-                    dataKey="score"
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3' }}
-                  />
-                  <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {scoreDistribution.some(d => d.count > 0) ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={scoreDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis
+                      dataKey="score"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3' }}
+                    />
+                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No score data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -289,33 +313,39 @@ export default function GamesInsights() {
             Top Games by Hours Played
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topHoursGames} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis type="number" stroke="#666" />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={150}
-                  stroke="#666"
-                  tick={{ fill: '#a3a3a3', fontSize: 11 }}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="glass-strong p-3 rounded-lg">
-                          <p className="text-foreground font-medium">{payload[0].payload.name}</p>
-                          <p className="text-primary font-bold">{payload[0].value} hours</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="hours" radius={[0, 4, 4, 0]} fill="#a855f7" />
-              </BarChart>
-            </ResponsiveContainer>
+            {topHoursGames.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topHoursGames} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <XAxis type="number" stroke="#666" />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={150}
+                    stroke="#666"
+                    tick={{ fill: '#a3a3a3', fontSize: 11 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="glass-strong p-3 rounded-lg">
+                            <p className="text-foreground font-medium">{payload[0].payload.name}</p>
+                            <p className="text-primary font-bold">{payload[0].value} hours</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="hours" radius={[0, 4, 4, 0]} fill="#a855f7" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-foreground-muted">
+                No games data available
+              </div>
+            )}
           </div>
         </Card>
       </motion.div>

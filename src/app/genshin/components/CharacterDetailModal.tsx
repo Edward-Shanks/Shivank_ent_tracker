@@ -44,7 +44,7 @@ export default function CharacterDetailModal({
             background: `linear-gradient(135deg, ${elementColors[character.element]}40 0%, ${elementColors[character.element]}10 100%)`,
           }}
         >
-          {character.image ? (
+          {character.image && character.image.trim() ? (
             <img
               src={character.image}
               alt={character.name}

@@ -1020,7 +1020,7 @@ export default function ReportsPage() {
                         transition={{ duration: 0.5, delay: index * 0.2 }}
                         style={{ 
                           transformOrigin: 'left',
-                          boxShadow: isActive ? '0 0 10px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.4)' : 'none',
+                          boxShadow: isActive ? '0 0 8px rgba(34, 197, 94, 0.3), 0 0 16px rgba(34, 197, 94, 0.2)' : 'none',
                         }}
                       />
                     </div>
@@ -1082,13 +1082,13 @@ export default function ReportsPage() {
                                 key={`upload-burst-${i}`}
                                 className="absolute inset-0 rounded-full"
                                 style={{
-                                  background: `radial-gradient(circle, rgba(235, 255, 251, 0.9) 0%, rgba(167, 243, 208, 0.5) 50%, transparent 70%)`,
-                                  boxShadow: `0 0 20px rgba(235, 255, 251, 0.7), 0 0 40px rgba(167, 243, 208, 0.4)`,
+                                  background: `radial-gradient(circle, rgba(235, 255, 251, 0.25) 0%, rgba(167, 243, 208, 0.12) 50%, transparent 70%)`,
+                                  boxShadow: `0 0 8px rgba(235, 255, 251, 0.15), 0 0 16px rgba(167, 243, 208, 0.12)`,
                                 }}
                                 initial={{ scale: 0, opacity: 1 }}
                                 animate={{
                                   scale: [0, 2.5, 3.5],
-                                  opacity: [1, 0.7, 0],
+                                  opacity: [0.4, 0.2, 0],
                                   rotate: (i * 360) / 12,
                                 }}
                                 transition={{
@@ -1103,8 +1103,8 @@ export default function ReportsPage() {
                             <motion.div
                               className="absolute inset-0 flex items-center justify-center"
                               animate={{
-                                scale: [1, 1.2, 1],
-                                opacity: [0.8, 1, 0.8],
+                                scale: [1, 1.15, 1],
+                                opacity: [0.5, 0.7, 0.5],
                               }}
                               transition={{
                                 duration: 1,
@@ -1115,7 +1115,7 @@ export default function ReportsPage() {
                                 className="w-4 h-4" 
                                 style={{ 
                                   color: '#EBFFFB',
-                                  filter: 'drop-shadow(0 0 8px rgba(235, 255, 251, 1)) drop-shadow(0 0 16px rgba(167, 243, 208, 0.8)) drop-shadow(0 0 24px rgba(167, 243, 208, 0.4))',
+                                  filter: 'drop-shadow(0 0 3px rgba(235, 255, 251, 0.3)) drop-shadow(0 0 6px rgba(167, 243, 208, 0.2)) drop-shadow(0 0 9px rgba(167, 243, 208, 0.1))',
                                 }} 
                               />
                             </motion.div>
@@ -1134,11 +1134,11 @@ export default function ReportsPage() {
                           style={
                             status === 'active'
                               ? {
-                                  boxShadow: '0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.4)',
+                                  boxShadow: '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2)',
                                 }
                               : status === 'completed'
                               ? {
-                                  boxShadow: '0 0 15px rgba(34, 197, 94, 0.5)',
+                                  boxShadow: '0 0 8px rgba(34, 197, 94, 0.25)',
                                 }
                               : {}
                           }
@@ -1156,7 +1156,7 @@ export default function ReportsPage() {
                               }`}
                               style={
                                 status === 'active'
-                                  ? { filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.8))' }
+                                  ? { filter: 'drop-shadow(0 0 3px rgba(34, 197, 94, 0.4))' }
                                   : {}
                               }
                             />
@@ -1167,13 +1167,14 @@ export default function ReportsPage() {
                         {status === 'active' && (
                           <motion.div
                             className="absolute inset-0 rounded-full border-2"
+                            className="absolute inset-0 rounded-full border-2 dark:border-cyan-400/40"
                             style={{
                               borderColor: '#EBFFFB',
-                              boxShadow: '0 0 20px rgba(235, 255, 251, 0.9), 0 0 40px rgba(167, 243, 208, 0.6), 0 0 60px rgba(167, 243, 208, 0.3)',
+                              boxShadow: '0 0 8px rgba(235, 255, 251, 0.2), 0 0 16px rgba(167, 243, 208, 0.15), 0 0 24px rgba(167, 243, 208, 0.08)',
                             }}
                             animate={{
                               scale: [1, 1.5, 1.5],
-                              opacity: [0.8, 0, 0],
+                              opacity: [0.4, 0, 0],
                             }}
                             transition={{
                               duration: 2,
@@ -1205,7 +1206,7 @@ export default function ReportsPage() {
                                 className="px-3 py-1.5 rounded-full text-xs font-medium text-white"
                                 style={{
                                   background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                                  boxShadow: '0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.4)',
+                                  boxShadow: '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2)',
                                 }}
                                 animate={{
                                   scale: [1, 1.05, 1],
@@ -1406,7 +1407,7 @@ export default function ReportsPage() {
                       className="flex-1"
                       style={{
                         background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                        boxShadow: '0 0 20px rgba(34, 197, 94, 0.4)',
+                        boxShadow: '0 0 10px rgba(34, 197, 94, 0.2)',
                       }}
                     >
                       {isUploading ? 'Uploading...' : 'Confirm Upload'}

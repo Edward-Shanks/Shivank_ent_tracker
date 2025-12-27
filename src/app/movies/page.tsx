@@ -96,11 +96,15 @@ export default function MoviesPage() {
       {featuredMovie && (
         <div className="relative h-[40vh] min-h-[300px] max-h-[500px] overflow-hidden">
           <div className="absolute inset-0">
+            {((featuredMovie.backdropImage && featuredMovie.backdropImage.trim()) || (featuredMovie.posterImage && featuredMovie.posterImage.trim())) ? (
             <img
-              src={featuredMovie.backdropImage || featuredMovie.posterImage}
+                src={((featuredMovie.backdropImage && featuredMovie.backdropImage.trim()) || (featuredMovie.posterImage && featuredMovie.posterImage.trim())) || undefined}
               alt={featuredMovie.title}
               className="w-full h-full object-cover"
             />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-800" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           </div>

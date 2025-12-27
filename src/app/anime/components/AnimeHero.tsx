@@ -16,11 +16,15 @@ export default function AnimeHero({ anime }: AnimeHeroProps) {
     <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img
-          src={anime.bannerImage || anime.coverImage}
-          alt={anime.title}
-          className="w-full h-full object-cover"
-        />
+        {((anime.bannerImage && anime.bannerImage.trim()) || (anime.coverImage && anime.coverImage.trim())) ? (
+          <img
+            src={(anime.bannerImage && anime.bannerImage.trim()) || (anime.coverImage && anime.coverImage.trim()) || undefined}
+            alt={anime.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-800" />
+        )}
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />

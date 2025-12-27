@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  Settings,
   LogOut,
   FileText,
 } from 'lucide-react';
@@ -133,17 +132,27 @@ export default function Sidebar() {
 
       {/* User Section */}
       <div className="border-t border-foreground/10 px-4 py-4">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 mb-4'}`}>
-          {user?.avatar ? (
-            <img
+        <Link
+          href="/profile"
+          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 mb-4'} group cursor-pointer`}
+          title={isCollapsed ? 'Profile' : undefined}
+        >
+          {user?.avatar && user.avatar.trim() ? (
+            <motion.img
               src={user.avatar}
               alt={user.username}
-              className="w-10 h-10 rounded-full ring-2 ring-primary/50 flex-shrink-0 shadow-md"
+              className="w-10 h-10 rounded-full ring-2 ring-primary/50 flex-shrink-0 shadow-md group-hover:ring-primary transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-md">
+            <motion.div
+              className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-md group-hover:bg-primary/30 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <User className="w-5 h-5 text-primary" />
-            </div>
+            </motion.div>
           )}
           <AnimatePresence>
             {!isCollapsed && (
@@ -153,7 +162,7 @@ export default function Sidebar() {
                 exit={{ opacity: 0, width: 0 }}
                 className="overflow-hidden flex-1 min-w-0"
               >
-                <p className="font-medium text-foreground truncate">
+                <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
                   {user?.username || 'Guest'}
                 </p>
                 <p className="text-xs text-foreground-muted truncate">
@@ -162,9 +171,9 @@ export default function Sidebar() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </Link>
         
-        {/* Settings, Theme Toggler & Logout */}
+        {/* Theme Toggler & Logout */}
         <AnimatePresence>
           {!isCollapsed && (
             <motion.div
@@ -173,10 +182,6 @@ export default function Sidebar() {
               exit={{ opacity: 0, height: 0 }}
               className="flex items-center gap-2"
             >
-              <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-muted hover:text-foreground hover:bg-foreground/10 active:bg-foreground/15 transition-all duration-200">
-                <Settings className="w-4 h-4" />
-                Settings
-              </button>
               <div className="flex-1">
                 <AnimatedThemeToggler className="w-full" />
               </div>
@@ -193,8 +198,15 @@ export default function Sidebar() {
         
         {/* Theme Toggler - Collapsed State */}
         {isCollapsed && (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <AnimatedThemeToggler />
+            <button 
+              onClick={handleLogout}
+              className="p-2 rounded-lg text-foreground-muted hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/15 transition-all duration-200"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

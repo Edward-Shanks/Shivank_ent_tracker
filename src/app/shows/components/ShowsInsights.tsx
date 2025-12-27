@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   PieChart,
@@ -36,70 +36,78 @@ export default function ShowsInsights() {
   const { movies, kdrama } = useData();
 
   // Calculate stats
-  const movieStats = {
+  const movieStats = useMemo(() => ({
     total: movies.length,
     watched: movies.filter((m) => m.status === 'watched').length,
     planning: movies.filter((m) => m.status === 'planning').length,
     rewatching: movies.filter((m) => m.status === 'rewatching').length,
-    totalRuntime: movies.filter((m) => m.status === 'watched').reduce((acc, m) => acc + m.runtime, 0),
-    avgScore: movies.filter((m) => m.score).reduce((acc, m, _, arr) => acc + (m.score || 0) / arr.length, 0),
-  };
+    totalRuntime: movies.filter((m) => m.status === 'watched').reduce((acc, m) => acc + (m.runtime || 0), 0),
+    avgScore: movies.filter((m) => m.score).length > 0
+      ? movies.filter((m) => m.score).reduce((acc, m) => acc + (m.score || 0), 0) / movies.filter((m) => m.score).length
+      : 0,
+  }), [movies]);
 
-  const kdramaStats = {
+  const kdramaStats = useMemo(() => ({
     total: kdrama.length,
     watching: kdrama.filter((k) => k.status === 'watching').length,
     completed: kdrama.filter((k) => k.status === 'completed').length,
     planning: kdrama.filter((k) => k.status === 'planning').length,
     onHold: kdrama.filter((k) => k.status === 'on-hold').length,
     dropped: kdrama.filter((k) => k.status === 'dropped').length,
-    totalEpisodes: kdrama.reduce((acc, k) => acc + k.episodesWatched, 0),
-    avgScore: kdrama.filter((k) => k.score).reduce((acc, k, _, arr) => acc + (k.score || 0) / arr.length, 0),
-  };
+    totalEpisodes: kdrama.reduce((acc, k) => acc + (k.episodesWatched || 0), 0),
+    avgScore: kdrama.filter((k) => k.score).length > 0
+      ? kdrama.filter((k) => k.score).reduce((acc, k) => acc + (k.score || 0), 0) / kdrama.filter((k) => k.score).length
+      : 0,
+  }), [kdrama]);
 
   // Genre distribution
-  const genreMap = new Map<string, number>();
-  [...movies, ...kdrama].forEach((item) => {
-    item.genres.forEach((genre) => {
-      genreMap.set(genre, (genreMap.get(genre) || 0) + 1);
+  const genreDistribution = useMemo(() => {
+    const genreMap = new Map<string, number>();
+    [...movies, ...kdrama].forEach((item) => {
+      (item.genres || []).forEach((genre) => {
+        genreMap.set(genre, (genreMap.get(genre) || 0) + 1);
+      });
     });
-  });
-  const genreDistribution = Array.from(genreMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
+    return Array.from(genreMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [movies, kdrama]);
 
   // Status distribution
-  const statusData = [
+  const statusData = useMemo(() => [
     { name: 'Watched/Completed', value: movieStats.watched + kdramaStats.completed, color: COLORS.watched },
     { name: 'Watching', value: kdramaStats.watching + movieStats.rewatching, color: COLORS.watching },
     { name: 'Planning', value: movieStats.planning + kdramaStats.planning, color: COLORS.planning },
     { name: 'On Hold', value: kdramaStats.onHold, color: COLORS['on-hold'] },
     { name: 'Dropped', value: kdramaStats.dropped, color: COLORS.dropped },
-  ].filter((item) => item.value > 0);
+  ].filter((item) => item.value > 0), [movieStats, kdramaStats]);
 
   // Score distribution
-  const scoreDistribution = Array.from({ length: 10 }, (_, i) => ({
+  const scoreDistribution = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
     score: i + 1,
     count: [...movies, ...kdrama].filter((item) => item.score === i + 1).length,
-  }));
+  })), [movies, kdrama]);
 
   // Year distribution
-  const yearMap = new Map<number, number>();
-  [...movies, ...kdrama].forEach((item) => {
-    let year: number | null = null;
-    if ('year' in item && item.year) {
-      year = item.year;
-    } else if ('releaseDate' in item && item.releaseDate) {
-      year = new Date(item.releaseDate).getFullYear();
-    }
-    if (year) {
-      yearMap.set(year, (yearMap.get(year) || 0) + 1);
-    }
-  });
-  const yearDistribution = Array.from(yearMap.entries())
-    .map(([year, count]) => ({ year: year.toString(), count }))
-    .sort((a, b) => parseInt(a.year) - parseInt(b.year))
-    .slice(-10);
+  const yearDistribution = useMemo(() => {
+    const yearMap = new Map<number, number>();
+    [...movies, ...kdrama].forEach((item) => {
+      let year: number | null = null;
+      if ('year' in item && item.year) {
+        year = item.year;
+      } else if ('releaseDate' in item && item.releaseDate) {
+        year = new Date(item.releaseDate).getFullYear();
+      }
+      if (year) {
+        yearMap.set(year, (yearMap.get(year) || 0) + 1);
+      }
+    });
+    return Array.from(yearMap.entries())
+      .map(([year, count]) => ({ year: year.toString(), count }))
+      .sort((a, b) => parseInt(a.year) - parseInt(b.year))
+      .slice(-10);
+  }, [movies, kdrama]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -195,28 +203,34 @@ export default function ShowsInsights() {
               Top Genres
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={genreDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis type="number" stroke="#666" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={80}
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 12 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {genreDistribution.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {genreDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={genreDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {genreDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No genre data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -236,19 +250,25 @@ export default function ShowsInsights() {
               Score Distribution
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={scoreDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis
-                    dataKey="score"
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3' }}
-                  />
-                  <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#e50914" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {scoreDistribution.some(d => d.count > 0) ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={scoreDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis
+                      dataKey="score"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3' }}
+                    />
+                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#e50914" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No score data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -265,26 +285,32 @@ export default function ShowsInsights() {
               Release Year Distribution
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={yearDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis
-                    dataKey="year"
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 12 }}
-                  />
-                  <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#f97316"
-                    strokeWidth={3}
-                    dot={{ fill: '#f97316', strokeWidth: 2 }}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {yearDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={yearDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis
+                      dataKey="year"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                    />
+                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#f97316"
+                      strokeWidth={3}
+                      dot={{ fill: '#f97316', strokeWidth: 2 }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No year data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>

@@ -47,12 +47,25 @@ const defaultStats: AnimeStats = {
 };
 
 export default function AnimeInsights() {
-  const { getAnimeStats } = useData();
+  const { getAnimeStats, anime, refreshData } = useData();
   const [stats, setStats] = useState<AnimeStats>(defaultStats);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getAnimeStats().then(setStats).catch(console.error);
-  }, [getAnimeStats]);
+    const fetchStats = async () => {
+      setIsLoading(true);
+      try {
+        const statsData = await getAnimeStats();
+        setStats(statsData);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchStats();
+  }, [getAnimeStats, anime.length]); // Refresh when anime count changes
 
   const statusData = [
     { name: 'Watching', value: stats.watching, color: COLORS.watching },
@@ -161,28 +174,34 @@ export default function AnimeInsights() {
               Top Genres
             </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.genreDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis type="number" stroke="#666" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={80}
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 12 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {stats.genreDistribution.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {stats.genreDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.genreDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {stats.genreDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No genre data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -202,19 +221,25 @@ export default function AnimeInsights() {
               Score Distribution
             </h3>
             <div className="h-64 chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.scoreDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis
-                    dataKey="score"
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3' }}
-                  />
-                  <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#e50914" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {stats.scoreDistribution.some(d => d.count > 0) ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.scoreDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis
+                      dataKey="score"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3' }}
+                    />
+                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#e50914" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No score data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -231,26 +256,32 @@ export default function AnimeInsights() {
               Monthly Activity
             </h3>
             <div className="h-64 chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.monthlyActivity}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis
-                    dataKey="month"
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3' }}
-                  />
-                  <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#e50914"
-                    strokeWidth={3}
-                    dot={{ fill: '#e50914', strokeWidth: 2 }}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {stats.monthlyActivity.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={stats.monthlyActivity}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <XAxis
+                      dataKey="month"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3' }}
+                    />
+                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#e50914"
+                      strokeWidth={3}
+                      dot={{ fill: '#e50914', strokeWidth: 2 }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No activity data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>

@@ -46,7 +46,7 @@ export default function AnimeDetailModal({
             background: `linear-gradient(135deg, ${getStatusColor(anime.status)}40 0%, ${getStatusColor(anime.status)}10 100%)`,
           }}
         >
-          {anime.coverImage ? (
+          {anime.coverImage && anime.coverImage.trim() ? (
             <img
               src={anime.coverImage}
               alt={anime.title}

@@ -96,7 +96,7 @@ export default function Navbar() {
 
             {/* User Avatar */}
             <button className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/5 transition-colors">
-              {user?.avatar ? (
+              {user?.avatar && user.avatar.trim() ? (
                 <img
                   src={user.avatar}
                   alt={user.username}

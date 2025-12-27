@@ -49,14 +49,42 @@ export async function GET(request: NextRequest) {
       count: parsedAnime.filter((a) => a.score === i + 1).length,
     }));
 
-    const monthlyActivity = [
-      { month: 'Jan', count: 12 },
-      { month: 'Feb', count: 8 },
-      { month: 'Mar', count: 15 },
-      { month: 'Apr', count: 10 },
-      { month: 'May', count: 18 },
-      { month: 'Jun', count: 14 },
-    ];
+    // Calculate monthly activity from actual data
+    const monthlyActivityMap = new Map<string, number>();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Get last 6 months
+    const now = new Date();
+    const last6Months: { month: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      last6Months.push({
+        month: monthNames[date.getMonth()],
+        count: 0,
+      });
+      monthlyActivityMap.set(monthKey, 0);
+    }
+    
+    // Count anime added in each month
+    parsedAnime.forEach((a) => {
+      if (a.createdAt) {
+        const date = new Date(a.createdAt);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const current = monthlyActivityMap.get(monthKey) || 0;
+        monthlyActivityMap.set(monthKey, current + 1);
+      }
+    });
+    
+    // Map to the last 6 months array
+    const monthlyActivity = last6Months.map((item, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      return {
+        month: item.month,
+        count: monthlyActivityMap.get(monthKey) || 0,
+      };
+    });
 
     return NextResponse.json({
       totalAnime: parsedAnime.length,

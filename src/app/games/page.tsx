@@ -267,11 +267,17 @@ export default function GamesPage() {
                     <Card hover className="p-0 overflow-hidden">
                       {/* Game Cover */}
                       <div className="relative aspect-[3/4]">
-                        <img
-                          src={game.coverImage}
-                          alt={game.title}
-                          className="w-full h-full object-cover"
-                        />
+                        {game.coverImage && game.coverImage.trim() ? (
+                          <img
+                            src={game.coverImage}
+                            alt={game.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                            <span className="text-gray-500 text-sm">No Image</span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                         {/* Platform Badges */}
