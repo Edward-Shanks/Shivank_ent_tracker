@@ -42,7 +42,7 @@ export default function LoginPage() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     },
   };
@@ -55,7 +55,7 @@ export default function LoginPage() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     },
   };
@@ -74,7 +74,7 @@ export default function LoginPage() {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: 'easeInOut',
+            ease: 'easeInOut' as const,
           }}
         />
         <motion.div
@@ -87,7 +87,7 @@ export default function LoginPage() {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: 'easeInOut',
+            ease: 'easeInOut' as const,
           }}
         />
         <motion.div
@@ -99,7 +99,7 @@ export default function LoginPage() {
           transition={{
             duration: 30,
             repeat: Infinity,
-            ease: 'linear',
+            ease: 'linear' as const,
           }}
         />
       </div>
@@ -311,7 +311,7 @@ export default function LoginPage() {
                       <motion.div
                         className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}
                       />
                       Signing In...
                     </>

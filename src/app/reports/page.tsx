@@ -1095,7 +1095,7 @@ export default function ReportsPage() {
                                   duration: 2,
                                   repeat: Infinity,
                                   delay: i * 0.08,
-                                  ease: 'easeOut',
+                                  ease: 'easeOut' as const,
                                 }}
                               />
                             ))}
@@ -1429,7 +1429,7 @@ export default function ReportsPage() {
               <div className="flex items-center justify-center gap-3 p-4 mt-4">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}
                 >
                   <Upload className="w-6 h-6 text-foreground-muted" />
                 </motion.div>

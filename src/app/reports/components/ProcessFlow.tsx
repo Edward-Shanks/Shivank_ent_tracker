@@ -121,7 +121,7 @@ export default function ProcessFlow({
                           duration: 2,
                           repeat: Infinity,
                           delay: i * 0.08,
-                          ease: 'easeOut',
+                          ease: 'easeOut' as const,
                         }}
                       />
                     ))}

@@ -71,7 +71,7 @@ export default function Sidebar() {
         >
           <motion.div
             animate={{ rotate: isCollapsed ? 0 : 180 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.3, ease: 'easeInOut' as const }}
         >
           {isCollapsed ? (
             <ChevronRight className="w-5 h-5" />
