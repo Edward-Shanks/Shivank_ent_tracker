@@ -22,6 +22,7 @@
   "dotenv": "^16.4.7",
   "tsx": "^4.20.3",
   "clsx": "^2.1.1",
+  "xlsx": "^0.18.5",
   "framer-motion": "^12.0.0",
   "recharts": "^2.15.1",
   "tailwind-merge": "^3.0.2",
