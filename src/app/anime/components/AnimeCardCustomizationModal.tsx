@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
-export type AnimeCardField = 'status' | 'score' | 'episodes' | 'airingStatus' | 'watchStatus' | 'year' | 'season' | 'genres' | 'type';
+export type AnimeCardField = 'watchStatus' | 'score' | 'episodes' | 'airingStatus' | 'year' | 'season' | 'genres' | 'type';
 
 interface AnimeCardCustomizationModalProps {
   isOpen: boolean;
@@ -14,11 +14,10 @@ interface AnimeCardCustomizationModalProps {
 }
 
 const availableFields: { value: AnimeCardField; label: string; description: string }[] = [
-  { value: 'status', label: 'Status', description: 'Watch status badge (Watching, Completed, etc.)' },
+  { value: 'watchStatus', label: 'Watch Status', description: 'Watch status badge (Watching, Completed, Yet To Watch, etc.)' },
   { value: 'score', label: 'Score', description: 'Rating score with star icon' },
   { value: 'episodes', label: 'Episodes', description: 'Episodes watched / total episodes' },
   { value: 'airingStatus', label: 'Airing Status', description: 'Airing status (Airing, Completed, Yet To Air)' },
-  { value: 'watchStatus', label: 'Watch Status', description: 'Watch status (Watching, Completed, Yet To Watch, etc.)' },
   { value: 'year', label: 'Year', description: 'Release year' },
   { value: 'season', label: 'Season', description: 'Airing season (Spring, Winter, etc.)' },
   { value: 'genres', label: 'Genres', description: 'Genre tags' },

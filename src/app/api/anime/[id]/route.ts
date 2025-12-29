@@ -71,7 +71,6 @@ export async function PATCH(
     if (body.bannerImage !== undefined) updateData.bannerImage = body.bannerImage;
     if (body.episodes !== undefined) updateData.episodes = body.episodes;
     if (body.episodesWatched !== undefined) updateData.episodesWatched = body.episodesWatched;
-    if (body.status !== undefined) updateData.status = body.status;
     if (body.score !== undefined) updateData.score = body.score;
     if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
     if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;

@@ -85,16 +85,6 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Map watchStatus to status (same as AddAnimeModal)
-    const statusMap: Record<WatchStatus, 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold'> = {
-      'YTW': 'planning',
-      'Watching': 'watching',
-      'Watch Later': 'planning',
-      'Completed': 'completed',
-      'On Hold': 'on-hold',
-      'Dropped': 'dropped',
-    };
 
     const updates = {
       title: formData.title,
@@ -108,7 +98,6 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
       season: formData.season || undefined,
       episodes: formData.episodes,
       coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
-      status: statusMap[formData.watchStatus],
     };
     onSave(updates);
     onClose();

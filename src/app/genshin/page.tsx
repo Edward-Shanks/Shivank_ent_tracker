@@ -290,7 +290,7 @@ export default function GenshinPage() {
                 onClick={() => setIsCustomizationModalOpen(true)}
                 title={t('genshin.customizeCard')}
               >
-                {t('common.customize') || 'Customize'}
+                Customize
               </Button>
             )}
           </div>

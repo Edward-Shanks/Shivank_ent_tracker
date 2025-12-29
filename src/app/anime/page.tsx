@@ -14,7 +14,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { AnimeStatus, Anime } from '@/types';
+import { Anime, WatchStatus } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -36,13 +36,14 @@ export default function AnimePage() {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
   
-  const statusFilters: { value: AnimeStatus | 'all'; label: string }[] = [
+  const statusFilters: { value: WatchStatus | 'all'; label: string }[] = [
     { value: 'all', label: t('anime.allAnime') },
-    { value: 'watching', label: t('status.watching') },
-    { value: 'completed', label: t('status.completed') },
-    { value: 'planning', label: t('status.planToWatch') },
-    { value: 'on-hold', label: t('status.onHold') },
-    { value: 'dropped', label: t('status.dropped') },
+    { value: 'Watching', label: t('status.watching') },
+    { value: 'Completed', label: t('status.completed') },
+    { value: 'YTW', label: t('status.planToWatch') },
+    { value: 'Watch Later', label: t('status.watchLater') || 'Watch Later' },
+    { value: 'On Hold', label: t('status.onHold') },
+    { value: 'Dropped', label: t('status.dropped') },
   ];
 
   const sortOptions: { value: SortOption; label: string }[] = [
@@ -51,7 +52,7 @@ export default function AnimePage() {
     { value: 'progress', label: t('sort.progress') },
     { value: 'recent', label: t('sort.recent') },
   ];
-  const [statusFilter, setStatusFilter] = useState<AnimeStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<WatchStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -62,7 +63,7 @@ export default function AnimePage() {
   const [isCustomizationModalOpen, setIsCustomizationModalOpen] = useState(false);
   
   const CARD_FIELDS_STORAGE_KEY = 'anime_card_fields';
-  const DEFAULT_CARD_FIELDS: AnimeCardField[] = ['status', 'score', 'episodes', 'airingStatus'];
+  const DEFAULT_CARD_FIELDS: AnimeCardField[] = ['watchStatus', 'score', 'episodes', 'airingStatus'];
   const [cardFields, setCardFields] = useState<AnimeCardField[]>(DEFAULT_CARD_FIELDS);
 
   // Load card customization from localStorage
@@ -89,7 +90,7 @@ export default function AnimePage() {
 
     // Apply status filter
     if (statusFilter !== 'all') {
-      result = result.filter((a) => a.status === statusFilter);
+      result = result.filter((a) => a.watchStatus === statusFilter);
     }
 
     // Apply search
@@ -129,14 +130,18 @@ export default function AnimePage() {
   }, [anime, statusFilter, searchQuery, sortBy, sortOrder]);
 
   // Stats for status pills
-  const statusCounts = useMemo(() => ({
-    all: anime.length,
-    watching: anime.filter((a) => a.status === 'watching').length,
-    completed: anime.filter((a) => a.status === 'completed').length,
-    planning: anime.filter((a) => a.status === 'planning' || a.status === 'ytw' || a.status === 'watch-later').length,
-    'on-hold': anime.filter((a) => a.status === 'on-hold').length,
-    dropped: anime.filter((a) => a.status === 'dropped').length,
-  }), [anime]);
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: anime.length,
+      Watching: anime.filter((a) => a.watchStatus === 'Watching').length,
+      Completed: anime.filter((a) => a.watchStatus === 'Completed').length,
+      YTW: anime.filter((a) => a.watchStatus === 'YTW').length,
+      'Watch Later': anime.filter((a) => a.watchStatus === 'Watch Later').length,
+      'On Hold': anime.filter((a) => a.watchStatus === 'On Hold').length,
+      Dropped: anime.filter((a) => a.watchStatus === 'Dropped').length,
+    };
+    return counts;
+  }, [anime]);
 
   return (
     <div className="min-h-screen bg-animated">
@@ -201,7 +206,7 @@ export default function AnimePage() {
                 onClick={() => setIsCustomizationModalOpen(true)}
                 title={t('genshin.customizeCard')}
               >
-                {t('common.customize') || 'Customize'}
+                Customize
               </Button>
             )}
             <Button
@@ -309,13 +314,19 @@ export default function AnimePage() {
                         image={item.coverImage}
                         title={item.title}
                         subtitle={undefined}
-                        badge={cardFields.includes('status') ? item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('-', ' ') : undefined}
+                        badge={cardFields.includes('watchStatus') ? item.watchStatus : undefined}
                         badgeType={
-                          item.status === 'ytw' || item.status === 'watch-later' 
+                          item.watchStatus === 'YTW' || item.watchStatus === 'Watch Later' 
                             ? 'planning' 
-                            : item.status === 'on-hold' 
+                            : item.watchStatus === 'On Hold' 
                             ? 'on-hold' 
-                            : item.status
+                            : item.watchStatus === 'Watching'
+                            ? 'watching'
+                            : item.watchStatus === 'Completed'
+                            ? 'completed'
+                            : item.watchStatus === 'Dropped'
+                            ? 'dropped'
+                            : 'planning'
                         }
                         progress={
                           cardFields.includes('episodes') && item.episodes > 0

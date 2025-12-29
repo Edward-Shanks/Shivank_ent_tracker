@@ -603,9 +603,26 @@ body {
 
 /* ===== MEDIA QUERY UTILITIES ===== */
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   :root {
     --header-height: 56px;
     --sidebar-width: 100%;
+  }
+  
+  /* Responsive text scaling */
+  .chart-container {
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .chart-container {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .chart-container {
+    font-size: 1rem;
   }
 }

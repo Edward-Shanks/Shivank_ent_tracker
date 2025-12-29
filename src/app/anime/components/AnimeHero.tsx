@@ -3,13 +3,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Plus, Info, Star } from 'lucide-react';
-import { Anime } from '@/types';
+import { Anime, WatchStatus } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
 
 interface AnimeHeroProps {
   anime: Anime;
 }
+
+const mapWatchStatusToBadge = (watchStatus: WatchStatus): 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later' => {
+  switch (watchStatus) {
+    case 'Watching': return 'watching';
+    case 'Completed': return 'completed';
+    case 'YTW': return 'ytw';
+    case 'Watch Later': return 'watch-later';
+    case 'On Hold': return 'on-hold';
+    case 'Dropped': return 'dropped';
+    default: return 'planning';
+  }
+};
 
 export default function AnimeHero({ anime }: AnimeHeroProps) {
   return (
@@ -40,7 +52,7 @@ export default function AnimeHero({ anime }: AnimeHeroProps) {
         >
           {/* Badges */}
           <div className="flex items-center gap-3 mb-4">
-            <StatusBadge status={anime.status} />
+            <StatusBadge status={mapWatchStatusToBadge(anime.watchStatus)} />
             {anime.score && (
               <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm">
                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />

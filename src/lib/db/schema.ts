@@ -19,14 +19,13 @@ export const anime = pgTable('anime', {
   animeOtherName: text('anime_other_name'),
   animeType: text('anime_type'), // 'Anime' | 'Donghua'
   airingStatus: text('airing_status'), // 'YTA' | 'Airing' | 'Completed'
-  watchStatus: text('watch_status'), // 'YTW' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped'
+  watchStatus: text('watch_status').notNull(), // 'YTW' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped'
   websiteLink: text('website_link'),
   episodeOn: text('episode_on'), // Day of week
   coverImage: text('cover_image').notNull(),
   bannerImage: text('banner_image'),
   episodes: integer('episodes').notNull().default(0),
   episodesWatched: integer('episodes_watched').notNull().default(0),
-  status: text('status').notNull(), // 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later'
   score: integer('score'), // 1-10
   genres: text('genres').notNull().default('[]'), // JSON array
   synopsis: text('synopsis'),

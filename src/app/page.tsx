@@ -69,7 +69,7 @@ export default function Dashboard() {
   // Calculate hours watched (estimate: anime episodes * 24min, movies * 2h, kdrama * 1h)
   const hoursWatched = useMemo(() => {
     const animeHours = anime
-      .filter(a => a.status === 'completed' || a.status === 'watching')
+      .filter(a => a.watchStatus === 'Completed' || a.watchStatus === 'Watching')
       .reduce((sum, a) => sum + (a.episodesWatched || 0) * 0.4, 0); // 24 min per episode
     const movieHours = movies
       .filter(m => m.status === 'watched')
@@ -169,7 +169,7 @@ export default function Dashboard() {
 
   // Completion rate by collection
   const completionRates = useMemo(() => {
-    const animeCompleted = anime.filter(a => a.status === 'completed').length;
+    const animeCompleted = anime.filter(a => a.watchStatus === 'Completed').length;
     const animeTotal = anime.length;
     const kdramaCompleted = kdrama.filter(k => k.status === 'completed').length;
     const kdramaTotal = kdrama.length;
@@ -257,12 +257,12 @@ export default function Dashboard() {
 
   // Get currently watching/playing items
   const currentlyWatching = [
-    ...anime.filter((a) => a.status === 'watching').slice(0, 2),
+    ...anime.filter((a) => a.watchStatus === 'Watching').slice(0, 2),
     ...kdrama.filter((k) => k.status === 'watching').slice(0, 1),
   ];
 
   const recentlyCompleted = [
-    ...anime.filter((a) => a.status === 'completed' && a.score).slice(0, 3),
+    ...anime.filter((a) => a.watchStatus === 'Completed' && a.score).slice(0, 3),
   ];
 
   const navCards = [
@@ -333,18 +333,18 @@ export default function Dashboard() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-radial" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
               {t('dashboard.welcome')}{' '}
               <span className="text-gradient">NexaVerse</span>
             </h1>
-            <p className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground-muted max-w-2xl mx-auto px-4">
               {t('dashboard.subtitle')}
             </p>
           </motion.div>
@@ -352,11 +352,11 @@ export default function Dashboard() {
       </section>
 
       {/* Navigation Cards - Moved to top */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         <motion.h2
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="text-2xl font-bold text-foreground mb-6"
+          className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6"
         >
           {t('dashboard.yourCollections')}
         </motion.h2>
@@ -364,7 +364,7 @@ export default function Dashboard() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
         >
           {navCards.map((card) => (
             <motion.div key={card.href} variants={item}>
@@ -375,21 +375,21 @@ export default function Dashboard() {
       </section>
 
       {/* Analytics Charts Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="space-y-6"
+          className="space-y-4 sm:space-y-5 md:space-y-6"
         >
           {/* Top Genres Across All Media */}
           <motion.div variants={item}>
-            <Card className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-                <PieChartIcon className="w-6 h-6 text-primary" />
-                {t('dashboard.topGenres') || 'Top Genres Across All Media'}
+            <Card className="p-4 sm:p-5 md:p-6">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                <PieChartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <span className="text-sm sm:text-base md:text-lg">{t('dashboard.topGenres') || 'Top Genres Across All Media'}</span>
               </h2>
-              <div className="h-80 chart-container">
+              <div className="h-64 sm:h-72 md:h-80 chart-container">
                 {genreDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={genreDistribution} layout="vertical">
@@ -398,9 +398,9 @@ export default function Dashboard() {
                       <YAxis 
                         dataKey="name" 
                         type="category" 
-                        width={100}
+                        width={60}
                         stroke="#666" 
-                        tick={{ fill: '#a3a3a3', fontSize: 12 }} 
+                        tick={{ fill: '#a3a3a3', fontSize: 10 }} 
                       />
                       <Tooltip />
                       <Bar dataKey="value" fill="#e50914" radius={[0, 4, 4, 0]} />
@@ -416,14 +416,14 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Completion Rates & Platform Distribution */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-500" />
-                  {t('dashboard.completionRates') || 'Completion Rates'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.completionRates') || 'Completion Rates'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {completionRates.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={completionRates}>
@@ -451,12 +451,12 @@ export default function Dashboard() {
             </motion.div>
 
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <Gamepad2 className="w-5 h-5 text-green-500" />
-                  {t('dashboard.gamePlatforms') || 'Game Platforms Distribution'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.gamePlatforms') || 'Game Platforms Distribution'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {platformDistribution.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -489,14 +489,14 @@ export default function Dashboard() {
           </div>
 
           {/* Score Distribution & Content Consumption */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500" />
-                  {t('dashboard.scoreDistribution') || 'Score Distribution'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.scoreDistribution') || 'Score Distribution'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {scoreDistribution.some(s => s.count > 0) ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={scoreDistribution}>
@@ -517,12 +517,12 @@ export default function Dashboard() {
             </motion.div>
 
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-500" />
-                  {t('dashboard.contentConsumption') || 'Content Consumption'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.contentConsumption') || 'Content Consumption'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {contentConsumption.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={contentConsumption}>
@@ -548,14 +548,14 @@ export default function Dashboard() {
           </div>
 
           {/* Monthly Activity & Collection Comparison */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-purple-500" />
-                  {t('dashboard.monthlyActivity') || 'Monthly Activity (Last 6 Months)'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.monthlyActivity') || 'Monthly Activity (Last 6 Months)'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {monthlyActivity.some(m => m.count > 0) ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={monthlyActivity}>
@@ -583,12 +583,12 @@ export default function Dashboard() {
             </motion.div>
 
             <motion.div variants={item}>
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-orange-500" />
-                  {t('dashboard.collectionComparison') || 'Collection Comparison'}
+              <Card className="p-4 sm:p-5 md:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  <span className="text-sm sm:text-base md:text-lg">{t('dashboard.collectionComparison') || 'Collection Comparison'}</span>
                 </h3>
-                <div className="h-64 chart-container">
+                <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {(() => {
                     const comparisonData = [
                       { name: t('page.anime') || 'Anime', total: stats.anime.total, active: stats.anime.watching },
@@ -622,20 +622,20 @@ export default function Dashboard() {
 
           {/* Status Distribution Across All Collections */}
           <motion.div variants={item}>
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                <Play className="w-5 h-5 text-blue-500" />
-                {t('dashboard.statusDistribution') || 'Status Distribution Across All Collections'}
+            <Card className="p-4 sm:p-5 md:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <span className="text-sm sm:text-base md:text-lg">{t('dashboard.statusDistribution') || 'Status Distribution Across All Collections'}</span>
               </h3>
-              <div className="h-64 chart-container">
+              <div className="h-56 sm:h-60 md:h-64 chart-container">
                 {(() => {
                   const statusData = [
                     { name: t('status.watching') || 'Watching', value: stats.anime.watching + stats.kdrama.watching, color: '#3b82f6' },
                     { name: t('status.completed') || 'Completed', value: stats.movies.watched + (kdrama.filter(k => k.status === 'completed').length) + (games.filter(g => g.status === 'completed').length), color: '#22c55e' },
                     { name: t('status.playing') || 'Playing', value: stats.games.playing, color: '#22c55e' },
-                    { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.status === 'planning').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: '#a855f7' },
-                    { name: t('status.onHold') || 'On Hold', value: (anime.filter(a => a.status === 'on-hold').length) + (kdrama.filter(k => k.status === 'on-hold').length) + (games.filter(g => g.status === 'on-hold').length), color: '#eab308' },
-                    { name: t('status.dropped') || 'Dropped', value: (anime.filter(a => a.status === 'dropped').length) + (kdrama.filter(k => k.status === 'dropped').length) + (games.filter(g => g.status === 'dropped').length), color: '#ef4444' },
+                    { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.watchStatus === 'YTW' || a.watchStatus === 'Watch Later').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: '#a855f7' },
+                    { name: t('status.onHold') || 'On Hold', value: (anime.filter(a => a.watchStatus === 'On Hold').length) + (kdrama.filter(k => k.status === 'on-hold').length) + (games.filter(g => g.status === 'on-hold').length), color: '#eab308' },
+                    { name: t('status.dropped') || 'Dropped', value: (anime.filter(a => a.watchStatus === 'Dropped').length) + (kdrama.filter(k => k.status === 'dropped').length) + (games.filter(g => g.status === 'dropped').length), color: '#ef4444' },
                   ].filter(item => item.value > 0);
                   
                   return statusData.length > 0 ? (
@@ -664,35 +664,35 @@ export default function Dashboard() {
 
           {/* Activity Overview */}
           <motion.div variants={item}>
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-yellow-500" />
-                {t('dashboard.activityOverview') || 'Activity Overview'}
+            <Card className="p-4 sm:p-5 md:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                <span className="text-sm sm:text-base md:text-lg">{t('dashboard.activityOverview') || 'Activity Overview'}</span>
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-3xl font-bold text-foreground mb-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total}
                   </div>
-                  <div className="text-sm text-foreground-muted">{t('dashboard.totalEntries') || 'Total Entries'}</div>
+                  <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.totalEntries') || 'Total Entries'}</div>
                 </div>
-                <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-3xl font-bold text-foreground mb-2">
+                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {stats.anime.watching + stats.kdrama.watching + stats.games.playing}
                   </div>
-                  <div className="text-sm text-foreground-muted">{t('dashboard.currentlyActive') || 'Currently Active'}</div>
+                  <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.currentlyActive') || 'Currently Active'}</div>
                 </div>
-                <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-3xl font-bold text-foreground mb-2">
+                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {hoursWatched.toLocaleString()}
                   </div>
-                  <div className="text-sm text-foreground-muted">{t('dashboard.hoursWatched') || 'Hours Watched'}</div>
+                  <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.hoursWatched') || 'Hours Watched'}</div>
                 </div>
-                <div className="text-center p-4 glass rounded-lg">
-                  <div className="text-3xl font-bold text-foreground mb-2">
+                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {averageScore > 0 ? averageScore.toFixed(1) : '0.0'}
                   </div>
-                  <div className="text-sm text-foreground-muted">{t('dashboard.averageScore') || 'Average Score'}</div>
+                  <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.averageScore') || 'Average Score'}</div>
                 </div>
               </div>
             </Card>
@@ -703,17 +703,17 @@ export default function Dashboard() {
 
       {/* Currently Watching */}
       {currentlyWatching.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <Play className="w-6 h-6 text-primary" />
-              {t('dashboard.continueWatching')}
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <span className="text-base sm:text-lg md:text-xl">{t('dashboard.continueWatching')}</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {currentlyWatching.map((item) => (
                 <MediaCard
                   key={item.id}
@@ -734,17 +734,17 @@ export default function Dashboard() {
 
       {/* Recently Completed */}
       {recentlyCompleted.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <Star className="w-6 h-6 text-yellow-500" />
-              {t('dashboard.recentlyCompleted')}
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+              <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+              <span className="text-base sm:text-lg md:text-xl">{t('dashboard.recentlyCompleted')}</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {recentlyCompleted.map((item) => (
                 <MediaCard
                   key={item.id}

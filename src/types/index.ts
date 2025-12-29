@@ -8,7 +8,6 @@ export interface User {
 }
 
 // ===== ANIME TYPES =====
-export type AnimeStatus = 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later';
 export type AnimeType = 'Anime' | 'Donghua';
 export type AiringStatus = 'YTA' | 'Airing' | 'Completed';
 export type WatchStatus = 'YTW' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped';
@@ -21,14 +20,13 @@ export interface Anime {
   animeOtherName?: string;
   animeType?: AnimeType;
   airingStatus?: AiringStatus;
-  watchStatus?: WatchStatus;
+  watchStatus: WatchStatus;
   websiteLink?: string;
   episodeOn?: DayOfWeek;
   coverImage: string;
   bannerImage?: string;
   episodes: number;
   episodesWatched: number;
-  status: AnimeStatus;
   score?: number;
   genres: string[];
   synopsis?: string;
@@ -160,11 +158,6 @@ export interface AnimeStats {
   totalAnime: number;
   totalEpisodes: number;
   meanScore: number;
-  watching: number;
-  completed: number;
-  planning: number;
-  dropped: number;
-  onHold: number;
   watchStatusCounts: {
     ytw: number;
     watching: number;

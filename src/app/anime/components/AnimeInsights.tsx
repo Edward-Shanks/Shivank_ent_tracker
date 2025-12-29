@@ -36,11 +36,6 @@ const defaultStats: AnimeStats = {
   totalAnime: 0,
   totalEpisodes: 0,
   meanScore: 0,
-  watching: 0,
-  completed: 0,
-  planning: 0,
-  dropped: 0,
-  onHold: 0,
   watchStatusCounts: {
     ytw: 0,
     watching: 0,
@@ -81,11 +76,12 @@ export default function AnimeInsights() {
   }, [getAnimeStats, anime.length]); // Refresh when anime count changes
 
   const statusData = [
-    { name: 'Watching', value: stats.watching, color: COLORS.watching },
-    { name: 'Completed', value: stats.completed, color: COLORS.completed },
-    { name: 'Planning', value: stats.planning, color: COLORS.planning },
-    { name: 'On Hold', value: stats.onHold, color: COLORS['on-hold'] },
-    { name: 'Dropped', value: stats.dropped, color: COLORS.dropped },
+    { name: 'Watching', value: stats.watchStatusCounts.watching, color: COLORS.watching },
+    { name: 'Completed', value: stats.watchStatusCounts.completed, color: COLORS.completed },
+    { name: 'YTW', value: stats.watchStatusCounts.ytw, color: COLORS.planning },
+    { name: 'Watch Later', value: stats.watchStatusCounts.watchLater, color: COLORS.planning },
+    { name: 'On Hold', value: stats.watchStatusCounts.onHold, color: COLORS['on-hold'] },
+    { name: 'Dropped', value: stats.watchStatusCounts.dropped, color: COLORS.dropped },
   ].filter((item) => item.value > 0);
 
   const CustomTooltip = ({ active, payload, label }: any) => {

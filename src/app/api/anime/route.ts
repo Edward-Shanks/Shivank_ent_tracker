@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
       bannerImage: body.bannerImage,
       episodes: body.episodes || 0,
       episodesWatched: body.episodesWatched || 0,
-      status: body.status,
       score: body.score,
       genres: JSON.stringify(body.genres || []),
       synopsis: body.synopsis,

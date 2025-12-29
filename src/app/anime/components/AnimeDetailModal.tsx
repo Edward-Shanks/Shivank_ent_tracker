@@ -23,16 +23,27 @@ export default function AnimeDetailModal({
   onEdit,
   onDelete,
 }: AnimeDetailModalProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'watching': return '#3b82f6';
-      case 'completed': return '#22c55e';
-      case 'planning': return '#a855f7';
-      case 'on-hold': return '#f59e0b';
-      case 'dropped': return '#ef4444';
-      case 'ytw': return '#a855f7';
-      case 'watch-later': return '#a855f7';
+  const getStatusColor = (watchStatus: string) => {
+    switch (watchStatus) {
+      case 'Watching': return '#3b82f6';
+      case 'Completed': return '#22c55e';
+      case 'YTW': return '#a855f7';
+      case 'Watch Later': return '#a855f7';
+      case 'On Hold': return '#f59e0b';
+      case 'Dropped': return '#ef4444';
       default: return '#6b7280';
+    }
+  };
+
+  const mapWatchStatusToBadge = (watchStatus: string): 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later' => {
+    switch (watchStatus) {
+      case 'Watching': return 'watching';
+      case 'Completed': return 'completed';
+      case 'YTW': return 'ytw';
+      case 'Watch Later': return 'watch-later';
+      case 'On Hold': return 'on-hold';
+      case 'Dropped': return 'dropped';
+      default: return 'planning';
     }
   };
 
@@ -43,7 +54,7 @@ export default function AnimeDetailModal({
         <div
           className="relative h-32 -mx-6 -mt-6 mb-4"
           style={{
-            background: `linear-gradient(135deg, ${getStatusColor(anime.status)}40 0%, ${getStatusColor(anime.status)}10 100%)`,
+            background: `linear-gradient(135deg, ${getStatusColor(anime.watchStatus)}40 0%, ${getStatusColor(anime.watchStatus)}10 100%)`,
           }}
         >
           {anime.coverImage && anime.coverImage.trim() ? (
@@ -57,8 +68,8 @@ export default function AnimeDetailModal({
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold"
                 style={{
-                  backgroundColor: `${getStatusColor(anime.status)}30`,
-                  color: getStatusColor(anime.status),
+                  backgroundColor: `${getStatusColor(anime.watchStatus)}30`,
+                  color: getStatusColor(anime.watchStatus),
                 }}
               >
                 {anime.title.charAt(0)}
@@ -78,7 +89,7 @@ export default function AnimeDetailModal({
                   <span className="text-white font-semibold text-xs">{anime.score}</span>
                 </div>
               )}
-              <StatusBadge status={anime.status} size="sm" />
+              <StatusBadge status={mapWatchStatusToBadge(anime.watchStatus)} size="sm" />
             </div>
             <h2 className="text-lg font-bold text-white line-clamp-1">{anime.title}</h2>
             {anime.titleJapanese && (
@@ -92,8 +103,8 @@ export default function AnimeDetailModal({
           {/* Basic Info Grid */}
           <div className="grid grid-cols-2 gap-2">
             <div className="glass-card p-2.5">
-              <div className="text-xs text-foreground-muted mb-0.5">Status</div>
-              <StatusBadge status={anime.status} size="sm" />
+              <div className="text-xs text-foreground-muted mb-0.5">Watch Status</div>
+              <StatusBadge status={mapWatchStatusToBadge(anime.watchStatus)} size="sm" />
             </div>
 
             <div className="glass-card p-2.5">

@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { 
-  AnimeStatus, 
+  WatchStatus,
   GameStatus,
   GamePlatform,
   KDramaStatus, 
@@ -100,12 +100,12 @@ export default function ReportsPage() {
       color: '#ef4444',
       statusOptions: [
         { value: 'all', label: 'All Anime' },
-        { value: 'watching', label: 'Watching' },
-        { value: 'completed', label: 'Completed' },
-        { value: 'on-hold', label: 'On Hold' },
-        { value: 'dropped', label: 'Dropped' },
-        { value: 'ytw', label: 'Yet To Watch' },
-        { value: 'watch-later', label: 'Watch Later' },
+        { value: 'Watching', label: 'Watching' },
+        { value: 'Completed', label: 'Completed' },
+        { value: 'On Hold', label: 'On Hold' },
+        { value: 'Dropped', label: 'Dropped' },
+        { value: 'YTW', label: 'Yet To Watch' },
+        { value: 'Watch Later', label: 'Watch Later' },
       ],
     },
     shows: {
@@ -183,7 +183,7 @@ export default function ReportsPage() {
     switch (selectedCategory) {
       case 'anime':
         data = filters.status && filters.status !== 'all'
-          ? anime.filter((a) => a.status === filters.status)
+          ? anime.filter((a) => a.watchStatus === filters.status)
           : anime;
         break;
       case 'shows':
@@ -623,10 +623,9 @@ export default function ReportsPage() {
                 animeOtherName: mappedRow.animeOtherName,
                 animeType: mappedRow.animeType as any,
                 airingStatus: mappedRow.airingStatus as any,
-                watchStatus: mappedRow.watchStatus as any,
+                watchStatus: (mappedRow.watchStatus || 'YTW') as WatchStatus,
                 episodes: parseInt(mappedRow.episodes || '0'),
                 episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
-                status: (mappedRow.status || 'watching') as AnimeStatus,
                 score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
                 genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 episodeOn: mappedRow.episodeOn as any,
@@ -781,23 +780,23 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-animated">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-4 sm:mb-6 md:mb-8"
         >
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: `${config.color}20` }}
             >
-              <FileText className="w-6 h-6" style={{ color: config.color }} />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: config.color }} />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Reports</h1>
-              <p className="text-foreground-muted mt-1">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Reports</h1>
+              <p className="text-xs sm:text-sm md:text-base text-foreground-muted mt-1">
                 Generate and download filtered reports in Excel format
               </p>
             </div>
@@ -810,22 +809,22 @@ export default function ReportsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
+          <Card className="p-3 sm:p-4 md:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: `${config.color}20` }}
               >
-                <Download className="w-6 h-6" style={{ color: config.color }} />
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: config.color }} />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
                   Reports Download
                   {currentStep >= 3 && canExport && (
-                    <span className="text-red-500 text-lg">✓</span>
+                    <span className="text-red-500 text-sm sm:text-base md:text-lg">✓</span>
                   )}
                 </h2>
-                <p className="text-foreground-muted mt-1">
+                <p className="text-xs sm:text-sm md:text-base text-foreground-muted mt-1">
                   Generate and download filtered reports in Excel format
                 </p>
               </div>
@@ -841,17 +840,17 @@ export default function ReportsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Step 1: Select Category */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Filter className="w-5 h-5" />
-                    {currentStep >= 1 ? '✓ Select Category' : 'Select Category'}
+                <Card className="p-4 sm:p-5 md:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                    <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{currentStep >= 1 ? '✓ Select Category' : 'Select Category'}</span>
                   </h3>
                   <div className="space-y-2">
                     {(Object.keys(categoryConfig) as ReportCategory[]).map((category) => {
@@ -893,10 +892,10 @@ export default function ReportsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Filter className="w-5 h-5" />
-                    {currentStep >= 2 ? '✓ Apply Filters' : 'Apply Filters'}
+                <Card className="p-4 sm:p-5 md:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                    <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{currentStep >= 2 ? '✓ Apply Filters' : 'Apply Filters'}</span>
                   </h3>
                   <div className="space-y-4">
                     <div>
@@ -924,10 +923,10 @@ export default function ReportsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Download className="w-5 h-5" />
-                    {currentStep >= 3 ? '✓ Export Report' : 'Export Report'}
+                <Card className="p-4 sm:p-5 md:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                    <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{currentStep >= 3 ? '✓ Export Report' : 'Export Report'}</span>
                   </h3>
                   <div className="space-y-4">
                     <div className="p-4 rounded-lg" style={{ backgroundColor: `${config.color}10` }}>
@@ -996,30 +995,30 @@ export default function ReportsPage() {
           transition={{ delay: 0.5 }}
           className="mt-8"
         >
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
+          <Card className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: `${config.color}20` }}
               >
-                <Upload className="w-6 h-6" style={{ color: config.color }} />
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: config.color }} />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
                   Bulk Upload
                   {uploadStep === 3 && uploadCategory && (
-                    <span className="text-green-500 text-lg">✓</span>
+                    <span className="text-green-500 text-sm sm:text-base md:text-lg">✓</span>
                   )}
                 </h2>
-                <p className="text-foreground-muted mt-1">
+                <p className="text-xs sm:text-sm md:text-base text-foreground-muted mt-1">
                   Upload Excel or CSV files to bulk import data
                 </p>
               </div>
             </div>
 
             {/* Upload Process Flow */}
-            <div className="w-full mb-8">
-              <div className="flex items-center justify-between relative">
+            <div className="w-full mb-6 sm:mb-8">
+              <div className="flex items-center justify-between relative px-2 sm:px-4">
                 {/* Connecting Lines */}
                 {[1, 2, 3].map((stepId, index) => {
                   if (index === 2) return null;
@@ -1150,7 +1149,7 @@ export default function ReportsPage() {
 
                         {/* Step Circle */}
                         <motion.div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+                          className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-all ${
                             status === 'completed'
                               ? 'bg-green-500 border-green-500'
                               : status === 'active'
@@ -1172,10 +1171,10 @@ export default function ReportsPage() {
                           whileTap={{ scale: 0.95 }}
                         >
                           {status === 'completed' ? (
-                            <Check className="w-6 h-6 text-white" />
+                            <Check className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                           ) : (
                             <Circle
-                              className={`w-6 h-6 ${
+                              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${
                                 status === 'active'
                                   ? 'text-green-500'
                                   : 'text-foreground-muted'
@@ -1210,9 +1209,9 @@ export default function ReportsPage() {
                       </motion.div>
 
                       {/* Step Label */}
-                      <motion.div className="mt-3 text-center relative">
+                      <motion.div className="mt-3 text-center relative mb-8 sm:mb-12 md:mb-16">
                         <p
-                          className={`text-sm font-medium ${
+                          className={`text-xs sm:text-sm font-medium ${
                             status === 'active' ? 'text-foreground' : 'text-foreground-muted'
                           }`}
                         >
@@ -1225,10 +1224,10 @@ export default function ReportsPage() {
                               initial={{ opacity: 0, y: -10, scale: 0.8 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: -10, scale: 0.8 }}
-                              className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+                              className="absolute top-full mt-2 sm:mt-3 md:mt-4 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-20"
                             >
                               <motion.div
-                                className="px-3 py-1.5 rounded-full text-xs font-medium text-white"
+                                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium text-white"
                                 style={{
                                   background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                                   boxShadow: '0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2)',
@@ -1262,15 +1261,15 @@ export default function ReportsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
               >
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Download className="w-5 h-5" />
-                    {uploadStep > 1 ? '✓ Download Template' : 'Download Template'}
+                <Card className="p-4 sm:p-5 md:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                    <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{uploadStep > 1 ? '✓ Download Template' : 'Download Template'}</span>
                   </h3>
-                  <p className="text-sm text-foreground-muted mb-4">
+                  <p className="text-xs sm:text-sm text-foreground-muted mb-3 sm:mb-4">
                     Select a category to download the template file. Fill in the template with your data, then proceed to upload.
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {(Object.keys(categoryConfig) as ReportCategory[]).map((category) => {
                     const catConfig = categoryConfig[category];
                     const CatIcon = catConfig.icon;
@@ -1278,7 +1277,7 @@ export default function ReportsPage() {
                       <button
                         key={category}
                         onClick={() => handleCategorySelectForUpload(category)}
-                        className={`p-4 rounded-lg text-left transition-all ${
+                        className={`p-3 sm:p-4 rounded-lg text-left transition-all ${
                           uploadCategory === category
                             ? 'text-white'
                             : 'text-foreground-muted hover:text-foreground hover:bg-white/5'
@@ -1292,9 +1291,9 @@ export default function ReportsPage() {
                             : {}
                         }
                       >
-                        <CatIcon className="w-6 h-6 mb-2" />
-                        <p className="font-medium text-sm">{catConfig.label}</p>
-                        <p className="text-xs mt-1 opacity-75">Click to download template</p>
+                        <CatIcon className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
+                        <p className="font-medium text-xs sm:text-sm">{catConfig.label}</p>
+                        <p className="text-[10px] sm:text-xs mt-1 opacity-75">Click to download template</p>
                       </button>
                     );
                   })}
@@ -1321,26 +1320,26 @@ export default function ReportsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
+                className="space-y-4 mt-8 sm:mt-12 md:mt-16"
               >
-                <Card className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
+                <Card className="p-4 sm:p-5 md:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-4">
                     <Button
                       variant="secondary"
-                      leftIcon={<ArrowLeft className="w-4 h-4" />}
+                      leftIcon={<ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />}
                       onClick={() => {
                         setUploadStep(1);
                         setUploadedFile(null);
                         setUploadFileData([]);
                         setUploadFileColumns([]);
                       }}
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                     >
                       Back
                     </Button>
-                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      <Upload className="w-5 h-5" />
-                      {uploadStep > 2 ? '✓ Select File' : 'Select File'}
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">{uploadStep > 2 ? '✓ Select File' : 'Select File'}</span>
                     </h3>
                   </div>
                   {uploadCategory && (() => {
@@ -1355,14 +1354,14 @@ export default function ReportsPage() {
                       </div>
                     );
                   })()}
-                  <div className="p-6 rounded-lg border-2 border-dashed border-white/20 hover:border-white/40 transition-colors">
+                  <div className="p-4 sm:p-5 md:p-6 rounded-lg border-2 border-dashed border-white/20 hover:border-white/40 transition-colors">
                   <div className="text-center">
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-foreground-muted" />
+                    <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto mb-3 sm:mb-4 text-foreground-muted" />
                     <label htmlFor="file-upload" className="cursor-pointer">
-                      <span className="text-foreground font-medium">Click to upload</span>
-                      <span className="text-foreground-muted"> or drag and drop</span>
+                      <span className="text-sm sm:text-base text-foreground font-medium">Click to upload</span>
+                      <span className="text-sm sm:text-base text-foreground-muted"> or drag and drop</span>
                     </label>
-                    <p className="text-sm text-foreground-muted mt-2">
+                    <p className="text-xs sm:text-sm text-foreground-muted mt-2">
                       Excel (.xlsx, .xls) or CSV files only
                     </p>
                     <input

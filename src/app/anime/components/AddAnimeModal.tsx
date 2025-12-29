@@ -67,16 +67,6 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Map watchStatus to status
-    const statusMap: Record<WatchStatus, 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold'> = {
-      'YTW': 'planning',
-      'Watching': 'watching',
-      'Watch Later': 'planning',
-      'Completed': 'completed',
-      'On Hold': 'on-hold',
-      'Dropped': 'dropped',
-    };
 
     try {
       await addAnime({
@@ -92,7 +82,6 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         episodes: formData.episodes,
         episodesWatched: 0,
         coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
-        status: statusMap[formData.watchStatus],
       });
 
       // Reset form

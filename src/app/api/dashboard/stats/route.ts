@@ -13,14 +13,14 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch anime - select all columns explicitly
-    let allAnime: Array<{ id: string; userId: string; title: string; status: string }> = [];
+    let allAnime: Array<{ id: string; userId: string; title: string; watchStatus: string }> = [];
     try {
       allAnime = await db
         .select({
           id: anime.id,
           userId: anime.userId,
           title: anime.title,
-          status: anime.status,
+          watchStatus: anime.watchStatus,
         })
         .from(anime)
         .where(eq(anime.userId, user.id));
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       anime: {
         total: allAnime.length,
-        watching: allAnime.filter((a) => a.status === 'watching').length,
+        watching: allAnime.filter((a) => a.watchStatus === 'Watching').length,
       },
       movies: {
         total: allMovies.length,

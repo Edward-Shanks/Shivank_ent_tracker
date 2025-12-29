@@ -48,9 +48,13 @@ export default function LanguageSelector({ collapsed = false, className = '' }: 
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 glass-strong rounded-lg shadow-xl border border-foreground/10 p-2 z-50"
+              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 rounded-lg shadow-2xl border border-foreground/20 z-50 overflow-hidden"
+              style={{
+                background: 'rgba(20, 20, 20, 0.95)',
+                backdropFilter: 'blur(10px)',
+              }}
             >
-              <div className="space-y-1">
+              <div className="p-1">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
@@ -58,18 +62,22 @@ export default function LanguageSelector({ collapsed = false, className = '' }: 
                       setLanguage(lang.code);
                       setIsOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-all ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors ${
                       language === lang.code
-                        ? 'bg-primary/20 text-primary'
-                        : 'text-foreground-muted hover:text-foreground hover:bg-foreground/5'
+                        ? 'bg-cyan-500/20 text-cyan-400'
+                        : 'text-foreground hover:bg-foreground/10'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{lang.nativeName}</span>
-                      <span className="text-xs opacity-60">({lang.name})</span>
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className={`text-sm font-medium ${language === lang.code ? 'text-cyan-400' : ''}`}>
+                        {lang.nativeName}
+                      </span>
+                      <span className={`text-xs ${language === lang.code ? 'opacity-70' : 'opacity-60'}`}>
+                        ({lang.name})
+                      </span>
                     </div>
                     {language === lang.code && (
-                      <Check className="w-4 h-4 text-primary" />
+                      <Check className="w-4 h-4 text-cyan-400 flex-shrink-0" />
                     )}
                   </button>
                 ))}
