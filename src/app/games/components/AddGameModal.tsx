@@ -64,10 +64,14 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
     notes: '',
   });
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
     if (formData.platform.length === 0) {
-      alert(t('msg.selectPlatform'));
+      setError(t('msg.selectPlatform') || 'Please select at least one platform');
       return;
     }
     try {
@@ -95,17 +99,38 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
         releaseDate: '',
         notes: '',
       });
+      setError(null);
       onClose();
     } catch (error: any) {
       console.error('Error adding game:', error);
-      const errorMessage = error?.message || 'Unknown error occurred';
-      console.error('Error details:', errorMessage);
-      alert(`Failed to add game: ${errorMessage}\n\nPlease check the browser console and server logs for more details.`);
+      const errorMessage = error?.message || error?.details || 'Unknown error occurred';
+      const fullError = `Failed to add game: ${errorMessage}\n\nPlease check the browser console and server logs for more details.`;
+      setError(fullError);
     }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('games.addGame')} size="lg">
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <div className="flex items-start justify-between gap-2">
+            <pre className="text-sm text-red-400 whitespace-pre-wrap break-words flex-1 font-mono">
+              {error}
+            </pre>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(error);
+                alert('Error message copied to clipboard!');
+              }}
+              className="px-2 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 rounded text-red-300 transition-colors"
+              title="Copy error message"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Game Title and Release Date */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

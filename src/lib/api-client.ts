@@ -8,7 +8,10 @@ const API_BASE = '/api';
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    const errorMessage = error.details 
+      ? `${error.message || 'An error occurred'}: ${error.details}`
+      : error.message || `HTTP error! status: ${response.status}`;
+    throw new Error(errorMessage);
   }
   return response.json();
 }

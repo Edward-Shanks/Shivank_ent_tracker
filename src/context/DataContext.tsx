@@ -88,19 +88,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       const [animeData, moviesData, kdramaData, gamesData, genshinData, credentialsData, websitesData] = await Promise.all([
-        apiClient.get<Anime[]>('/anime').catch(() => []),
-        apiClient.get<Movie[]>('/movies').catch(() => []),
-        apiClient.get<KDrama[]>('/kdrama').catch(() => []),
-        apiClient.get<Game[]>('/games').catch(() => []),
-        apiClient.get<GenshinAccount | null>('/genshin').catch(() => null),
-        apiClient.get<Credential[]>('/credentials').catch(() => []),
-        apiClient.get<Website[]>('/websites').catch(() => []),
+        apiClient.get<Anime[]>('/anime').catch((err) => {
+          console.error('Error fetching anime:', err);
+          return [];
+        }),
+        apiClient.get<Movie[]>('/movies').catch((err) => {
+          console.error('Error fetching movies:', err);
+          return [];
+        }),
+        apiClient.get<KDrama[]>('/kdrama').catch((err) => {
+          console.error('Error fetching kdrama:', err);
+          return [];
+        }),
+        apiClient.get<Game[]>('/games').catch((err) => {
+          console.error('Error fetching games:', err);
+          console.error('Games error details:', err);
+          return [];
+        }),
+        apiClient.get<GenshinAccount | null>('/genshin').catch((err) => {
+          console.error('Error fetching genshin:', err);
+          return null;
+        }),
+        apiClient.get<Credential[]>('/credentials').catch((err) => {
+          console.error('Error fetching credentials:', err);
+          return [];
+        }),
+        apiClient.get<Website[]>('/websites').catch((err) => {
+          console.error('Error fetching websites:', err);
+          return [];
+        }),
       ]);
       
       setAnime(animeData);
       setMovies(moviesData);
       setKDrama(kdramaData);
-      setGames(gamesData);
+      setGames(gamesData || []);
       setGenshinAccount(genshinData);
       setCredentials(credentialsData);
       setWebsites(websitesData);

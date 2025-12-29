@@ -253,6 +253,28 @@ export default function GamesPage() {
               </div>
 
               {/* Games Grid */}
+              {filteredGames.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-foreground-muted text-lg mb-4">
+                    {games.length === 0 
+                      ? t('games.noGames') || 'No games found. Add your first game!'
+                      : t('games.noFilteredGames') || `No games match your filters. (${games.length} total games)`}
+                  </p>
+                  {games.length === 0 && (
+                    <Button
+                      variant="primary"
+                      leftIcon={<Plus className="w-4 h-4" />}
+                      onClick={() => setIsAddModalOpen(true)}
+                      style={{
+                        background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                        boxShadow: '0 0 20px rgba(34, 197, 94, 0.4)',
+                      }}
+                    >
+                      {t('games.addGame')}
+                    </Button>
+                  )}
+                </div>
+              ) : (
               <motion.div
                 layout
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
@@ -348,6 +370,7 @@ export default function GamesPage() {
                   </motion.div>
                 ))}
               </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
