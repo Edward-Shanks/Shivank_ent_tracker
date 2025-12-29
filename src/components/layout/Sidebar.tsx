@@ -64,7 +64,7 @@ export default function Sidebar() {
                 exit={{ opacity: 0, width: 0 }}
                 className="text-xl font-bold text-foreground overflow-hidden whitespace-nowrap"
               >
-                EntTracker
+                NexaVerse
               </motion.span>
             )}
           </AnimatePresence>

@@ -46,7 +46,7 @@ export default function Navbar() {
               <span className="text-white font-bold text-xl">E</span>
             </div>
             <span className="text-xl font-bold text-foreground hidden sm:block group-hover:text-primary transition-colors">
-              EntTracker
+              NexaVerse
             </span>
           </Link>
 

@@ -165,7 +165,7 @@ export default function LoginPage() {
           >
             Welcome to{' '}
             <span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-purple bg-clip-text text-transparent">
-              EntTracker
+              NexaVerse
             </span>
           </motion.h1>
           <motion.p

@@ -133,7 +133,7 @@ export default function Dashboard() {
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
               Welcome to{' '}
-              <span className="text-gradient">EntTracker</span>
+              <span className="text-primary">NexaVerse</span>
             </h1>
             <p className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto">
               Your personal entertainment hub. Track anime, movies, games, and more—all in one beautiful dashboard.
