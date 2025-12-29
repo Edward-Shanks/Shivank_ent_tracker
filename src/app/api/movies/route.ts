@@ -115,25 +115,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const newMovie: Record<string, unknown> = {
+    const newMovie = {
       id: nanoid(),
       userId: user.id,
       title: body.title,
       posterImage: body.posterImage,
       backdropImage: body.backdropImage || null,
-      releaseDate: body.releaseDate,
+      releaseDate: body.releaseDate || '',
       status: body.status,
       genres: JSON.stringify(body.genres || []),
       synopsis: body.synopsis || null,
       notes: body.notes || null,
+      ...(body.reviewType !== undefined && { reviewType: body.reviewType }),
     };
     
-    // Only include reviewType if provided (column may not exist in DB)
-    if (body.reviewType !== undefined) {
-      newMovie.reviewType = body.reviewType;
-    }
-    
-    await db.insert(movies).values(newMovie);
+    await db.insert(movies).values(newMovie as any);
     return NextResponse.json({
       ...newMovie,
       genres: body.genres || [],

@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    let allAnime, allMovies, allKDrama, allGames;
-    
     // Fetch anime - select all columns explicitly
+    let allAnime: Array<{ id: string; userId: string; title: string; status: string }> = [];
     try {
       allAnime = await db
         .select({
@@ -31,6 +30,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch movies - exclude review_type which might not exist
+    let allMovies: Array<{ id: string; userId: string; title: string; status: string }> = [];
     try {
       allMovies = await db
         .select({
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch kdrama
+    let allKDrama: Array<{ id: string; userId: string; title: string; status: string }> = [];
     try {
       allKDrama = await db
         .select({
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch games - exclude optional columns that might not exist
+    let allGames: Array<{ id: string; userId: string; title: string; status: string }> = [];
     try {
       allGames = await db
         .select({
