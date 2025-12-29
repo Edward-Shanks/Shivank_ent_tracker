@@ -81,7 +81,7 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
         level: formData.level,
         obtained: formData.obtained === 'yes',
         constellation: formData.constellation,
-        image: formData.image,
+        image: formData.image || undefined,
       });
       // Reset form
       setFormData({
@@ -98,9 +98,11 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
         image: '',
       });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding character:', error);
-      alert('Failed to add character. Please try again.');
+      const errorMessage = error?.message || 'Unknown error occurred';
+      console.error('Error details:', errorMessage);
+      alert(`Failed to add character: ${errorMessage}\n\nPlease check the browser console and server logs for more details.`);
     }
   };
 
@@ -205,7 +207,7 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
           type="url"
           value={formData.image}
           onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-          required
+          placeholder="Optional"
         />
         <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
           <Button type="button" variant="secondary" onClick={onClose}>

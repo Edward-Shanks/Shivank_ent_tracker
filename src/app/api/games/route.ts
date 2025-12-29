@@ -33,29 +33,47 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    
+    // Validate required fields
+    if (!body.title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+    if (!body.status) {
+      return NextResponse.json({ error: 'Status is required' }, { status: 400 });
+    }
+    if (!body.platform || (Array.isArray(body.platform) && body.platform.length === 0)) {
+      return NextResponse.json({ error: 'At least one platform is required' }, { status: 400 });
+    }
+
     const newGame = {
       id: nanoid(),
       userId: user.id,
       title: body.title,
-      coverImage: body.coverImage,
+      coverImage: body.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
       platform: JSON.stringify(body.platform || []),
-      status: body.status,
-      hoursPlayed: body.hoursPlayed || 0,
-      score: body.score,
+      status: body.status || body.playStatus || 'planning', // Support both status and playStatus
+      gameType: body.gameType || null,
+      downloadUrl: body.downloadUrl || null,
       genres: JSON.stringify(body.genres || []),
-      developer: body.developer,
-      publisher: body.publisher,
-      releaseDate: body.releaseDate,
-      notes: body.notes,
+      releaseDate: body.releaseDate || null,
+      notes: body.notes || null,
     };
+    
     await db.insert(games).values(newGame);
+    
     return NextResponse.json({
       ...newGame,
       platform: body.platform || [],
       genres: body.genres || [],
+      status: newGame.status, // Return status in response
     }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating game:', error);
-    return NextResponse.json({ error: 'Failed to create game' }, { status: 500 });
+    // Return more detailed error message
+    const errorMessage = error?.message || 'Failed to create game';
+    return NextResponse.json({ 
+      error: 'Failed to create game',
+      details: errorMessage 
+    }, { status: 500 });
   }
 }

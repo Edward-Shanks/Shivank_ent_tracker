@@ -20,24 +20,29 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebar } from '@/context/SidebarContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
+import LanguageSelector from '@/components/ui/LanguageSelector';
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/anime', label: 'Anime', icon: Tv },
-  { href: '/shows', label: 'Movies & K-Drama', icon: Film },
-  { href: '/games', label: 'Games', icon: Gamepad2 },
-  { href: '/genshin', label: 'Genshin', icon: Sparkles },
-  { href: '/credentials', label: 'Credentials', icon: KeyRound },
-  { href: '/websites', label: 'Websites', icon: Globe },
-  { href: '/reports', label: 'Reports', icon: FileText },
-];
+// navItems will be defined inside component to use translations
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { href: '/', label: t('nav.dashboard'), icon: Home },
+    { href: '/anime', label: t('nav.anime'), icon: Tv },
+    { href: '/shows', label: t('nav.movies'), icon: Film },
+    { href: '/games', label: t('nav.games'), icon: Gamepad2 },
+    { href: '/genshin', label: t('nav.genshin'), icon: Sparkles },
+    { href: '/credentials', label: t('nav.credentials'), icon: KeyRound },
+    { href: '/websites', label: t('nav.websites'), icon: Globe },
+    { href: '/reports', label: t('nav.reports'), icon: FileText },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -173,42 +178,25 @@ export default function Sidebar() {
           </AnimatePresence>
         </Link>
         
-        {/* Theme Toggler & Logout */}
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-center gap-2"
-            >
-              <div className="flex-1">
-                <AnimatedThemeToggler className="w-full" />
-              </div>
-              <button 
-                onClick={handleLogout}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-muted hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/15 transition-all duration-200"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Theme Toggler - Collapsed State */}
-        {isCollapsed && (
-          <div className="flex flex-col items-center gap-2">
-            <AnimatedThemeToggler />
-            <button 
-              onClick={handleLogout}
-              className="p-2 rounded-lg text-foreground-muted hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/15 transition-all duration-200"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+        {/* Theme Toggler, Language & Logout - Single Row */}
+        <div className="flex items-center justify-center gap-3">
+          {/* Theme Toggler */}
+          <div className="w-10 h-10 rounded-full border-2 border-cyan-500/40 hover:border-cyan-400/60 hover:shadow-[0_0_10px_rgba(34,211,238,0.4),0_0_20px_rgba(34,211,238,0.2)] transition-all duration-200 flex items-center justify-center overflow-hidden group">
+            <AnimatedThemeToggler className="w-full h-full p-0 rounded-full border-0 hover:border-0 hover:shadow-none group-hover:scale-110 transition-transform" />
           </div>
-        )}
+          
+          {/* Language Selector */}
+          <LanguageSelector collapsed={true} />
+          
+          {/* Logout */}
+          <button 
+            onClick={handleLogout}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-foreground-muted hover:text-red-400 transition-all duration-200 border-2 border-red-500/40 hover:border-red-400/60 hover:shadow-[0_0_10px_rgba(239,68,68,0.4),0_0_20px_rgba(239,68,68,0.2)]"
+            title={t('nav.logout')}
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -27,7 +27,6 @@ export async function GET(
     return NextResponse.json({
       ...item,
       genres: JSON.parse(item.genres || '[]'),
-      cast: item.cast ? JSON.parse(item.cast) : undefined,
     });
   } catch (error) {
     console.error('Error fetching movie:', error);
@@ -52,13 +51,10 @@ export async function PATCH(
     if (body.posterImage !== undefined) updateData.posterImage = body.posterImage;
     if (body.backdropImage !== undefined) updateData.backdropImage = body.backdropImage;
     if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate;
-    if (body.runtime !== undefined) updateData.runtime = body.runtime;
     if (body.status !== undefined) updateData.status = body.status;
-    if (body.score !== undefined) updateData.score = body.score;
+    if (body.reviewType !== undefined) updateData.reviewType = body.reviewType;
     if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
     if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
-    if (body.director !== undefined) updateData.director = body.director;
-    if (body.cast !== undefined) updateData.cast = JSON.stringify(body.cast);
     if (body.notes !== undefined) updateData.notes = body.notes;
     updateData.updatedAt = new Date().toISOString();
     
@@ -76,7 +72,6 @@ export async function PATCH(
     return NextResponse.json({
       ...item,
       genres: JSON.parse(item.genres || '[]'),
-      cast: item.cast ? JSON.parse(item.cast) : undefined,
     });
   } catch (error) {
     console.error('Error updating movie:', error);

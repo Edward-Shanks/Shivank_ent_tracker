@@ -14,6 +14,8 @@ import {
   Heart,
   LayoutGrid,
   BarChart3,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { MovieStatus, KDramaStatus } from '@/types';
@@ -22,10 +24,12 @@ import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
 import ShowsInsights from './components/ShowsInsights';
 import AddMovieModal from './components/AddMovieModal';
+import EditMovieModal from './components/EditMovieModal';
+import EditKDramaModal from './components/EditKDramaModal';
 
 type ViewMode = 'insights' | 'collection';
 type ContentType = 'all' | 'movies' | 'kdrama';
-type SortOption = 'title' | 'score' | 'year';
+type SortOption = 'title' | 'year';
 
 interface UnifiedShow {
   id: string;
@@ -33,13 +37,10 @@ interface UnifiedShow {
   image: string;
   type: 'movie' | 'kdrama';
   status: string;
-  score?: number;
   genres: string[];
   year?: number;
   episodes?: number;
   episodesWatched?: number;
-  runtime?: number;
-  director?: string;
   network?: string;
 }
 
@@ -55,12 +56,11 @@ const statusFilters = [
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'title', label: 'Title' },
-  { value: 'score', label: 'Score' },
   { value: 'year', label: 'Year' },
 ];
 
 export default function ShowsPage() {
-  const { movies, kdrama } = useData();
+  const { movies, kdrama, updateMovie, deleteMovie, updateKDrama, deleteKDrama } = useData();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
   const [contentType, setContentType] = useState<ContentType>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -68,6 +68,8 @@ export default function ShowsPage() {
   const [sortBy, setSortBy] = useState<SortOption>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedShow, setSelectedShow] = useState<UnifiedShow | null>(null);
 
   // Combine movies and k-drama into unified format
   const unifiedShows: UnifiedShow[] = useMemo(() => {
@@ -77,11 +79,8 @@ export default function ShowsPage() {
       image: m.posterImage,
       type: 'movie' as const,
       status: m.status,
-      score: m.score,
       genres: m.genres,
       year: m.releaseDate ? new Date(m.releaseDate).getFullYear() : undefined,
-      runtime: m.runtime,
-      director: m.director,
     }));
 
     const kdramaItems: UnifiedShow[] = kdrama.map((k) => ({
@@ -90,7 +89,6 @@ export default function ShowsPage() {
       image: k.posterImage,
       type: 'kdrama' as const,
       status: k.status,
-      score: k.score,
       genres: k.genres,
       year: k.year,
       episodes: k.episodes,
@@ -132,9 +130,6 @@ export default function ShowsPage() {
         case 'title':
           comparison = a.title.localeCompare(b.title);
           break;
-        case 'score':
-          comparison = (b.score || 0) - (a.score || 0);
-          break;
         case 'year':
           comparison = (b.year || 0) - (a.year || 0);
           break;
@@ -156,6 +151,51 @@ export default function ShowsPage() {
       dropped: { label: 'Dropped', type: 'dropped' },
     };
     return statusMap[show.status] || { label: show.status, type: 'planning' };
+  };
+
+  const handleEdit = (show: UnifiedShow) => {
+    setSelectedShow(show);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (show: UnifiedShow) => {
+    if (window.confirm(`Are you sure you want to delete "${show.title}"?`)) {
+      try {
+        const id = show.id.replace(`${show.type}-`, '');
+        if (show.type === 'movie') {
+          await deleteMovie(id);
+        } else {
+          await deleteKDrama(id);
+        }
+      } catch (error) {
+        console.error('Error deleting show:', error);
+        alert('Failed to delete show. Please try again.');
+      }
+    }
+  };
+
+  const handleSaveEdit = async (updates: any) => {
+    if (selectedShow) {
+      try {
+        const id = selectedShow.id.replace(`${selectedShow.type}-`, '');
+        if (selectedShow.type === 'movie') {
+          const movie = movies.find(m => m.id === id);
+          if (movie) {
+            await updateMovie(id, updates);
+          }
+        } else {
+          const drama = kdrama.find(k => k.id === id);
+          if (drama) {
+            await updateKDrama(id, updates);
+          }
+        }
+        setIsEditModalOpen(false);
+        setSelectedShow(null);
+      } catch (error) {
+        console.error('Error updating show:', error);
+        alert('Failed to update show. Please try again.');
+      }
+    }
   };
 
   return (
@@ -377,19 +417,42 @@ export default function ShowsPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.03 }}
                       >
-                        <div className="relative">
+                        <div className="relative group">
                           {/* Type Badge */}
                           <div
-                            className={`absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium text-white ${
+                            className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-medium text-white ${
                               show.type === 'movie' ? 'bg-orange-500' : 'bg-pink-500'
                             }`}
                           >
                             {show.type === 'movie' ? 'Movie' : 'K-Drama'}
                           </div>
+                          
+                          {/* Edit/Delete Icons */}
+                          <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => { e.stopPropagation(); handleEdit(show); }}
+                              className="bg-black/50 hover:bg-black/70 text-white"
+                              title="Edit Show"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => { e.stopPropagation(); handleDelete(show); }}
+                              className="bg-black/50 hover:bg-black/70 text-red-500"
+                              title="Delete Show"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+
                           <MediaCard
                             image={show.image}
                             title={show.title}
-                            subtitle={show.type === 'movie' ? show.director : show.network}
+                            subtitle={show.type === 'movie' ? undefined : show.network}
                             badge={badge.label}
                             badgeType={badge.type}
                             progress={
@@ -397,7 +460,6 @@ export default function ShowsPage() {
                                 ? { current: show.episodesWatched, total: show.episodes }
                                 : undefined
                             }
-                            score={show.score}
                           />
                         </div>
                       </motion.div>
@@ -425,6 +487,37 @@ export default function ShowsPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
+
+      {/* Edit Modals */}
+      {selectedShow && selectedShow.type === 'movie' && (() => {
+        const movie = movies.find(m => m.id === selectedShow.id.replace('movie-', ''));
+        return movie ? (
+          <EditMovieModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedShow(null);
+            }}
+            movie={movie}
+            onSave={handleSaveEdit}
+          />
+        ) : null;
+      })()}
+
+      {selectedShow && selectedShow.type === 'kdrama' && (() => {
+        const drama = kdrama.find(k => k.id === selectedShow.id.replace('kdrama-', ''));
+        return drama ? (
+          <EditKDramaModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedShow(null);
+            }}
+            kdrama={drama}
+            onSave={handleSaveEdit}
+          />
+        ) : null;
+      })()}
     </div>
   );
 }

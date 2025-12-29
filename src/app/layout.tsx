@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { DataProvider } from '@/context/DataContext';
 import { SidebarProvider } from '@/context/SidebarContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import RouteGuard from '@/components/auth/RouteGuard';
 
@@ -51,7 +52,9 @@ export default function RootLayout({
           <DataProvider>
             <RouteGuard>
               <SidebarProvider>
-                <ConditionalLayout>{children}</ConditionalLayout>
+                <LanguageProvider>
+                  <ConditionalLayout>{children}</ConditionalLayout>
+                </LanguageProvider>
               </SidebarProvider>
             </RouteGuard>
           </DataProvider>

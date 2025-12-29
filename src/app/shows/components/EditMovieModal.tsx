@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
-import { MovieStatus, ReviewType } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { Movie, MovieStatus, ReviewType } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 
-interface AddMovieModalProps {
+interface EditMovieModalProps {
   isOpen: boolean;
   onClose: () => void;
+  movie: Movie;
+  onSave: (updates: Partial<Movie>) => void;
 }
 
 // Statuses and review types will be created inside component to use translations
@@ -22,8 +23,7 @@ const commonGenres = [
   'Biography', 'War', 'Western', 'Musical',
 ];
 
-export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
-  const { addMovie } = useData();
+export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditMovieModalProps) {
   const { t } = useLanguage();
   
   const statuses: { value: MovieStatus; label: string }[] = [
@@ -38,24 +38,41 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
     { value: 'Onetime watch', label: t('review.onetimeWatch') },
     { value: 'Not Good', label: t('review.notGood') },
   ];
+  
   const [formData, setFormData] = useState({
-    title: '',
-    posterImage: '',
-    backdropImage: '',
-    releaseDate: '',
-    status: 'planning' as MovieStatus,
-    reviewType: '' as ReviewType | '',
-    genres: [] as string[],
-    synopsis: '',
-    notes: '',
+    title: movie.title,
+    posterImage: movie.posterImage,
+    backdropImage: movie.backdropImage || '',
+    releaseDate: movie.releaseDate,
+    status: movie.status,
+    reviewType: movie.reviewType || '',
+    genres: movie.genres,
+    synopsis: movie.synopsis || '',
+    notes: movie.notes || '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        title: movie.title,
+        posterImage: movie.posterImage,
+        backdropImage: movie.backdropImage || '',
+        releaseDate: movie.releaseDate,
+        status: movie.status,
+        reviewType: movie.reviewType || '',
+        genres: movie.genres,
+        synopsis: movie.synopsis || '',
+        notes: movie.notes || '',
+      });
+    }
+  }, [movie, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addMovie({
+      onSave({
         title: formData.title,
-        posterImage: formData.posterImage || 'https://via.placeholder.com/300x450?text=No+Image',
+        posterImage: formData.posterImage,
         backdropImage: formData.backdropImage || undefined,
         releaseDate: formData.releaseDate,
         status: formData.status,
@@ -64,28 +81,15 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
         synopsis: formData.synopsis || undefined,
         notes: formData.notes || undefined,
       });
-
-      // Reset form
-      setFormData({
-        title: '',
-        posterImage: '',
-        backdropImage: '',
-        releaseDate: '',
-        status: 'planning',
-        reviewType: '',
-        genres: [],
-        synopsis: '',
-        notes: '',
-      });
       onClose();
     } catch (error) {
-      console.error('Error adding movie:', error);
-      alert(t('msg.failedAdd'));
+      console.error('Error updating movie:', error);
+      alert(t('msg.failedUpdate'));
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('shows.addMovie')} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('shows.editMovie')} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
@@ -164,7 +168,7 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
             {t('common.cancel')}
           </Button>
           <Button type="submit" variant="primary">
-            {t('shows.addMovie')}
+            {t('action.save')}
           </Button>
         </div>
       </form>

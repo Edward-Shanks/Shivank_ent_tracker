@@ -17,6 +17,7 @@ import {
 import { useData } from '@/context/DataContext';
 import { NavCard, StatCard, MediaCard } from '@/components/ui/Card';
 import { DashboardStats } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 const container = {
   hidden: { opacity: 0 },
@@ -35,6 +36,7 @@ const item = {
 
 export default function Dashboard() {
   const { getDashboardStats, anime, movies, kdrama, games } = useData();
+  const { t } = useLanguage();
   const [stats, setStats] = useState<DashboardStats>({
     anime: { total: 0, watching: 0 },
     movies: { total: 0, watched: 0 },
@@ -60,62 +62,62 @@ export default function Dashboard() {
     {
       href: '/anime',
       icon: Tv,
-      title: 'Anime',
-      description: 'Track your anime watchlist and discover new series',
+      title: t('page.anime'),
+      description: t('dashboard.animeDesc'),
       color: '#e50914',
       stats: [
-        { label: 'Total', value: stats.anime.total },
-        { label: 'Watching', value: stats.anime.watching },
+        { label: t('dashboard.total'), value: stats.anime.total },
+        { label: t('status.watching'), value: stats.anime.watching },
       ],
     },
     {
       href: '/shows',
       icon: Film,
-      title: 'Movies & K-Drama',
-      description: 'Track movies and Korean dramas in one place',
+      title: t('page.movies'),
+      description: t('dashboard.moviesDesc'),
       color: '#f97316',
       stats: [
-        { label: 'Movies', value: stats.movies.total },
+        { label: t('dashboard.movies'), value: stats.movies.total },
         { label: 'K-Drama', value: stats.kdrama.total },
       ],
     },
     {
       href: '/games',
       icon: Gamepad2,
-      title: 'Games',
-      description: 'Gaming backlog and achievements tracker',
+      title: t('page.games'),
+      description: t('dashboard.gamesDesc'),
       color: '#22c55e',
       stats: [
-        { label: 'Total', value: stats.games.total },
-        { label: 'Playing', value: stats.games.playing },
+        { label: t('dashboard.total'), value: stats.games.total },
+        { label: t('status.playing'), value: stats.games.playing },
       ],
     },
     {
       href: '/genshin',
       icon: Sparkles,
-      title: 'Genshin Impact',
-      description: 'Character builds, wishes, and account stats',
+      title: t('page.genshin'),
+      description: t('dashboard.genshinDesc'),
       color: '#06b6d4',
       stats: [
-        { label: 'Characters', value: 6 },
+        { label: t('dashboard.characters'), value: 6 },
         { label: 'AR', value: 58 },
       ],
     },
     {
       href: '/credentials',
       icon: KeyRound,
-      title: 'Credentials',
-      description: 'Secure password and account manager',
+      title: t('page.credentials'),
+      description: t('dashboard.credentialsDesc'),
       color: '#8b5cf6',
-      stats: [{ label: 'Saved', value: 5 }],
+      stats: [{ label: t('dashboard.saved'), value: 5 }],
     },
     {
       href: '/websites',
       icon: Globe,
-      title: 'Websites',
-      description: 'Quick access to your favorite sites',
+      title: t('page.websites'),
+      description: t('dashboard.websitesDesc'),
       color: '#3b82f6',
-      stats: [{ label: 'Bookmarks', value: 7 }],
+      stats: [{ label: t('dashboard.bookmarks'), value: 7 }],
     },
   ];
 
@@ -132,11 +134,11 @@ export default function Dashboard() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Welcome to{' '}
+              {t('dashboard.welcome')}{' '}
               <span className="text-gradient">NexaVerse</span>
             </h1>
             <p className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto">
-              Your personal entertainment hub. Track anime, movies, games, and more—all in one beautiful dashboard.
+              {t('dashboard.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -153,7 +155,7 @@ export default function Dashboard() {
             <motion.div variants={item}>
               <StatCard
                 icon={TrendingUp}
-                label="Total Entries"
+                label={t('dashboard.totalEntries')}
                 value={stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total}
                 color="#e50914"
               />
@@ -161,7 +163,7 @@ export default function Dashboard() {
             <motion.div variants={item}>
               <StatCard
                 icon={Play}
-                label="Currently Active"
+                label={t('dashboard.currentlyActive')}
                 value={stats.anime.watching + stats.kdrama.watching + stats.games.playing}
                 color="#3b82f6"
               />
@@ -169,7 +171,7 @@ export default function Dashboard() {
           <motion.div variants={item}>
             <StatCard
               icon={Clock}
-              label="Hours Watched"
+              label={t('dashboard.hoursWatched')}
               value="1,234"
               color="#22c55e"
             />
@@ -177,7 +179,7 @@ export default function Dashboard() {
           <motion.div variants={item}>
             <StatCard
               icon={Star}
-              label="Average Score"
+              label={t('dashboard.averageScore')}
               value="8.5"
               color="#ffd700"
             />
@@ -192,7 +194,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, x: 0 }}
           className="text-2xl font-bold text-foreground mb-6"
         >
-          Your Collections
+          {t('dashboard.yourCollections')}
         </motion.h2>
         <motion.div
           variants={container}
@@ -218,7 +220,7 @@ export default function Dashboard() {
           >
             <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <Play className="w-6 h-6 text-primary" />
-              Continue Watching
+              {t('dashboard.continueWatching')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {currentlyWatching.map((item) => (
@@ -226,7 +228,7 @@ export default function Dashboard() {
                   key={item.id}
                   image={'coverImage' in item ? item.coverImage : item.posterImage}
                   title={item.title}
-                  badge="Watching"
+                  badge={t('status.watching')}
                   badgeType="watching"
                   progress={{
                     current: item.episodesWatched,
@@ -249,7 +251,7 @@ export default function Dashboard() {
           >
             <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <Star className="w-6 h-6 text-yellow-500" />
-              Recently Completed
+              {t('dashboard.recentlyCompleted')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {recentlyCompleted.map((item) => (
@@ -257,7 +259,7 @@ export default function Dashboard() {
                   key={item.id}
                   image={item.coverImage}
                   title={item.title}
-                  badge="Completed"
+                  badge={t('status.completed')}
                   badgeType="completed"
                   score={item.score}
                 />

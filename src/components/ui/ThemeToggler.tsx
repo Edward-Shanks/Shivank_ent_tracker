@@ -106,7 +106,7 @@ export const AnimatedThemeToggler = ({
     return (
       <button
         ref={buttonRef}
-        className={cn("p-2 rounded-lg text-foreground-muted hover:text-foreground hover:bg-foreground/5 transition-colors", className)}
+        className={cn("w-full h-full flex items-center justify-center text-foreground-muted hover:text-foreground transition-colors", className)}
         {...props}
         disabled
       >
@@ -120,7 +120,7 @@ export const AnimatedThemeToggler = ({
     <button
       ref={buttonRef}
       onClick={toggleTheme}
-      className={cn("p-2 rounded-lg text-foreground-muted hover:text-foreground hover:bg-foreground/5 transition-colors", className)}
+      className={cn("w-full h-full flex items-center justify-center text-foreground-muted hover:text-foreground transition-colors", className)}
       {...props}
     >
       {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

@@ -134,21 +134,20 @@ export default function GenshinPage() {
     localStorage.setItem(CARD_FIELDS_STORAGE_KEY, JSON.stringify(fields));
   };
 
-  if (!genshinAccount) {
-    return (
-      <div className="min-h-screen bg-animated flex items-center justify-center">
-        <div className="text-center">
-          <Sparkles className="w-16 h-16 text-cyan-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">No Account Linked</h2>
-          <p className="text-foreground-muted">Link your Genshin Impact account to get started</p>
-        </div>
-      </div>
-    );
-  }
+  // Use default account structure if no account exists
+  const account = genshinAccount || {
+    uid: '',
+    adventureRank: 1,
+    worldLevel: 0,
+    characters: [],
+    primogems: 0,
+    intertwined: 0,
+    acquaint: 0,
+  };
 
   const filteredCharacters = selectedElement === 'all'
-    ? genshinAccount.characters
-    : genshinAccount.characters.filter((c) => c.element === selectedElement);
+    ? account.characters
+    : account.characters.filter((c) => c.element === selectedElement);
 
   return (
     <div className="min-h-screen bg-animated">
@@ -187,11 +186,11 @@ export default function GenshinPage() {
                 Character Collection
               </h1>
               <p className="text-lg text-white/70 mb-4">
-                {genshinAccount.characters.length} characters in your collection
+                {account.characters.length} characters in your collection
               </p>
               <div className="flex flex-wrap gap-2">
                 <span className="px-3 py-1 rounded-full text-sm bg-foreground/10 text-foreground backdrop-blur-sm flex items-center gap-2 group">
-                  Adventure Rank {genshinAccount.adventureRank}
+                  Adventure Rank {account.adventureRank}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -204,7 +203,7 @@ export default function GenshinPage() {
                   </button>
                 </span>
                 <span className="px-3 py-1 rounded-full text-sm bg-foreground/10 text-foreground backdrop-blur-sm flex items-center gap-2 group">
-                  World Level {genshinAccount.worldLevel}
+                  World Level {account.worldLevel}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -233,7 +232,7 @@ export default function GenshinPage() {
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights'
                 ? 'Analytics and statistics for your characters'
-                : `${genshinAccount.characters.length} characters in your collection`}
+                : `${account.characters.length} characters in your collection`}
             </p>
           </div>
 
@@ -307,7 +306,7 @@ export default function GenshinPage() {
               {/* Element Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
                 {(Object.keys(elementColors) as GenshinElement[]).map((element) => {
-                  const elementCharacters = genshinAccount.characters.filter((c) => c.element === element);
+                  const elementCharacters = account.characters.filter((c) => c.element === element);
                   const totalCount = elementCharacters.length;
                   const ownedCount = elementCharacters.filter((c) => c.obtained).length;
                   
@@ -567,21 +566,19 @@ export default function GenshinPage() {
       />
 
       {/* Account Edit Modal */}
-      {genshinAccount && (
-        <AccountEditModal
-          isOpen={isAccountEditModalOpen}
-          onClose={() => setIsAccountEditModalOpen(false)}
-          account={genshinAccount}
-          onSave={async (updates) => {
-            try {
-              await updateGenshinAccount(updates);
-            } catch (error) {
-              console.error('Error updating account:', error);
-              alert('Failed to update account. Please try again.');
-            }
-          }}
-        />
-      )}
+      <AccountEditModal
+        isOpen={isAccountEditModalOpen}
+        onClose={() => setIsAccountEditModalOpen(false)}
+        account={account}
+        onSave={async (updates) => {
+          try {
+            await updateGenshinAccount(updates);
+          } catch (error) {
+            console.error('Error updating account:', error);
+            alert('Failed to update account. Please try again.');
+          }
+        }}
+      />
     </div>
   );
 }

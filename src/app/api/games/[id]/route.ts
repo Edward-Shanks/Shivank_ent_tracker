@@ -49,11 +49,9 @@ export async function PATCH(
     if (body.coverImage !== undefined) updateData.coverImage = body.coverImage;
     if (body.platform !== undefined) updateData.platform = JSON.stringify(body.platform);
     if (body.status !== undefined) updateData.status = body.status;
-    if (body.hoursPlayed !== undefined) updateData.hoursPlayed = body.hoursPlayed;
-    if (body.score !== undefined) updateData.score = body.score;
+    if (body.gameType !== undefined) updateData.gameType = body.gameType;
+    if (body.downloadUrl !== undefined) updateData.downloadUrl = body.downloadUrl;
     if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
-    if (body.developer !== undefined) updateData.developer = body.developer;
-    if (body.publisher !== undefined) updateData.publisher = body.publisher;
     if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate;
     if (body.notes !== undefined) updateData.notes = body.notes;
     updateData.updatedAt = new Date().toISOString();

@@ -47,13 +47,10 @@ export const movies = pgTable('movies', {
   posterImage: text('poster_image').notNull(),
   backdropImage: text('backdrop_image'),
   releaseDate: text('release_date').notNull(),
-  runtime: integer('runtime').notNull().default(0),
   status: text('status').notNull(), // 'watched' | 'planning' | 'rewatching'
-  score: integer('score'), // 1-10
+  reviewType: text('review_type'), // 'Good' | 'Okay' | 'Onetime watch' | 'Not Good'
   genres: text('genres').notNull().default('[]'), // JSON array
   synopsis: text('synopsis'),
-  director: text('director'),
-  cast: text('cast'), // JSON array
   notes: text('notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -88,11 +85,9 @@ export const games = pgTable('games', {
   coverImage: text('cover_image').notNull(),
   platform: text('platform').notNull().default('[]'), // JSON array
   status: text('status').notNull(), // 'playing' | 'completed' | 'planning' | 'dropped' | 'on-hold'
-  hoursPlayed: real('hours_played').notNull().default(0),
-  score: integer('score'), // 1-10
+  gameType: text('game_type'), // Game type/category
+  downloadUrl: text('download_url'), // Download URL
   genres: text('genres').notNull().default('[]'), // JSON array
-  developer: text('developer'),
-  publisher: text('publisher'),
   releaseDate: text('release_date'),
   notes: text('notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

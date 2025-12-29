@@ -1,31 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
-import { GameStatus, GamePlatform } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { Game, GameStatus, GamePlatform } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 
-interface AddGameModalProps {
+interface EditGameModalProps {
   isOpen: boolean;
   onClose: () => void;
+  game: Game;
+  onSave: (updates: Partial<Game>) => void;
 }
 
-// Statuses will be created inside component to use translations
-
-const platforms: { value: GamePlatform; label: string }[] = [
-  { value: 'PC', label: 'PC' },
-  { value: 'PlayStation', label: 'PlayStation' },
-  { value: 'Xbox', label: 'Xbox' },
-  { value: 'Nintendo', label: 'Nintendo' },
-  { value: 'Mobile', label: 'Mobile' },
-  { value: 'Other', label: 'Other' },
-];
-
-// Game types will be created inside component to use translations
+// Statuses, platforms, and game types will be created inside component to use translations
 
 const commonGenres = [
   'Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Sports', 'Racing',
@@ -33,8 +23,7 @@ const commonGenres = [
   'Roguelike', 'Metroidvania', 'Open World', 'Survival',
 ];
 
-export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
-  const { addGame } = useData();
+export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGameModalProps) {
   const { t } = useLanguage();
   
   const statuses: { value: GameStatus; label: string }[] = [
@@ -44,7 +33,16 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
     { value: 'on-hold', label: t('status.onHold') },
     { value: 'dropped', label: t('status.dropped') },
   ];
-  
+
+  const platforms: { value: GamePlatform; label: string }[] = [
+    { value: 'PC', label: 'PC' },
+    { value: 'PlayStation', label: 'PlayStation' },
+    { value: 'Xbox', label: 'Xbox' },
+    { value: 'Nintendo', label: 'Nintendo' },
+    { value: 'Mobile', label: 'Mobile' },
+    { value: 'Other', label: 'Other' },
+  ];
+
   const gameTypes: { value: string; label: string }[] = [
     { value: 'good', label: t('games.good') },
     { value: 'okay', label: t('games.okay') },
@@ -52,17 +50,34 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
     { value: 'Best', label: t('games.best') },
     { value: 'not good', label: t('games.notGood') },
   ];
+  
   const [formData, setFormData] = useState({
-    title: '',
-    coverImage: '',
-    platform: [] as GamePlatform[],
-    status: 'planning' as GameStatus,
-    gameType: '',
-    downloadUrl: '',
-    genres: [] as string[],
-    releaseDate: '',
-    notes: '',
+    title: game.title,
+    coverImage: game.coverImage,
+    platform: game.platform,
+    status: game.status,
+    gameType: game.gameType || '',
+    downloadUrl: game.downloadUrl || '',
+    genres: game.genres,
+    releaseDate: game.releaseDate || '',
+    notes: game.notes || '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        title: game.title,
+        coverImage: game.coverImage,
+        platform: game.platform,
+        status: game.status,
+        gameType: game.gameType || '',
+        downloadUrl: game.downloadUrl || '',
+        genres: game.genres,
+        releaseDate: game.releaseDate || '',
+        notes: game.notes || '',
+      });
+    }
+  }, [game, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,9 +86,9 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
       return;
     }
     try {
-      await addGame({
+      onSave({
         title: formData.title,
-        coverImage: formData.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
+        coverImage: formData.coverImage,
         platform: formData.platform,
         status: formData.status,
         gameType: formData.gameType || undefined,
@@ -82,30 +97,15 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
         releaseDate: formData.releaseDate || undefined,
         notes: formData.notes || undefined,
       });
-
-      // Reset form
-      setFormData({
-        title: '',
-        coverImage: '',
-        platform: [],
-        status: 'planning',
-        gameType: '',
-        downloadUrl: '',
-        genres: [],
-        releaseDate: '',
-        notes: '',
-      });
       onClose();
-    } catch (error: any) {
-      console.error('Error adding game:', error);
-      const errorMessage = error?.message || 'Unknown error occurred';
-      console.error('Error details:', errorMessage);
-      alert(`Failed to add game: ${errorMessage}\n\nPlease check the browser console and server logs for more details.`);
+    } catch (error) {
+      console.error('Error updating game:', error);
+      alert(t('msg.failedUpdate'));
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('games.addGame')} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('games.editGame')} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Game Title and Release Date */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,7 +195,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
             {t('common.cancel')}
           </Button>
           <Button type="submit" variant="primary">
-            {t('games.addGame')}
+            {t('action.save')}
           </Button>
         </div>
       </form>

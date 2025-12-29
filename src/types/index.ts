@@ -41,6 +41,7 @@ export interface Anime {
 
 // ===== MOVIE TYPES =====
 export type MovieStatus = 'watched' | 'planning' | 'rewatching';
+export type ReviewType = 'Good' | 'Okay' | 'Onetime watch' | 'Not Good';
 
 export interface Movie {
   id: string;
@@ -48,13 +49,10 @@ export interface Movie {
   posterImage: string;
   backdropImage?: string;
   releaseDate: string;
-  runtime: number;
   status: MovieStatus;
-  score?: number;
+  reviewType?: ReviewType;
   genres: string[];
   synopsis?: string;
-  director?: string;
-  cast?: string[];
   notes?: string;
 }
 
@@ -88,11 +86,9 @@ export interface Game {
   coverImage: string;
   platform: GamePlatform[];
   status: GameStatus;
-  hoursPlayed: number;
-  score?: number;
+  gameType?: string;
+  downloadUrl?: string;
   genres: string[];
-  developer?: string;
-  publisher?: string;
   releaseDate?: string;
   notes?: string;
 }
@@ -169,6 +165,19 @@ export interface AnimeStats {
   planning: number;
   dropped: number;
   onHold: number;
+  watchStatusCounts: {
+    ytw: number;
+    watching: number;
+    watchLater: number;
+    completed: number;
+    onHold: number;
+    dropped: number;
+  };
+  airingStatusCounts: {
+    yta: number;
+    airing: number;
+    completed: number;
+  };
   genreDistribution: { name: string; value: number }[];
   scoreDistribution: { score: number; count: number }[];
   monthlyActivity: { month: string; count: number }[];

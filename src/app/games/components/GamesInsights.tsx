@@ -14,7 +14,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Gamepad2, Clock, Star, TrendingUp, Trophy, Monitor } from 'lucide-react';
+import { Gamepad2, TrendingUp, Trophy, Monitor } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Card, StatCard } from '@/components/ui/Card';
 
@@ -38,10 +38,6 @@ export default function GamesInsights() {
     planning: games.filter((g) => g.status === 'planning').length,
     onHold: games.filter((g) => g.status === 'on-hold').length,
     dropped: games.filter((g) => g.status === 'dropped').length,
-    totalHours: games.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0),
-    avgScore: games.filter((g) => g.score).length > 0
-      ? games.filter((g) => g.score).reduce((acc, g) => acc + (g.score || 0), 0) / games.filter((g) => g.score).length
-      : 0,
   }), [games]);
 
   // Status distribution
@@ -80,17 +76,19 @@ export default function GamesInsights() {
       .slice(0, 8);
   }, [games]);
 
-  // Score distribution
-  const scoreDistribution = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
-    score: i + 1,
-    count: games.filter((g) => g.score === i + 1).length,
-  })), [games]);
-
-  // Hours played distribution (top games)
-  const topHoursGames = useMemo(() => [...games]
-    .sort((a, b) => (b.hoursPlayed || 0) - (a.hoursPlayed || 0))
-    .slice(0, 8)
-    .map((g) => ({ name: g.title, hours: g.hoursPlayed || 0 })), [games]);
+  // Game type distribution
+  const gameTypeDistribution = useMemo(() => {
+    const typeMap = new Map<string, number>();
+    games.forEach((game) => {
+      if (game.gameType) {
+        typeMap.set(game.gameType, (typeMap.get(game.gameType) || 0) + 1);
+      }
+    });
+    return Array.from(typeMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [games]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -110,7 +108,7 @@ export default function GamesInsights() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-3 gap-4"
       >
         <StatCard
           icon={Gamepad2}
@@ -129,12 +127,6 @@ export default function GamesInsights() {
           label="Completed"
           value={stats.completed}
           color="#ffd700"
-        />
-        <StatCard
-          icon={Clock}
-          label="Hours Played"
-          value={stats.totalHours.toLocaleString()}
-          color="#a855f7"
         />
       </motion.div>
 
@@ -219,7 +211,7 @@ export default function GamesInsights() {
         </motion.div>
       </div>
 
-      {/* Genre & Score Distribution */}
+      {/* Genre & Game Type Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Genre Distribution */}
         <motion.div
@@ -265,7 +257,7 @@ export default function GamesInsights() {
           </Card>
         </motion.div>
 
-        {/* Score Distribution */}
+        {/* Game Type Distribution */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -273,82 +265,42 @@ export default function GamesInsights() {
         >
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              Score Distribution
+              <TrendingUp className="w-5 h-5 text-purple-500" />
+              Game Type Distribution
             </h3>
             <div className="h-64">
-              {scoreDistribution.some(d => d.count > 0) ? (
+              {gameTypeDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={scoreDistribution}>
+                  <BarChart data={gameTypeDistribution} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis
-                      dataKey="score"
+                    <XAxis type="number" stroke="#666" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={100}
                       stroke="#666"
-                      tick={{ fill: '#a3a3a3' }}
+                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
                     />
-                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} fill="#a855f7">
+                      {gameTypeDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-foreground-muted">
-                  No score data available
+                  No game type data available
                 </div>
               )}
             </div>
           </Card>
         </motion.div>
       </div>
-
-      {/* Top Games by Hours */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-purple-500" />
-            Top Games by Hours Played
-          </h3>
-          <div className="h-64">
-            {topHoursGames.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topHoursGames} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis type="number" stroke="#666" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={150}
-                    stroke="#666"
-                    tick={{ fill: '#a3a3a3', fontSize: 11 }}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="glass-strong p-3 rounded-lg">
-                            <p className="text-foreground font-medium">{payload[0].payload.name}</p>
-                            <p className="text-primary font-bold">{payload[0].value} hours</p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="hours" radius={[0, 4, 4, 0]} fill="#a855f7" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-foreground-muted">
-                No games data available
-              </div>
-            )}
-          </div>
-        </Card>
-      </motion.div>
 
       {/* Detailed Stats */}
       <motion.div

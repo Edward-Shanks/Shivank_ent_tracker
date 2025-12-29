@@ -33,6 +33,23 @@ export async function GET(request: NextRequest) {
       onHold: parsedAnime.filter((a) => a.status === 'on-hold').length,
     };
 
+    // Calculate watch status counts
+    const watchStatusCounts = {
+      ytw: parsedAnime.filter((a) => a.watchStatus === 'YTW').length,
+      watching: parsedAnime.filter((a) => a.watchStatus === 'Watching').length,
+      watchLater: parsedAnime.filter((a) => a.watchStatus === 'Watch Later').length,
+      completed: parsedAnime.filter((a) => a.watchStatus === 'Completed').length,
+      onHold: parsedAnime.filter((a) => a.watchStatus === 'On Hold').length,
+      dropped: parsedAnime.filter((a) => a.watchStatus === 'Dropped').length,
+    };
+
+    // Calculate airing status counts
+    const airingStatusCounts = {
+      yta: parsedAnime.filter((a) => a.airingStatus === 'YTA').length,
+      airing: parsedAnime.filter((a) => a.airingStatus === 'Airing').length,
+      completed: parsedAnime.filter((a) => a.airingStatus === 'Completed').length,
+    };
+
     const genreMap = new Map<string, number>();
     parsedAnime.forEach((a) => {
       a.genres.forEach((genre: string) => {
@@ -91,6 +108,8 @@ export async function GET(request: NextRequest) {
       totalEpisodes,
       meanScore: Math.round(meanScore * 10) / 10,
       ...statusCounts,
+      watchStatusCounts,
+      airingStatusCounts,
       genreDistribution,
       scoreDistribution,
       monthlyActivity,

@@ -14,34 +14,24 @@ import {
   Monitor,
   LayoutGrid,
   BarChart3,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { GameStatus, GamePlatform } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard, StatCard, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import GamesInsights from './components/GamesInsights';
 import AddGameModal from './components/AddGameModal';
+import EditGameModal from './components/EditGameModal';
 
 type ViewMode = 'insights' | 'collection';
-type SortOption = 'title' | 'score' | 'hoursPlayed' | 'releaseDate';
+type SortOption = 'title' | 'releaseDate';
 
-const statusFilters: { value: GameStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Games' },
-  { value: 'playing', label: 'Playing' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'planning', label: 'Backlog' },
-  { value: 'on-hold', label: 'On Hold' },
-  { value: 'dropped', label: 'Dropped' },
-];
-
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'title', label: 'Title' },
-  { value: 'score', label: 'Score' },
-  { value: 'hoursPlayed', label: 'Hours Played' },
-  { value: 'releaseDate', label: 'Release Date' },
-];
+// Status filters and sort options will be created inside component to use translations
 
 const platformColors: Record<GamePlatform, string> = {
   PC: '#3b82f6',
@@ -53,13 +43,30 @@ const platformColors: Record<GamePlatform, string> = {
 };
 
 export default function GamesPage() {
-  const { games } = useData();
+  const { games, updateGame, deleteGame } = useData();
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
+  
+  const statusFilters: { value: GameStatus | 'all'; label: string }[] = [
+    { value: 'all', label: t('games.allGames') },
+    { value: 'playing', label: t('status.playing') },
+    { value: 'completed', label: t('status.completed') },
+    { value: 'planning', label: t('status.planning') },
+    { value: 'on-hold', label: t('status.onHold') },
+    { value: 'dropped', label: t('status.dropped') },
+  ];
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'title', label: t('sort.title') },
+    { value: 'releaseDate', label: t('sort.releaseDate') },
+  ];
   const [statusFilter, setStatusFilter] = useState<GameStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<import('@/types').Game | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const filteredGames = useMemo(() => {
     let result = [...games];
@@ -73,7 +80,7 @@ export default function GamesPage() {
       result = result.filter(
         (g) =>
           g.title.toLowerCase().includes(query) ||
-          g.developer?.toLowerCase().includes(query) ||
+          g.gameType?.toLowerCase().includes(query) ||
           g.genres.some((genre) => genre.toLowerCase().includes(query))
       );
     }
@@ -83,12 +90,6 @@ export default function GamesPage() {
       switch (sortBy) {
         case 'title':
           comparison = a.title.localeCompare(b.title);
-          break;
-        case 'score':
-          comparison = (b.score || 0) - (a.score || 0);
-          break;
-        case 'hoursPlayed':
-          comparison = b.hoursPlayed - a.hoursPlayed;
           break;
         case 'releaseDate':
           comparison = new Date(b.releaseDate || 0).getTime() - new Date(a.releaseDate || 0).getTime();
@@ -114,13 +115,13 @@ export default function GamesPage() {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4">
                 <Gamepad2 className="w-5 h-5 text-green-500" />
-                <span className="text-foreground-muted">Gaming Library</span>
+                <span className="text-foreground-muted">{t('games.gamingLibrary')}</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Your Gaming Collection
+                {t('games.yourGamingCollection')}
               </h1>
               <p className="text-foreground-muted text-lg max-w-2xl mx-auto">
-                Track your gaming journey across all platforms
+                {t('games.trackJourney')}
               </p>
             </motion.div>
           </div>
@@ -133,12 +134,12 @@ export default function GamesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? 'Games Insights' : 'Games Collection'}
+              {viewMode === 'insights' ? t('games.insights') : t('games.collection')}
             </h1>
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights'
-                ? 'Analytics and statistics for your gaming library'
-                : `${games.length} games in your collection`}
+                ? t('games.insightsDesc')
+                : `${games.length} ${t('games.collectionDesc')}`}
             </p>
           </div>
 
@@ -158,7 +159,7 @@ export default function GamesPage() {
                 } : {}}
               >
                 <BarChart3 className="w-4 h-4" />
-                Insights
+                {t('view.insights')}
               </button>
               <button
                 onClick={() => setViewMode('collection')}
@@ -173,7 +174,7 @@ export default function GamesPage() {
                 } : {}}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Collection
+                {t('view.collection')}
               </button>
             </div>
             <Button
@@ -185,7 +186,7 @@ export default function GamesPage() {
                 boxShadow: '0 0 20px rgba(34, 197, 94, 0.4)',
               }}
             >
-              Add Game
+              {t('games.addGame')}
             </Button>
           </div>
         </div>
@@ -230,7 +231,7 @@ export default function GamesPage() {
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <div className="flex-1">
                   <SearchInput
-                    placeholder="Search games..."
+                    placeholder={t('games.searchGames')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -264,7 +265,7 @@ export default function GamesPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card hover className="p-0 overflow-hidden">
+                    <Card hover className="p-0 overflow-hidden group">
                       {/* Game Cover */}
                       <div className="relative aspect-[3/4]">
                         {game.coverImage && game.coverImage.trim() ? (
@@ -293,28 +294,53 @@ export default function GamesPage() {
                           ))}
                         </div>
 
-                        {/* Score */}
-                        {game.score && (
-                          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm">
-                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                            <span className="text-white text-sm font-medium">{game.score}</span>
-                          </div>
-                        )}
+                        {/* Edit and Delete Icons */}
+                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedGame(game);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
+                            title={t('games.editGame')}
+                          >
+                            <Edit className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
+                                deleteGame(game.id).catch((error) => {
+                                  console.error('Error deleting game:', error);
+                                  alert(t('msg.failedDelete'));
+                                });
+                              }
+                            }}
+                            className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
+                            title={t('games.deleteGame')}
+                          >
+                            <Trash2 className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
 
                         {/* Content Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           <h3 className="text-lg font-bold text-white mb-1 line-clamp-2">
                             {game.title}
                           </h3>
-                          <p className="text-white/70 text-sm mb-2">{game.developer}</p>
+                          {game.gameType && (
+                            <p className="text-white/70 text-sm mb-2">{game.gameType}</p>
+                          )}
                           <div className="flex items-center justify-between">
                             <Badge variant={game.status === 'playing' ? 'watching' : game.status === 'completed' ? 'completed' : 'planning'}>
-                              {game.status.charAt(0).toUpperCase() + game.status.slice(1)}
+                              {t(`status.${game.status}`)}
                             </Badge>
-                            <span className="text-white/60 text-sm flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {game.hoursPlayed}h
-                            </span>
+                            {game.gameType && (
+                              <span className="text-white/60 text-sm">
+                                {game.gameType}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -332,6 +358,28 @@ export default function GamesPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
+
+      {/* Edit Game Modal */}
+      {selectedGame && (
+        <EditGameModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedGame(null);
+          }}
+          game={selectedGame}
+          onSave={async (updates) => {
+            try {
+              await updateGame(selectedGame.id, updates);
+              setIsEditModalOpen(false);
+              setSelectedGame(null);
+            } catch (error) {
+              console.error('Error updating game:', error);
+              alert('Failed to update game. Please try again.');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

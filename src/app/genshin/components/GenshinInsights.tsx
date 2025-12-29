@@ -85,6 +85,25 @@ export default function GenshinInsights() {
     { name: '4★', value: stats.fourStar, color: '#a855f7' },
   ].filter((item) => item.value > 0), [stats]);
 
+  // Rarity vs character count (bar chart format)
+  const rarityBarData = useMemo(() => [
+    { rarity: '5★', count: stats.fiveStar },
+    { rarity: '4★', count: stats.fourStar },
+  ], [stats]);
+
+  // Tier distribution
+  const tierDistribution = useMemo(() => {
+    const tierMap = new Map<string, number>();
+    characters.forEach((c) => {
+      if (c.tier) {
+        tierMap.set(c.tier, (tierMap.get(c.tier) || 0) + 1);
+      }
+    });
+    return Array.from(tierMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [characters]);
+
   // Level distribution
   const levelDistribution = useMemo(() => {
     const levelRanges = [
@@ -126,11 +145,11 @@ export default function GenshinInsights() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 relative z-10"
+        className="grid grid-cols-2 lg:grid-cols-5 gap-4 relative z-10"
       >
         <StatCard
           icon={User}
-          label="Total Characters"
+          label="Total Character Count"
           value={stats.total}
           color="#06b6d4"
         />
@@ -151,6 +170,12 @@ export default function GenshinInsights() {
           label="Avg Level"
           value={stats.avgLevel}
           color="#22c55e"
+        />
+        <StatCard
+          icon={User}
+          label="Obtained"
+          value={stats.obtained}
+          color="#3b82f6"
         />
       </motion.div>
 
@@ -239,9 +264,9 @@ export default function GenshinInsights() {
         </motion.div>
       </div>
 
-      {/* Rarity & Level Distribution */}
+      {/* Rarity vs Character Count & Weapon Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-        {/* Rarity Distribution */}
+        {/* Rarity vs Character Count */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -250,30 +275,125 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              Rarity Distribution
+              Rarity vs Character Count
             </h3>
-            <div className="h-64 flex items-center justify-center chart-container">
-              {rarityDistribution.length > 0 ? (
+            <div className="h-64 chart-container">
+              {rarityBarData.some(d => d.count > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={rarityDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {rarityDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
+                  <BarChart data={rarityBarData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
+                    <XAxis
+                      dataKey="rarity"
+                      className="stroke-foreground-muted"
+                      tick={{ fill: 'var(--foreground-muted)' }}
+                    />
+                    <YAxis className="stroke-foreground-muted" tick={{ fill: 'var(--foreground-muted)' }} />
                     <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {rarityBarData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.rarity === '5★' ? '#ffd700' : '#a855f7'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-foreground-muted">No rarity data available</div>
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No rarity data available
+                </div>
+              )}
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Character Count by Weapon Type */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Swords className="w-5 h-5 text-primary" />
+              Character Count by Weapon Type
+            </h3>
+            <div className="h-64 chart-container">
+              {weaponDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weaponDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
+                    <XAxis type="number" className="stroke-foreground-muted" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      className="stroke-foreground-muted"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {weaponDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No weapon data available
+                </div>
+              )}
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Character by Tier & Level Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+        {/* Character by Tier */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-500" />
+              Character by Tier
+            </h3>
+            <div className="h-64 chart-container">
+              {tierDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={tierDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
+                    <XAxis type="number" className="stroke-foreground-muted" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      className="stroke-foreground-muted"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {tierDistribution.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No tier data available
+                </div>
               )}
             </div>
           </Card>
@@ -283,7 +403,7 @@ export default function GenshinInsights() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.7 }}
         >
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">

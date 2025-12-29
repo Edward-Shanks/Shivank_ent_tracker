@@ -90,6 +90,7 @@ export default function ReportsPage() {
   const [uploadFileColumns, setUploadFileColumns] = useState<string[]>([]);
   const [uploadCategory, setUploadCategory] = useState<ReportCategory | null>(null);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
   const categoryConfig = {
     anime: {
@@ -372,6 +373,82 @@ export default function ReportsPage() {
     }
   };
 
+  // Download template for selected category
+  const downloadTemplate = (category: ReportCategory) => {
+    const fields = getPortalFields(category);
+    const headers = fields.map(f => f.label);
+    
+    // Create a sample row with example data
+    const sampleRow: any = {};
+    fields.forEach(field => {
+      switch (field.field) {
+        case 'title':
+          sampleRow[field.label] = 'Example Title';
+          break;
+        case 'status':
+        case 'watchStatus':
+        case 'airingStatus':
+          sampleRow[field.label] = category === 'anime' ? 'Watching' : category === 'games' ? 'Playing' : 'Watched';
+          break;
+        case 'episodes':
+        case 'episodesWatched':
+          sampleRow[field.label] = '12';
+          break;
+        case 'score':
+          sampleRow[field.label] = '8.5';
+          break;
+        case 'genres':
+          sampleRow[field.label] = 'Action, Adventure';
+          break;
+        case 'platform':
+          sampleRow[field.label] = 'PC';
+          break;
+        case 'element':
+          sampleRow[field.label] = 'Pyro';
+          break;
+        case 'weapon':
+          sampleRow[field.label] = 'Sword';
+          break;
+        case 'rarity':
+          sampleRow[field.label] = '5';
+          break;
+        case 'level':
+          sampleRow[field.label] = '90';
+          break;
+        case 'constellation':
+          sampleRow[field.label] = '0';
+          break;
+        case 'obtained':
+        case 'isFavorite':
+          sampleRow[field.label] = 'Yes';
+          break;
+        case 'name':
+          sampleRow[field.label] = category === 'credentials' ? 'Example Service' : category === 'websites' ? 'Example Website' : 'Example Name';
+          break;
+        case 'url':
+          sampleRow[field.label] = 'https://example.com';
+          break;
+        case 'password':
+          sampleRow[field.label] = '********';
+          break;
+        case 'category':
+          sampleRow[field.label] = 'other';
+          break;
+        default:
+          sampleRow[field.label] = '';
+      }
+    });
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, Object.values(sampleRow)]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
+
+    // Download file
+    const categoryName = categoryConfig[category].label;
+    XLSX.writeFile(workbook, `${categoryName}_Template.xlsx`);
+  };
+
   // Get portal fields for selected category
   const getPortalFields = (category: ReportCategory): { field: string; label: string; required: boolean }[] => {
     switch (category) {
@@ -410,14 +487,13 @@ export default function ReportsPage() {
       case 'games':
         return [
           { field: 'title', label: 'Title', required: true },
-          { field: 'status', label: 'Status', required: true },
+          { field: 'playStatus', label: 'Play Status', required: true },
           { field: 'platform', label: 'Platform', required: true },
-          { field: 'hoursPlayed', label: 'Hours Played', required: true },
-          { field: 'score', label: 'Score', required: false },
+          { field: 'gameType', label: 'Game Type', required: false },
+          { field: 'downloadUrl', label: 'Download URL', required: false },
           { field: 'genres', label: 'Genres', required: false },
           { field: 'releaseDate', label: 'Release Date', required: false },
-          { field: 'developer', label: 'Developer', required: false },
-          { field: 'publisher', label: 'Publisher', required: false },
+          { field: 'notes', label: 'Notes', required: false },
         ];
       case 'genshin':
         return [
@@ -458,10 +534,24 @@ export default function ReportsPage() {
     }
   };
 
-  // Step 1: Handle file selection
+  // Step 1: Handle category selection and template download
+  const handleCategorySelectForUpload = (category: ReportCategory) => {
+    setUploadCategory(category);
+    setUploadError(null);
+    // Auto-download template when category is selected
+    downloadTemplate(category);
+    setUploadStep(2);
+  };
+
+  // Step 2: Handle file selection
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (!uploadCategory) {
+      setUploadError('Please select a category first');
+      return;
+    }
 
     setUploadedFile(file);
     setUploadError(null);
@@ -491,40 +581,50 @@ export default function ReportsPage() {
       
       setUploadFileData(jsonData);
       setUploadFileColumns(columns);
-      setUploadStep(2);
+      setUploadStep(3);
     } catch (error: any) {
       setUploadError(error.message || 'Error reading file. Please check the file format.');
     }
   };
 
-  // Step 2: Handle category selection
-  const handleCategorySelect = (category: ReportCategory) => {
-    setUploadCategory(category);
-    setFieldMapping({});
-    setUploadStep(3);
+  // Helper function to map row data from template column names to field names
+  const mapRowData = (row: any, category: ReportCategory): any => {
+    const fields = getPortalFields(category);
+    const mapped: any = {};
+    
+    fields.forEach(field => {
+      // Map from template label to field name
+      const value = row[field.label];
+      if (value !== undefined && value !== null && value !== '') {
+        mapped[field.field] = value;
+      }
+    });
+    
+    return mapped;
   };
 
-  // Step 3: Confirm upload with field mapping
+  // Step 3: Confirm upload with progress tracking
   const handleConfirmUpload = async () => {
     if (!uploadCategory || !uploadFileData.length) return;
 
     setIsUploading(true);
     setUploadError(null);
+    setUploadProgress({ current: 0, total: uploadFileData.length });
 
     try {
       let uploadedCount = 0;
+      const totalRows = uploadFileData.length;
 
-      switch (uploadCategory) {
-        case 'anime':
-          await Promise.all(uploadFileData.map(async (row: any) => {
-            try {
-              const mappedRow: any = {};
-              Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                if (fileColumn && row[fileColumn] !== undefined) {
-                  mappedRow[portalField] = row[fileColumn];
-                }
-              });
+      // Process rows sequentially to show progress
+      for (let i = 0; i < uploadFileData.length; i++) {
+        const row = uploadFileData[i];
+        setUploadProgress({ current: i + 1, total: totalRows });
 
+        try {
+          const mappedRow = mapRowData(row, uploadCategory);
+
+          switch (uploadCategory) {
+            case 'anime':
               await addAnime({
                 title: mappedRow.title || '',
                 animeOtherName: mappedRow.animeOtherName,
@@ -535,7 +635,7 @@ export default function ReportsPage() {
                 episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
                 status: (mappedRow.status || 'watching') as AnimeStatus,
                 score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
-                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : mappedRow.genres.split(',').map((g: string) => g.trim())) : [],
+                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 episodeOn: mappedRow.episodeOn as any,
                 websiteLink: mappedRow.websiteLink,
                 year: mappedRow.year ? parseInt(mappedRow.year) : undefined,
@@ -543,22 +643,9 @@ export default function ReportsPage() {
                 coverImage: '',
               });
               uploadedCount++;
-            } catch (err) {
-              console.error('Error adding anime:', err);
-            }
-          }));
-          break;
+              break;
 
-        case 'shows':
-          await Promise.all(uploadFileData.map(async (row: any) => {
-            try {
-              const mappedRow: any = {};
-              Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                if (fileColumn && row[fileColumn] !== undefined) {
-                  mappedRow[portalField] = row[fileColumn];
-                }
-              });
-
+            case 'shows':
               const type = mappedRow.type || 'Movie';
               if (type === 'K-Drama' || mappedRow.year) {
                 await addKDrama({
@@ -567,7 +654,7 @@ export default function ReportsPage() {
                   episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
                   status: (mappedRow.status || 'watching') as KDramaStatus,
                   score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
-                  genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : mappedRow.genres.split(',').map((g: string) => g.trim())) : [],
+                  genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                   year: mappedRow.year ? parseInt(mappedRow.year) : undefined,
                   network: mappedRow.network,
                   posterImage: '',
@@ -579,58 +666,31 @@ export default function ReportsPage() {
                   runtime: parseInt(mappedRow.runtime || '0'),
                   status: (mappedRow.status || 'watched') as MovieStatus,
                   score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
-                  genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : mappedRow.genres.split(',').map((g: string) => g.trim())) : [],
+                  genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                   director: mappedRow.director,
                   posterImage: '',
                 });
               }
               uploadedCount++;
-            } catch (err) {
-              console.error('Error adding show:', err);
-            }
-          }));
-          break;
+              break;
 
-        case 'games':
-          await Promise.all(uploadFileData.map(async (row: any) => {
-            try {
-              const mappedRow: any = {};
-              Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                if (fileColumn && row[fileColumn] !== undefined) {
-                  mappedRow[portalField] = row[fileColumn];
-                }
-              });
-
+            case 'games':
               await addGame({
                 title: mappedRow.title || '',
-                platform: mappedRow.platform ? (Array.isArray(mappedRow.platform) ? mappedRow.platform : [mappedRow.platform]) : ['PC'],
-                status: (mappedRow.status || 'playing') as GameStatus,
-                hoursPlayed: parseFloat(mappedRow.hoursPlayed || '0'),
-                score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
-                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : mappedRow.genres.split(',').map((g: string) => g.trim())) : [],
+                platform: mappedRow.platform ? (Array.isArray(mappedRow.platform) ? mappedRow.platform : String(mappedRow.platform).split(',').map((p: string) => p.trim() as GamePlatform)) : ['PC'],
+                playStatus: (mappedRow.playStatus || mappedRow.status || 'playing') as any,
+                gameType: mappedRow.gameType,
+                downloadUrl: mappedRow.downloadUrl,
+                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 releaseDate: mappedRow.releaseDate,
-                developer: mappedRow.developer,
-                publisher: mappedRow.publisher,
+                notes: mappedRow.notes,
                 coverImage: '',
               });
               uploadedCount++;
-            } catch (err) {
-              console.error('Error adding game:', err);
-            }
-          }));
-          break;
+              break;
 
-        case 'genshin':
-          if (genshinAccount) {
-            await Promise.all(uploadFileData.map(async (row: any) => {
-              try {
-                const mappedRow: any = {};
-                Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                  if (fileColumn && row[fileColumn] !== undefined) {
-                    mappedRow[portalField] = row[fileColumn];
-                  }
-                });
-
+            case 'genshin':
+              if (genshinAccount) {
                 await addGenshinCharacter({
                   name: mappedRow.name || '',
                   element: (mappedRow.element || 'Pyro') as GenshinElement,
@@ -638,30 +698,17 @@ export default function ReportsPage() {
                   rarity: parseInt(String(mappedRow.rarity).replace('★', '') || '5') as GenshinRarity,
                   level: parseInt(mappedRow.level || '1'),
                   constellation: parseInt(mappedRow.constellation || '0'),
-                  obtained: mappedRow.obtained === 'Yes' || mappedRow.obtained === true || mappedRow.obtained === 'true',
+                  obtained: mappedRow.obtained === 'Yes' || mappedRow.obtained === true || mappedRow.obtained === 'true' || mappedRow.obtained === 'yes',
                   tier: mappedRow.tier,
                   type: mappedRow.type,
                   type2: mappedRow.type2,
-                  image: mappedRow.image || '',
+                  image: mappedRow.image || mappedRow['Image URL'] || '',
                 });
                 uploadedCount++;
-              } catch (err) {
-                console.error('Error adding character:', err);
               }
-            }));
-          }
-          break;
+              break;
 
-        case 'credentials':
-          await Promise.all(uploadFileData.map(async (row: any) => {
-            try {
-              const mappedRow: any = {};
-              Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                if (fileColumn && row[fileColumn] !== undefined) {
-                  mappedRow[portalField] = row[fileColumn];
-                }
-              });
-
+            case 'credentials':
               await addCredential({
                 name: mappedRow.name || '',
                 category: (mappedRow.category || 'other') as CredentialCategory,
@@ -673,37 +720,25 @@ export default function ReportsPage() {
                 lastUpdated: new Date().toISOString(),
               });
               uploadedCount++;
-            } catch (err) {
-              console.error('Error adding credential:', err);
-            }
-          }));
-          break;
+              break;
 
-        case 'websites':
-          await Promise.all(uploadFileData.map(async (row: any) => {
-            try {
-              const mappedRow: any = {};
-              Object.entries(fieldMapping).forEach(([portalField, fileColumn]) => {
-                if (fileColumn && row[fileColumn] !== undefined) {
-                  mappedRow[portalField] = row[fileColumn];
-                }
-              });
-
+            case 'websites':
               await addWebsite({
                 name: mappedRow.name || '',
                 url: mappedRow.url || '',
                 category: (mappedRow.category || 'other') as WebsiteCategory,
-                isFavorite: mappedRow.isFavorite === 'Yes' || mappedRow.isFavorite === true || mappedRow.isFavorite === 'true' || false,
+                isFavorite: mappedRow.isFavorite === 'Yes' || mappedRow.isFavorite === true || mappedRow.isFavorite === 'true' || mappedRow.isFavorite === 'yes',
                 lastVisited: mappedRow.lastVisited ? new Date(mappedRow.lastVisited).toISOString() : new Date().toISOString(),
                 description: mappedRow.description,
                 favicon: mappedRow.favicon,
               });
               uploadedCount++;
-            } catch (err) {
-              console.error('Error adding website:', err);
-            }
-          }));
-          break;
+              break;
+          }
+        } catch (err) {
+          console.error(`Error processing row ${i + 1}:`, err);
+          // Continue processing other rows even if one fails
+        }
       }
 
       setUploadedCount(uploadedCount);
@@ -712,6 +747,7 @@ export default function ReportsPage() {
         setUploadSuccess(false);
         setIsUploading(false);
         setUploadedCount(0);
+        setUploadProgress({ current: 0, total: 0 });
         // Reset upload state
         setUploadStep(1);
         setUploadedFile(null);
@@ -721,7 +757,7 @@ export default function ReportsPage() {
         setFieldMapping({});
       }, 2000);
     } catch (error: any) {
-      setUploadError(error.message || 'Error uploading data. Please check your field mappings.');
+      setUploadError(error.message || 'Error uploading data. Please check your file format.');
       setIsUploading(false);
     }
   };
@@ -1029,9 +1065,9 @@ export default function ReportsPage() {
 
                 {/* Steps */}
                 {[
-                  { id: 1, label: 'Select Input File' },
-                  { id: 2, label: 'Select Category' },
-                  { id: 3, label: 'Map Data Fields' },
+                  { id: 1, label: 'Download Template' },
+                  { id: 2, label: 'Select File' },
+                  { id: 3, label: 'Upload Progress' },
                 ].map((step, index) => {
                   // Step 1 is only active when file is selected, similar to Apply Filters
                   let status: 'completed' | 'active' | 'pending';
@@ -1215,9 +1251,9 @@ export default function ReportsPage() {
                                   repeat: Infinity,
                                 }}
                               >
-                                {step.id === 1 && 'Select a file ↓'}
-                                {step.id === 2 && 'Choose a category ↓'}
-                                {step.id === 3 && 'Map your fields ↓'}
+                                {step.id === 1 && 'Select category & download template ↓'}
+                                {step.id === 2 && 'Select your file ↓'}
+                                {step.id === 3 && 'Uploading... ↓'}
                               </motion.div>
                             </motion.div>
                           )}
@@ -1229,7 +1265,7 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* Step 1: File Selection */}
+            {/* Step 1: Category Selection & Template Download */}
             {uploadStep === 1 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1238,9 +1274,97 @@ export default function ReportsPage() {
               >
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Upload className="w-5 h-5" />
-                    {uploadStep > 1 ? '✓ Select Input File' : 'Select Input File'}
+                    <Download className="w-5 h-5" />
+                    {uploadStep > 1 ? '✓ Download Template' : 'Download Template'}
                   </h3>
+                  <p className="text-sm text-foreground-muted mb-4">
+                    Select a category to download the template file. Fill in the template with your data, then proceed to upload.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {(Object.keys(categoryConfig) as ReportCategory[]).map((category) => {
+                    const catConfig = categoryConfig[category];
+                    const CatIcon = catConfig.icon;
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => handleCategorySelectForUpload(category)}
+                        className={`p-4 rounded-lg text-left transition-all ${
+                          uploadCategory === category
+                            ? 'text-white'
+                            : 'text-foreground-muted hover:text-foreground hover:bg-white/5'
+                        }`}
+                        style={
+                          uploadCategory === category
+                            ? {
+                                background: `linear-gradient(135deg, ${catConfig.color} 0%, ${catConfig.color}dd 100%)`,
+                                boxShadow: `0 0 20px ${catConfig.color}40`,
+                              }
+                            : {}
+                        }
+                      >
+                        <CatIcon className="w-6 h-6 mb-2" />
+                        <p className="font-medium text-sm">{catConfig.label}</p>
+                        <p className="text-xs mt-1 opacity-75">Click to download template</p>
+                      </button>
+                    );
+                  })}
+                  </div>
+                  {uploadCategory && (
+                    <div className="p-4 rounded-lg glass-card mt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        <p className="text-sm font-medium text-foreground">
+                          Template downloaded! Now select your file to upload.
+                        </p>
+                      </div>
+                      <p className="text-xs text-foreground-muted">
+                        Category: {categoryConfig[uploadCategory].label}
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Step 2: File Selection */}
+            {uploadStep === 2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <Card className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Button
+                      variant="secondary"
+                      leftIcon={<ArrowLeft className="w-4 h-4" />}
+                      onClick={() => {
+                        setUploadStep(1);
+                        setUploadedFile(null);
+                        setUploadFileData([]);
+                        setUploadFileColumns([]);
+                      }}
+                      className="flex-shrink-0"
+                    >
+                      Back
+                    </Button>
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Upload className="w-5 h-5" />
+                      {uploadStep > 2 ? '✓ Select File' : 'Select File'}
+                    </h3>
+                  </div>
+                  {uploadCategory && (() => {
+                    const CatIcon = categoryConfig[uploadCategory].icon;
+                    return (
+                      <div className="p-4 rounded-lg glass-card mb-4">
+                        <p className="text-sm text-foreground-muted mb-1">Selected Category:</p>
+                        <p className="font-medium text-foreground flex items-center gap-2">
+                          <CatIcon className="w-4 h-4" style={{ color: categoryConfig[uploadCategory].color }} />
+                          {categoryConfig[uploadCategory].label}
+                        </p>
+                      </div>
+                    );
+                  })()}
                   <div className="p-6 rounded-lg border-2 border-dashed border-white/20 hover:border-white/40 transition-colors">
                   <div className="text-center">
                     <Upload className="w-12 h-12 mx-auto mb-4 text-foreground-muted" />
@@ -1266,7 +1390,7 @@ export default function ReportsPage() {
                       <p className="text-sm text-foreground-muted mb-1">Selected File:</p>
                       <p className="font-medium text-foreground">{uploadedFile.name}</p>
                       <p className="text-xs text-foreground-muted mt-1">
-                        {(uploadedFile.size / 1024).toFixed(2)} KB
+                        {(uploadedFile.size / 1024).toFixed(2)} KB • {uploadFileData.length} rows found
                       </p>
                     </div>
                   )}
@@ -1274,70 +1398,7 @@ export default function ReportsPage() {
               </motion.div>
             )}
 
-            {/* Step 2: Category Selection */}
-            {uploadStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                <Card className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Button
-                      variant="secondary"
-                      leftIcon={<ArrowLeft className="w-4 h-4" />}
-                      onClick={() => setUploadStep(1)}
-                      className="flex-shrink-0"
-                    >
-                      Back
-                    </Button>
-                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      <Filter className="w-5 h-5" />
-                      {uploadStep > 2 ? '✓ Select Category' : 'Select Category'}
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {(Object.keys(categoryConfig) as ReportCategory[]).map((category) => {
-                    const catConfig = categoryConfig[category];
-                    const CatIcon = catConfig.icon;
-                    return (
-                      <button
-                        key={category}
-                        onClick={() => handleCategorySelect(category)}
-                        className={`p-4 rounded-lg text-left transition-all ${
-                          uploadCategory === category
-                            ? 'text-white'
-                            : 'text-foreground-muted hover:text-foreground hover:bg-white/5'
-                        }`}
-                        style={
-                          uploadCategory === category
-                            ? {
-                                background: `linear-gradient(135deg, ${catConfig.color} 0%, ${catConfig.color}dd 100%)`,
-                                boxShadow: `0 0 20px ${catConfig.color}40`,
-                              }
-                            : {}
-                        }
-                      >
-                        <CatIcon className="w-6 h-6 mb-2" />
-                        <p className="font-medium text-sm">{catConfig.label}</p>
-                      </button>
-                    );
-                  })}
-                  </div>
-                  {uploadedFile && (
-                    <div className="p-4 rounded-lg glass-card mt-4">
-                      <p className="text-sm text-foreground-muted mb-1">File:</p>
-                      <p className="font-medium text-foreground text-sm">{uploadedFile.name}</p>
-                      <p className="text-xs text-foreground-muted mt-2">
-                        Found {uploadFileData.length} rows, {uploadFileColumns.length} columns
-                      </p>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Step 3: Field Mapping */}
+            {/* Step 3: Upload Progress */}
             {uploadStep === 3 && uploadCategory && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1349,69 +1410,108 @@ export default function ReportsPage() {
                     <Button
                       variant="secondary"
                       leftIcon={<ArrowLeft className="w-4 h-4" />}
-                      onClick={() => setUploadStep(2)}
+                      onClick={() => {
+                        if (!isUploading) {
+                          setUploadStep(2);
+                        }
+                      }}
                       className="flex-shrink-0"
+                      disabled={isUploading}
                     >
                       Back
                     </Button>
                     <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
-                      Map Data Fields
+                      <Upload className="w-5 h-5" />
+                      Upload Progress
                     </h3>
                   </div>
-                  <p className="text-xs text-foreground-muted mb-3">
-                    Map your file columns to portal fields. Required fields are marked with *
-                  </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto">
-                  {getPortalFields(uploadCategory).map((portalField) => (
-                    <div key={portalField.field} className="p-3 rounded-lg glass-card">
-                      <div className="flex flex-col">
-                        <label className="block text-xs font-medium text-foreground mb-1.5">
-                          {portalField.label}
-                          {portalField.required && <span className="text-red-400 ml-1">*</span>}
-                        </label>
-                        <Select
-                          options={[
-                            { value: '', label: '-- Select Column --' },
-                            ...uploadFileColumns.map((col) => ({ value: col, label: col })),
-                          ]}
-                          value={fieldMapping[portalField.field] || ''}
-                          onChange={(e) =>
-                            setFieldMapping({
-                              ...fieldMapping,
-                              [portalField.field]: e.target.value,
-                            })
-                          }
-                        />
+                  {uploadedFile && (
+                    <div className="p-4 rounded-lg glass-card mb-4">
+                      <p className="text-sm text-foreground-muted mb-1">File:</p>
+                      <p className="font-medium text-foreground">{uploadedFile.name}</p>
+                      <p className="text-xs text-foreground-muted mt-1">
+                        {uploadFileData.length} rows to upload
+                      </p>
+                    </div>
+                  )}
+
+                  {!isUploading ? (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg glass-card">
+                        <p className="text-sm text-foreground-muted mb-2">Ready to upload:</p>
+                        <p className="text-2xl font-bold text-foreground">{uploadFileData.length}</p>
+                        <p className="text-xs text-foreground-muted mt-1">rows will be processed</p>
+                      </div>
+
+                      <div className="flex gap-3 pt-4 border-t border-foreground/10">
+                        <Button
+                          variant="secondary"
+                          onClick={handleCancelUpload}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          leftIcon={<Upload className="w-4 h-4" />}
+                          onClick={handleConfirmUpload}
+                          className="flex-1"
+                          style={{
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            boxShadow: '0 0 10px rgba(34, 197, 94, 0.2)',
+                          }}
+                        >
+                          Start Upload
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                  </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-6 rounded-lg glass-card">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <p className="text-sm text-foreground-muted mb-1">Uploading...</p>
+                            <p className="text-2xl font-bold text-foreground">
+                              {uploadProgress.current} / {uploadProgress.total}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-foreground-muted mb-1">Remaining</p>
+                            <p className="text-2xl font-bold text-foreground">
+                              {uploadProgress.total - uploadProgress.current}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className="w-full bg-foreground/10 rounded-full h-3 overflow-hidden mb-2">
+                          <motion.div
+                            className="h-full bg-gradient-to-r from-green-500 to-green-400"
+                            initial={{ width: 0 }}
+                            animate={{ 
+                              width: `${(uploadProgress.current / uploadProgress.total) * 100}%` 
+                            }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                        
+                        <p className="text-xs text-foreground-muted text-center">
+                          {Math.round((uploadProgress.current / uploadProgress.total) * 100)}% complete
+                        </p>
+                      </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-foreground/10 mt-4">
-                    <Button
-                      variant="secondary"
-                      onClick={handleCancelUpload}
-                      className="flex-1"
-                      disabled={isUploading}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="primary"
-                      leftIcon={<Upload className="w-4 h-4" />}
-                      onClick={handleConfirmUpload}
-                      disabled={isUploading}
-                      className="flex-1"
-                      style={{
-                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                        boxShadow: '0 0 10px rgba(34, 197, 94, 0.2)',
-                      }}
-                    >
-                      {isUploading ? 'Uploading...' : 'Confirm Upload'}
-                    </Button>
-                  </div>
+                      <div className="flex items-center justify-center gap-3 p-4">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}
+                        >
+                          <Upload className="w-6 h-6 text-green-500" />
+                        </motion.div>
+                        <p className="text-foreground-muted">Processing rows...</p>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </motion.div>
             )}
@@ -1425,17 +1525,6 @@ export default function ReportsPage() {
               </div>
             )}
 
-            {isUploading && (
-              <div className="flex items-center justify-center gap-3 p-4 mt-4">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}
-                >
-                  <Upload className="w-6 h-6 text-foreground-muted" />
-                </motion.div>
-                <p className="text-foreground-muted">Uploading and processing data...</p>
-              </div>
-            )}
           </Card>
         </motion.div>
 

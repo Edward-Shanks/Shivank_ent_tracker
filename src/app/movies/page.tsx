@@ -11,12 +11,15 @@ import {
   Clock,
   Star,
   Calendar,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { MovieStatus } from '@/types';
-import { MediaCard, StatCard } from '@/components/ui/Card';
+import { MediaCard, StatCard, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
+import EditMovieModal from '../shows/components/EditMovieModal';
 
 type SortOption = 'title' | 'score' | 'releaseDate' | 'runtime';
 
@@ -35,11 +38,13 @@ const sortOptions: { value: SortOption; label: string }[] = [
 ];
 
 export default function MoviesPage() {
-  const { movies } = useData();
+  const { movies, updateMovie, deleteMovie } = useData();
   const [statusFilter, setStatusFilter] = useState<MovieStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selectedMovie, setSelectedMovie] = useState<import('@/types').Movie | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Featured movie for hero
   const featuredMovie = movies.find((m) => m.backdropImage) || movies[0];
@@ -212,19 +217,73 @@ export default function MoviesPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
+              className="group relative"
             >
-              <MediaCard
-                image={movie.posterImage}
-                title={movie.title}
-                subtitle={movie.director}
-                badge={movie.status === 'watched' ? 'Watched' : movie.status === 'planning' ? 'Plan to Watch' : 'Rewatching'}
-                badgeType={movie.status === 'watched' ? 'completed' : movie.status === 'planning' ? 'planning' : 'watching'}
-                score={movie.score}
-              />
+              <div className="relative">
+                <MediaCard
+                  image={movie.posterImage}
+                  title={movie.title}
+                  subtitle={movie.director}
+                  badge={movie.status === 'watched' ? 'Watched' : movie.status === 'planning' ? 'Plan to Watch' : 'Rewatching'}
+                  badgeType={movie.status === 'watched' ? 'completed' : movie.status === 'planning' ? 'planning' : 'watching'}
+                  score={movie.score}
+                />
+                {/* Edit and Delete Icons */}
+                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedMovie(movie);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
+                    title="Edit movie"
+                  >
+                    <Edit className="w-4 h-4 text-white" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Are you sure you want to delete ${movie.title}?`)) {
+                        deleteMovie(movie.id).catch((error) => {
+                          console.error('Error deleting movie:', error);
+                          alert('Failed to delete movie. Please try again.');
+                        });
+                      }
+                    }}
+                    className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
+                    title="Delete movie"
+                  >
+                    <Trash2 className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
             </motion.div>
           ))}
         </motion.div>
       </div>
+
+      {/* Edit Movie Modal */}
+      {selectedMovie && (
+        <EditMovieModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedMovie(null);
+          }}
+          movie={selectedMovie}
+          onSave={async (updates) => {
+            try {
+              await updateMovie(selectedMovie.id, updates);
+              setIsEditModalOpen(false);
+              setSelectedMovie(null);
+            } catch (error) {
+              console.error('Error updating movie:', error);
+              alert('Failed to update movie. Please try again.');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

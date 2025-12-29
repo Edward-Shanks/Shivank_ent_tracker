@@ -17,7 +17,7 @@ import {
   Line,
   Legend,
 } from 'recharts';
-import { Tv, Clock, Star, TrendingUp, Film, Layers } from 'lucide-react';
+import { Tv, Clock, Star, TrendingUp, Film, Layers, Bookmark, Play, CheckCircle, Pause, X, Calendar } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Card, StatCard } from '@/components/ui/Card';
 import { AnimeStats } from '@/types';
@@ -41,6 +41,19 @@ const defaultStats: AnimeStats = {
   planning: 0,
   dropped: 0,
   onHold: 0,
+  watchStatusCounts: {
+    ytw: 0,
+    watching: 0,
+    watchLater: 0,
+    completed: 0,
+    onHold: 0,
+    dropped: 0,
+  },
+  airingStatusCounts: {
+    yta: 0,
+    airing: 0,
+    completed: 0,
+  },
   genreDistribution: [],
   scoreDistribution: [],
   monthlyActivity: [],
@@ -93,31 +106,63 @@ export default function AnimeInsights() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-7 gap-4"
       >
+        {/* Total Anime Card with Airing Status Breakdown */}
+        <Card className="p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: '#e5091420' }}
+            >
+              <Tv className="w-5 h-5" style={{ color: '#e50914' }} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-foreground mb-1">{stats.totalAnime}</div>
+          <div className="text-sm text-foreground-muted mb-2">Total Anime</div>
+          <div className="pt-2 border-t border-white/10 mt-2">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground-muted">
+              <span>YTA: <span className="font-medium text-foreground">{stats.airingStatusCounts.yta}</span></span>
+              <span>Airing: <span className="font-medium text-foreground">{stats.airingStatusCounts.airing}</span></span>
+              <span>Completed: <span className="font-medium text-foreground">{stats.airingStatusCounts.completed}</span></span>
+            </div>
+          </div>
+        </Card>
         <StatCard
-          icon={Tv}
-          label="Total Anime"
-          value={stats.totalAnime}
-          color="#e50914"
+          icon={Calendar}
+          label="YTW"
+          value={stats.watchStatusCounts.ytw}
+          color="#a855f7"
         />
         <StatCard
-          icon={Film}
-          label="Episodes Watched"
-          value={stats.totalEpisodes.toLocaleString()}
+          icon={Play}
+          label="Watching"
+          value={stats.watchStatusCounts.watching}
           color="#3b82f6"
         />
         <StatCard
-          icon={Star}
-          label="Mean Score"
-          value={stats.meanScore || 'N/A'}
-          color="#ffd700"
+          icon={Bookmark}
+          label="Watch Later"
+          value={stats.watchStatusCounts.watchLater}
+          color="#ec4899"
         />
         <StatCard
-          icon={Clock}
-          label="Days Watched"
-          value={Math.round((stats.totalEpisodes * 24) / 60 / 24)}
+          icon={CheckCircle}
+          label="Completed"
+          value={stats.watchStatusCounts.completed}
           color="#22c55e"
+        />
+        <StatCard
+          icon={Pause}
+          label="On Hold"
+          value={stats.watchStatusCounts.onHold}
+          color="#eab308"
+        />
+        <StatCard
+          icon={X}
+          label="Dropped"
+          value={stats.watchStatusCounts.dropped}
+          color="#ef4444"
         />
       </motion.div>
 
