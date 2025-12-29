@@ -261,7 +261,6 @@ export default function Dashboard() {
                   title={item.title}
                   badge={t('status.completed')}
                   badgeType="completed"
-                  score={item.score}
                 />
               ))}
             </div>

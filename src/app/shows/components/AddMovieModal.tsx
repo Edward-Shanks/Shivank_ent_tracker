@@ -59,10 +59,10 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
         backdropImage: formData.backdropImage || undefined,
         releaseDate: formData.releaseDate,
         status: formData.status,
-        reviewType: formData.reviewType || undefined,
+        reviewType: formData.reviewType || "Okay",
         genres: formData.genres,
-        synopsis: formData.synopsis || undefined,
-        notes: formData.notes || undefined,
+        synopsis: formData.synopsis || "",
+        notes: formData.notes || "",
       });
 
       // Reset form

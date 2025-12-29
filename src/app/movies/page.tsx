@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
 import EditMovieModal from '../shows/components/EditMovieModal';
 
-type SortOption = 'title' | 'score' | 'releaseDate' | 'runtime';
+type SortOption = 'title' | 'releaseDate';
 
 const statusFilters: { value: MovieStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'All Movies' },
@@ -32,9 +32,7 @@ const statusFilters: { value: MovieStatus | 'all'; label: string }[] = [
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'title', label: 'Title' },
-  { value: 'score', label: 'Score' },
   { value: 'releaseDate', label: 'Release Date' },
-  { value: 'runtime', label: 'Runtime' },
 ];
 
 export default function MoviesPage() {
@@ -61,7 +59,6 @@ export default function MoviesPage() {
       result = result.filter(
         (m) =>
           m.title.toLowerCase().includes(query) ||
-          m.director?.toLowerCase().includes(query) ||
           m.genres.some((g) => g.toLowerCase().includes(query))
       );
     }
@@ -72,14 +69,8 @@ export default function MoviesPage() {
         case 'title':
           comparison = a.title.localeCompare(b.title);
           break;
-        case 'score':
-          comparison = (b.score || 0) - (a.score || 0);
-          break;
         case 'releaseDate':
           comparison = new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
-          break;
-        case 'runtime':
-          comparison = b.runtime - a.runtime;
           break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
@@ -91,8 +82,6 @@ export default function MoviesPage() {
   const stats = {
     total: movies.length,
     watched: movies.filter((m) => m.status === 'watched').length,
-    totalRuntime: movies.filter((m) => m.status === 'watched').reduce((acc, m) => acc + m.runtime, 0),
-    avgScore: movies.filter((m) => m.score).reduce((acc, m, _, arr) => acc + (m.score || 0) / arr.length, 0),
   };
 
   return (
@@ -122,13 +111,6 @@ export default function MoviesPage() {
                 {featuredMovie.title}
               </h1>
               <div className="flex items-center gap-4 text-white/70">
-                {featuredMovie.director && <span>Directed by {featuredMovie.director}</span>}
-                {featuredMovie.score && (
-                  <span className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    {featuredMovie.score}
-                  </span>
-                )}
               </div>
             </motion.div>
           </div>
@@ -141,18 +123,6 @@ export default function MoviesPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard icon={Film} label="Total Movies" value={stats.total} color="#f97316" />
           <StatCard icon={Star} label="Watched" value={stats.watched} color="#22c55e" />
-          <StatCard
-            icon={Clock}
-            label="Hours Watched"
-            value={Math.round(stats.totalRuntime / 60)}
-            color="#3b82f6"
-          />
-          <StatCard
-            icon={Star}
-            label="Avg Score"
-            value={stats.avgScore.toFixed(1)}
-            color="#ffd700"
-          />
         </div>
 
         {/* Header */}
@@ -223,10 +193,9 @@ export default function MoviesPage() {
                 <MediaCard
                   image={movie.posterImage}
                   title={movie.title}
-                  subtitle={movie.director}
+                  subtitle={undefined}
                   badge={movie.status === 'watched' ? 'Watched' : movie.status === 'planning' ? 'Plan to Watch' : 'Rewatching'}
                   badgeType={movie.status === 'watched' ? 'completed' : movie.status === 'planning' ? 'planning' : 'watching'}
-                  score={movie.score}
                 />
                 {/* Edit and Delete Icons */}
                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">

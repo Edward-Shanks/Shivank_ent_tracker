@@ -27,7 +27,8 @@ import { Select } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { 
   AnimeStatus, 
-  GameStatus, 
+  GameStatus,
+  GamePlatform,
   KDramaStatus, 
   MovieStatus,
   GenshinElement,
@@ -236,7 +237,6 @@ export default function ReportsPage() {
           'Watch Status': item.watchStatus || item.status,
           Episodes: item.episodes,
           'Episodes Watched': item.episodesWatched,
-          Score: item.score || '',
           Genres: item.genres?.join(', ') || '',
           'Episode On': item.episodeOn || '',
           'Website Link': item.websiteLink || '',
@@ -249,13 +249,10 @@ export default function ReportsPage() {
           Title: item.title,
           Type: 'year' in item ? 'K-Drama' : 'Movie',
           Status: item.status,
-          Score: item.score || '',
           Genres: item.genres?.join(', ') || '',
           Year: 'year' in item ? item.year : (item.releaseDate ? new Date(item.releaseDate).getFullYear() : ''),
           Episodes: 'episodes' in item ? item.episodes : '',
           'Episodes Watched': 'episodesWatched' in item ? item.episodesWatched : '',
-          Runtime: 'runtime' in item ? item.runtime : '',
-          Director: 'director' in item ? item.director : '',
           Network: 'network' in item ? item.network : '',
         }));
         break;
@@ -462,7 +459,6 @@ export default function ReportsPage() {
           { field: 'episodes', label: 'Episodes', required: true },
           { field: 'episodesWatched', label: 'Episodes Watched', required: true },
           { field: 'status', label: 'Status', required: true },
-          { field: 'score', label: 'Score', required: false },
           { field: 'genres', label: 'Genres', required: false },
           { field: 'episodeOn', label: 'Episode On', required: false },
           { field: 'websiteLink', label: 'Website Link', required: false },
@@ -474,12 +470,9 @@ export default function ReportsPage() {
           { field: 'title', label: 'Title', required: true },
           { field: 'type', label: 'Type (Movie/K-Drama)', required: false },
           { field: 'status', label: 'Status', required: true },
-          { field: 'score', label: 'Score', required: false },
           { field: 'genres', label: 'Genres', required: false },
           { field: 'episodes', label: 'Episodes', required: false },
           { field: 'episodesWatched', label: 'Episodes Watched', required: false },
-          { field: 'runtime', label: 'Runtime', required: false },
-          { field: 'director', label: 'Director', required: false },
           { field: 'network', label: 'Network', required: false },
           { field: 'year', label: 'Year', required: false },
           { field: 'releaseDate', label: 'Release Date', required: false },
@@ -663,11 +656,8 @@ export default function ReportsPage() {
                 await addMovie({
                   title: mappedRow.title || '',
                   releaseDate: mappedRow.releaseDate || new Date().toISOString(),
-                  runtime: parseInt(mappedRow.runtime || '0'),
                   status: (mappedRow.status || 'watched') as MovieStatus,
-                  score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
                   genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
-                  director: mappedRow.director,
                   posterImage: '',
                 });
               }
@@ -678,7 +668,7 @@ export default function ReportsPage() {
               await addGame({
                 title: mappedRow.title || '',
                 platform: mappedRow.platform ? (Array.isArray(mappedRow.platform) ? mappedRow.platform : String(mappedRow.platform).split(',').map((p: string) => p.trim() as GamePlatform)) : ['PC'],
-                playStatus: (mappedRow.playStatus || mappedRow.status || 'playing') as any,
+                status: (mappedRow.status || 'playing') as GameStatus,
                 gameType: mappedRow.gameType,
                 downloadUrl: mappedRow.downloadUrl,
                 genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],

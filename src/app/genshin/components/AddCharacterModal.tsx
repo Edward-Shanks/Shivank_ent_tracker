@@ -81,7 +81,7 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
         level: formData.level,
         obtained: formData.obtained === 'yes',
         constellation: formData.constellation,
-        image: formData.image || undefined,
+        image: formData.image || '',
       });
       // Reset form
       setFormData({

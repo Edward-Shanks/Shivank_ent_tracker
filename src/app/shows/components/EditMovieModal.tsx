@@ -76,10 +76,10 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
         backdropImage: formData.backdropImage || undefined,
         releaseDate: formData.releaseDate,
         status: formData.status,
-        reviewType: formData.reviewType || undefined,
+        reviewType: formData.reviewType as ReviewType || "Okay",
         genres: formData.genres,
-        synopsis: formData.synopsis || undefined,
-        notes: formData.notes || undefined,
+        synopsis: formData.synopsis || "",
+        notes: formData.notes || "",
       });
       onClose();
     } catch (error) {

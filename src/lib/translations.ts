@@ -77,7 +77,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': 'Title',
     'form.name': 'Name',
     'form.status': 'Status',
-    'form.notes': 'Notes',
     'form.search': 'Search...',
     
     // Messages
@@ -331,7 +330,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': '标题',
     'form.name': '名称',
     'form.status': '状态',
-    'form.notes': '备注',
     'form.search': '搜索...',
     
     // Messages
@@ -585,7 +583,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': '제목',
     'form.name': '이름',
     'form.status': '상태',
-    'form.notes': '메모',
     'form.search': '검색...',
     
     // Messages
@@ -839,7 +836,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': 'タイトル',
     'form.name': '名前',
     'form.status': 'ステータス',
-    'form.notes': 'メモ',
     'form.search': '検索...',
     
     // Messages
@@ -1093,7 +1089,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': 'Título',
     'form.name': 'Nombre',
     'form.status': 'Estado',
-    'form.notes': 'Notas',
     'form.search': 'Buscar...',
     
     // Messages
@@ -1347,7 +1342,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': 'Titel',
     'form.name': 'Name',
     'form.status': 'Status',
-    'form.notes': 'Notizen',
     'form.search': 'Suchen...',
     
     // Messages
@@ -1601,7 +1595,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.title': 'Titre',
     'form.name': 'Nom',
     'form.status': 'Statut',
-    'form.notes': 'Notes',
     'form.search': 'Rechercher...',
     
     // Messages

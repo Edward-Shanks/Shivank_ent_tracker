@@ -433,24 +433,20 @@ export default function ShowsPage() {
                           
                           {/* Edit/Delete Icons */}
                           <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              variant="ghost"
-                              size="icon"
+                            <button
                               onClick={(e) => { e.stopPropagation(); handleEdit(show); }}
-                              className="bg-black/50 hover:bg-black/70 text-white"
+                              className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
                               title={t('shows.editShow')}
                             >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
+                              <Edit className="w-4 h-4 text-white" />
+                            </button>
+                            <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(show); }}
-                              className="bg-black/50 hover:bg-black/70 text-red-500"
+                              className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
                               title={t('shows.deleteShow')}
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </button>
                           </div>
 
                           <MediaCard

@@ -100,12 +100,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "score": {
-          "name": "score",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "genres": {
           "name": "genres",
           "type": "text",
@@ -334,12 +328,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
-        },
-        "score": {
-          "name": "score",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         },
         "genres": {
           "name": "genres",
@@ -700,12 +688,7 @@
           "primaryKey": false,
           "notNull": true
         },
-        "score": {
-          "name": "score",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
+
         "genres": {
           "name": "genres",
           "type": "text",
@@ -832,12 +815,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "score": {
-          "name": "score",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         },
         "genres": {
           "name": "genres",

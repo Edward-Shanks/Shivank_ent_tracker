@@ -41,10 +41,6 @@ export default function ShowsInsights() {
     watched: movies.filter((m) => m.status === 'watched').length,
     planning: movies.filter((m) => m.status === 'planning').length,
     rewatching: movies.filter((m) => m.status === 'rewatching').length,
-    totalRuntime: movies.filter((m) => m.status === 'watched').reduce((acc, m) => acc + (m.runtime || 0), 0),
-    avgScore: movies.filter((m) => m.score).length > 0
-      ? movies.filter((m) => m.score).reduce((acc, m) => acc + (m.score || 0), 0) / movies.filter((m) => m.score).length
-      : 0,
   }), [movies]);
 
   const kdramaStats = useMemo(() => ({
@@ -83,11 +79,11 @@ export default function ShowsInsights() {
     { name: 'Dropped', value: kdramaStats.dropped, color: COLORS.dropped },
   ].filter((item) => item.value > 0), [movieStats, kdramaStats]);
 
-  // Score distribution
+  // Score distribution (only for K-Drama, as movies don't have score)
   const scoreDistribution = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
     score: i + 1,
-    count: [...movies, ...kdrama].filter((item) => item.score === i + 1).length,
-  })), [movies, kdrama]);
+    count: kdrama.filter((item) => item.score === i + 1).length,
+  })), [kdrama]);
 
   // Year distribution
   const yearDistribution = useMemo(() => {
@@ -142,15 +138,9 @@ export default function ShowsInsights() {
           color="#ec4899"
         />
         <StatCard
-          icon={Clock}
-          label="Hours Watched"
-          value={Math.round(movieStats.totalRuntime / 60)}
-          color="#3b82f6"
-        />
-        <StatCard
           icon={Star}
           label="Avg Score"
-          value={((movieStats.avgScore + kdramaStats.avgScore) / 2).toFixed(1)}
+          value={kdramaStats.avgScore > 0 ? kdramaStats.avgScore.toFixed(1) : '0'}
           color="#ffd700"
         />
       </motion.div>
