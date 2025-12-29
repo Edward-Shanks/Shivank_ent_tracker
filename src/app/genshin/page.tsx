@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { GenshinElement, GenshinWeapon } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -69,6 +70,7 @@ const DEFAULT_CARD_FIELDS: CardField[] = ['weapon', 'constellation', 'friendship
 
 export default function GenshinPage() {
   const { genshinAccount, updateGenshinCharacter, deleteGenshinCharacter, updateGenshinAccount } = useData();
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
   const [selectedElement, setSelectedElement] = useState<GenshinElement | 'all'>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -105,14 +107,14 @@ export default function GenshinPage() {
   };
 
   const handleDelete = async () => {
-    if (selectedCharacter && window.confirm(`Are you sure you want to delete ${selectedCharacter.name}?`)) {
+    if (selectedCharacter && window.confirm(`${t('genshin.deleteCharacter')} ${selectedCharacter.name}?`)) {
       try {
         await deleteGenshinCharacter(selectedCharacter.id);
         setIsDetailModalOpen(false);
         setSelectedCharacter(null);
       } catch (error) {
         console.error('Error deleting character:', error);
-        alert('Failed to delete character. Please try again.');
+        alert(t('msg.failedDelete'));
       }
     }
   };
@@ -124,7 +126,7 @@ export default function GenshinPage() {
         setSelectedCharacter({ ...selectedCharacter, ...updates });
       } catch (error) {
         console.error('Error updating character:', error);
-        alert('Failed to update character. Please try again.');
+        alert(t('msg.failedUpdate'));
       }
     }
   };
@@ -183,10 +185,10 @@ export default function GenshinPage() {
               className="max-w-2xl"
             >
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-                Character Collection
+                {t('genshin.collection')}
               </h1>
               <p className="text-lg text-white/70 mb-4">
-                {account.characters.length} characters in your collection
+                {account.characters.length} {t('genshin.collection')}
               </p>
               <div className="flex flex-wrap gap-2">
                 <span className="px-3 py-1 rounded-full text-sm bg-foreground/10 text-foreground backdrop-blur-sm flex items-center gap-2 group">
@@ -197,7 +199,7 @@ export default function GenshinPage() {
                       setIsAccountEditModalOpen(true);
                     }}
                     className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-foreground/20 rounded"
-                    title="Edit Adventure Rank"
+                    title={t('genshin.editAdventureRank')}
                   >
                     <Edit className="w-3 h-3" />
                   </button>
@@ -210,7 +212,7 @@ export default function GenshinPage() {
                       setIsAccountEditModalOpen(true);
                     }}
                     className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-foreground/20 rounded"
-                    title="Edit World Level"
+                    title={t('genshin.editWorldLevel')}
                   >
                     <Edit className="w-3 h-3" />
                   </button>
@@ -227,12 +229,12 @@ export default function GenshinPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? 'Genshin Insights' : 'Character Collection'}
+              {viewMode === 'insights' ? t('genshin.insights') : t('genshin.collection')}
             </h1>
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights'
-                ? 'Analytics and statistics for your characters'
-                : `${account.characters.length} characters in your collection`}
+                ? t('genshin.insights')
+                : `${account.characters.length} ${t('genshin.collection')}`}
             </p>
           </div>
 
@@ -252,7 +254,7 @@ export default function GenshinPage() {
                 } : {}}
               >
                 <BarChart3 className="w-4 h-4" />
-                Insights
+                {t('view.insights')}
               </button>
               <button
                 onClick={() => setViewMode('collection')}
@@ -267,7 +269,7 @@ export default function GenshinPage() {
                 } : {}}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Collection
+                {t('view.collection')}
               </button>
             </div>
             <Button
@@ -279,16 +281,16 @@ export default function GenshinPage() {
                 boxShadow: '0 0 20px rgba(6, 182, 212, 0.4)',
               }}
             >
-              Add Character
+              {t('genshin.addCharacter')}
             </Button>
             {viewMode === 'collection' && (
               <Button
                 variant="secondary"
                 leftIcon={<Settings className="w-4 h-4" />}
                 onClick={() => setIsCustomizationModalOpen(true)}
-                title="Customize card display"
+                title={t('genshin.customizeCard')}
               >
-                Customize
+                {t('common.customize') || 'Customize'}
               </Button>
             )}
           </div>

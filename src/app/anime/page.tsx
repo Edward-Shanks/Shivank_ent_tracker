@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { AnimeStatus, Anime } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
@@ -28,25 +29,28 @@ import AnimeCardCustomizationModal, { AnimeCardField } from './components/AnimeC
 type ViewMode = 'collection' | 'insights';
 type SortOption = 'title' | 'score' | 'progress' | 'recent';
 
-const statusFilters: { value: AnimeStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Anime' },
-  { value: 'watching', label: 'Watching' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'planning', label: 'Plan to Watch' },
-  { value: 'on-hold', label: 'On Hold' },
-  { value: 'dropped', label: 'Dropped' },
-];
-
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'title', label: 'Title' },
-  { value: 'score', label: 'Score' },
-  { value: 'progress', label: 'Progress' },
-  { value: 'recent', label: 'Recently Added' },
-];
+// Status filters and sort options will be created inside component to use translations
 
 export default function AnimePage() {
   const { anime, updateAnime, deleteAnime } = useData();
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
+  
+  const statusFilters: { value: AnimeStatus | 'all'; label: string }[] = [
+    { value: 'all', label: t('anime.allAnime') },
+    { value: 'watching', label: t('status.watching') },
+    { value: 'completed', label: t('status.completed') },
+    { value: 'planning', label: t('status.planToWatch') },
+    { value: 'on-hold', label: t('status.onHold') },
+    { value: 'dropped', label: t('status.dropped') },
+  ];
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'title', label: t('sort.title') },
+    { value: 'score', label: t('sort.score') },
+    { value: 'progress', label: t('sort.progress') },
+    { value: 'recent', label: t('sort.recent') },
+  ];
   const [statusFilter, setStatusFilter] = useState<AnimeStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('title');
@@ -147,12 +151,12 @@ export default function AnimePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? 'Anime Insights' : 'Anime Collection'}
+              {viewMode === 'insights' ? t('anime.insights') : t('anime.collection')}
             </h1>
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights' 
-                ? 'Analytics and statistics for your anime collection'
-                : `${anime.length} anime in your collection`}
+                ? t('anime.insights')
+                : `${anime.length} ${t('anime.collection')}`}
             </p>
           </div>
 
@@ -172,7 +176,7 @@ export default function AnimePage() {
                 } : {}}
               >
                 <BarChart3 className="w-4 h-4" />
-                Insights
+                {t('view.insights')}
               </button>
               <button
                 onClick={() => setViewMode('collection')}
@@ -187,7 +191,7 @@ export default function AnimePage() {
                 } : {}}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Collection
+                {t('view.collection')}
               </button>
             </div>
             {viewMode === 'collection' && (
@@ -195,9 +199,9 @@ export default function AnimePage() {
                 variant="secondary"
                 leftIcon={<Settings className="w-4 h-4" />}
                 onClick={() => setIsCustomizationModalOpen(true)}
-                title="Customize card display"
+                title={t('genshin.customizeCard')}
               >
-                Customize
+                {t('common.customize') || 'Customize'}
               </Button>
             )}
             <Button
@@ -209,7 +213,7 @@ export default function AnimePage() {
                 boxShadow: '0 0 20px rgba(168, 85, 247, 0.4)',
               }}
             >
-              Add Anime
+              {t('anime.addAnime')}
             </Button>
           </div>
         </div>
@@ -262,7 +266,7 @@ export default function AnimePage() {
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <div className="flex-1">
                   <SearchInput
-                    placeholder="Search anime by title, Japanese name, or genre..."
+                    placeholder={t('anime.searchAnime')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -339,10 +343,10 @@ export default function AnimePage() {
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4">🔍</div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">
-                    No anime found
+                    {t('common.noResults') || 'No anime found'}
                   </h3>
                   <p className="text-foreground-muted">
-                    Try adjusting your search or filters
+                    {t('common.tryAdjusting') || 'Try adjusting your search or filters'}
                   </p>
                 </div>
               )}

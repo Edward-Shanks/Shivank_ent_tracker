@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { MovieStatus, KDramaStatus } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard, StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
@@ -44,24 +45,27 @@ interface UnifiedShow {
   network?: string;
 }
 
-const statusFilters = [
-  { value: 'all', label: 'All' },
-  { value: 'watching', label: 'Watching' },
-  { value: 'watched', label: 'Watched' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'planning', label: 'Plan to Watch' },
-  { value: 'on-hold', label: 'On Hold' },
-  { value: 'dropped', label: 'Dropped' },
-];
-
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'title', label: 'Title' },
-  { value: 'year', label: 'Year' },
-];
+// Status filters and sort options will be created inside component to use translations
 
 export default function ShowsPage() {
   const { movies, kdrama, updateMovie, deleteMovie, updateKDrama, deleteKDrama } = useData();
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
+  
+  const statusFilters = [
+    { value: 'all', label: t('common.all') },
+    { value: 'watching', label: t('status.watching') },
+    { value: 'watched', label: t('status.watched') },
+    { value: 'completed', label: t('status.completed') },
+    { value: 'planning', label: t('status.planToWatch') },
+    { value: 'on-hold', label: t('status.onHold') },
+    { value: 'dropped', label: t('status.dropped') },
+  ];
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'title', label: t('sort.title') },
+    { value: 'year', label: t('sort.year') },
+  ];
   const [contentType, setContentType] = useState<ContentType>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,13 +146,13 @@ export default function ShowsPage() {
 
   const getStatusBadge = (show: UnifiedShow) => {
     const statusMap: Record<string, { label: string; type: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' }> = {
-      watching: { label: 'Watching', type: 'watching' },
-      watched: { label: 'Watched', type: 'completed' },
-      completed: { label: 'Completed', type: 'completed' },
-      planning: { label: 'Plan to Watch', type: 'planning' },
-      rewatching: { label: 'Rewatching', type: 'watching' },
-      'on-hold': { label: 'On Hold', type: 'on-hold' },
-      dropped: { label: 'Dropped', type: 'dropped' },
+      watching: { label: t('status.watching'), type: 'watching' },
+      watched: { label: t('status.watched'), type: 'completed' },
+      completed: { label: t('status.completed'), type: 'completed' },
+      planning: { label: t('status.planToWatch'), type: 'planning' },
+      rewatching: { label: t('status.rewatching'), type: 'watching' },
+      'on-hold': { label: t('status.onHold'), type: 'on-hold' },
+      dropped: { label: t('status.dropped'), type: 'dropped' },
     };
     return statusMap[show.status] || { label: show.status, type: 'planning' };
   };
@@ -159,7 +163,7 @@ export default function ShowsPage() {
   };
 
   const handleDelete = async (show: UnifiedShow) => {
-    if (window.confirm(`Are you sure you want to delete "${show.title}"?`)) {
+    if (window.confirm(`${t('msg.deleteConfirm')} "${show.title}"?`)) {
       try {
         const id = show.id.replace(`${show.type}-`, '');
         if (show.type === 'movie') {
@@ -169,7 +173,7 @@ export default function ShowsPage() {
         }
       } catch (error) {
         console.error('Error deleting show:', error);
-        alert('Failed to delete show. Please try again.');
+        alert(t('msg.failedDelete'));
       }
     }
   };
@@ -193,7 +197,7 @@ export default function ShowsPage() {
         setSelectedShow(null);
       } catch (error) {
         console.error('Error updating show:', error);
-        alert('Failed to update show. Please try again.');
+        alert(t('msg.failedUpdate'));
       }
     }
   };
@@ -213,13 +217,13 @@ export default function ShowsPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4">
                 <Film className="w-5 h-5 text-orange-500" />
                 <Heart className="w-4 h-4 text-pink-500" />
-                <span className="text-foreground-muted">Movies & K-Drama</span>
+                <span className="text-foreground-muted">{t('page.movies')}</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Shows Collection
+                {t('shows.collection')}
               </h1>
               <p className="text-foreground-muted text-lg max-w-2xl mx-auto">
-                Track your movies and Korean dramas all in one place
+                {t('dashboard.moviesDesc')}
               </p>
             </motion.div>
           </div>
@@ -232,12 +236,12 @@ export default function ShowsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? 'Shows Insights' : 'Shows Collection'}
+              {viewMode === 'insights' ? t('shows.insights') : t('shows.collection')}
             </h1>
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights'
-                ? 'Analytics and statistics for your shows'
-                : `${unifiedShows.length} shows in your collection`}
+                ? t('shows.insights')
+                : `${unifiedShows.length} ${t('shows.collection')}`}
             </p>
           </div>
 
@@ -257,7 +261,7 @@ export default function ShowsPage() {
                 } : {}}
               >
                 <BarChart3 className="w-4 h-4" />
-                Insights
+                {t('view.insights')}
               </button>
               <button
                 onClick={() => setViewMode('collection')}
@@ -272,7 +276,7 @@ export default function ShowsPage() {
                 } : {}}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Collection
+                {t('view.collection')}
               </button>
             </div>
             <Button
@@ -284,7 +288,7 @@ export default function ShowsPage() {
                 boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)',
               }}
             >
-              Add Show
+              {t('shows.addMovie')}
             </Button>
           </div>
         </div>
@@ -318,7 +322,7 @@ export default function ShowsPage() {
                       : 'glass text-foreground-muted hover:text-foreground'
                   }`}
                 >
-                  All Shows
+                  {t('common.all')} {t('shows.title')}
                   <span className="opacity-60">({unifiedShows.length})</span>
                 </button>
                 <button
@@ -330,7 +334,7 @@ export default function ShowsPage() {
                   }`}
                 >
                   <Film className="w-4 h-4" />
-                  Movies
+                  {t('dashboard.movies')}
                   <span className="opacity-60">({movies.length})</span>
                 </button>
                 <button
@@ -380,7 +384,7 @@ export default function ShowsPage() {
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <div className="flex-1">
                   <SearchInput
-                    placeholder="Search movies and K-drama..."
+                    placeholder={t('shows.searchShows')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -424,7 +428,7 @@ export default function ShowsPage() {
                               show.type === 'movie' ? 'bg-orange-500' : 'bg-pink-500'
                             }`}
                           >
-                            {show.type === 'movie' ? 'Movie' : 'K-Drama'}
+                            {show.type === 'movie' ? t('dashboard.movies') : 'K-Drama'}
                           </div>
                           
                           {/* Edit/Delete Icons */}
@@ -434,7 +438,7 @@ export default function ShowsPage() {
                               size="icon"
                               onClick={(e) => { e.stopPropagation(); handleEdit(show); }}
                               className="bg-black/50 hover:bg-black/70 text-white"
-                              title="Edit Show"
+                              title={t('shows.editShow')}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -443,7 +447,7 @@ export default function ShowsPage() {
                               size="icon"
                               onClick={(e) => { e.stopPropagation(); handleDelete(show); }}
                               className="bg-black/50 hover:bg-black/70 text-red-500"
-                              title="Delete Show"
+                              title={t('shows.deleteShow')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
