@@ -28,6 +28,14 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Prevent body scrolling on register page
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -111,7 +119,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-animated relative overflow-hidden flex items-center justify-center p-4">
+    <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center justify-center p-3 sm:p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -172,28 +180,28 @@ export default function RegisterPage() {
         className="relative z-10 w-full max-w-md"
       >
         {/* Logo and Title */}
-        <motion.div variants={itemVariants} className="text-center mb-8">
+        <motion.div variants={itemVariants} className="text-center mb-4 sm:mb-6">
           <motion.div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-cyan via-primary to-accent-purple mb-6 shadow-lg"
+            className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-accent-cyan via-primary to-accent-purple mb-3 sm:mb-4 shadow-lg"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
-            <Sparkles className="w-10 h-10 text-white" />
+            <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </motion.div>
           <motion.h1
-            className="text-4xl md:text-5xl font-bold text-foreground mb-3"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-2 sm:mb-3"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             Join{' '}
             <span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-purple bg-clip-text text-transparent">
-              EntTracker
+              NexaVerse
             </span>
           </motion.h1>
           <motion.p
-            className="text-foreground-muted text-lg"
+            className="text-foreground-muted text-sm sm:text-base md:text-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -205,9 +213,9 @@ export default function RegisterPage() {
         {/* Register Card */}
         <motion.div
           variants={cardVariants}
-          className="glass-strong rounded-2xl p-8 shadow-2xl border border-foreground/10"
+          className="glass-strong rounded-2xl p-4 sm:p-5 md:p-6 shadow-2xl border border-foreground/10"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Email Input */}
             <motion.div
               variants={itemVariants}
@@ -237,7 +245,7 @@ export default function RegisterPage() {
                   onFocus={() => setIsFocused('email')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 {isFocused === 'email' && (
@@ -249,7 +257,7 @@ export default function RegisterPage() {
                   />
                 )}
               </div>
-              <p className="text-xs text-foreground-muted">Your username will be derived from your email</p>
+              <p className="text-xs text-foreground-muted mt-1">Your username will be derived from your email</p>
             </motion.div>
 
             {/* Password Input */}
@@ -281,7 +289,7 @@ export default function RegisterPage() {
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Create a password (min. 6 characters)"
-                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-12 py-2.5 sm:py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 <motion.button
@@ -337,7 +345,7 @@ export default function RegisterPage() {
                   onFocus={() => setIsFocused('confirmPassword')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Confirm your password"
-                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-12 py-2.5 sm:py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 <motion.button
@@ -391,7 +399,7 @@ export default function RegisterPage() {
               <motion.button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-cyan via-primary to-accent-purple shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 sm:py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-cyan via-primary to-accent-purple shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                 whileHover={!isSubmitting && !isLoading ? { scale: 1.02, boxShadow: '0 10px 30px rgba(0, 240, 255, 0.4)' } : {}}
                 whileTap={!isSubmitting && !isLoading ? { scale: 0.98 } : {}}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -429,7 +437,7 @@ export default function RegisterPage() {
             {/* Divider */}
             <motion.div
               variants={itemVariants}
-              className="relative flex items-center py-4"
+              className="relative flex items-center py-2 sm:py-3"
             >
               <div className="flex-1 border-t border-foreground/20" />
               <span className="px-4 text-sm text-foreground-muted">or</span>
@@ -457,9 +465,9 @@ export default function RegisterPage() {
         {/* Footer */}
         <motion.div
           variants={itemVariants}
-          className="text-center mt-8"
+          className="text-center mt-4 sm:mt-6"
         >
-          <p className="text-foreground-muted text-sm">
+          <p className="text-foreground-muted text-xs sm:text-sm">
             By creating an account, you agree to our{' '}
             <a href="#" className="text-primary hover:underline">
               Terms of Service

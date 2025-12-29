@@ -43,10 +43,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-xl">E</span>
+              <span className="text-white font-bold text-xl">N</span>
             </div>
             <span className="text-xl font-bold text-foreground hidden sm:block group-hover:text-primary transition-colors">
-              EntTracker
+              NexaVerse
             </span>
           </Link>
 

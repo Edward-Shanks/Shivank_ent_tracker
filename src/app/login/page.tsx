@@ -25,6 +25,14 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Prevent body scrolling on login page
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -87,7 +95,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-animated relative overflow-hidden flex items-center justify-center p-4">
+    <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center justify-center p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -165,7 +173,7 @@ export default function LoginPage() {
           >
             Welcome to{' '}
             <span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-purple bg-clip-text text-transparent">
-              EntTracker
+              NexaVerse
             </span>
           </motion.h1>
           <motion.p

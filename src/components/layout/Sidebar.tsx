@@ -54,7 +54,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
         <Link href="/" className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-white font-bold text-xl">E</span>
+            <span className="text-white font-bold text-xl">N</span>
           </div>
           <AnimatePresence>
             {!isCollapsed && (
@@ -64,7 +64,7 @@ export default function Sidebar() {
                 exit={{ opacity: 0, width: 0 }}
                 className="text-xl font-bold text-foreground overflow-hidden whitespace-nowrap"
               >
-                EntTracker
+                NexaVerse
               </motion.span>
             )}
           </AnimatePresence>

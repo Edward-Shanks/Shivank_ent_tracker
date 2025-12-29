@@ -15,7 +15,7 @@ const jakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'EntTracker - Entertainment Tracking Hub',
+  title: 'NexaVerse - Entertainment Tracking Hub',
   description: 'Track your anime, movies, K-dramas, games, and more in one beautiful dashboard',
 };
 
