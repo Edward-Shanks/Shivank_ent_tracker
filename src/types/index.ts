@@ -92,7 +92,7 @@ export interface Game {
 }
 
 // ===== GENSHIN TYPES =====
-export type GenshinElement = 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cryo' | 'Geo';
+export type GenshinElement = 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cyro' | 'Geo';
 export type GenshinWeapon = 'Sword' | 'Claymore' | 'Polearm' | 'Bow' | 'Catalyst';
 export type GenshinRarity = 4 | 5;
 

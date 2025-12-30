@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
@@ -42,7 +42,7 @@ const elementColors: Record<GenshinElement, string> = {
   Anemo: '#22d3ee',
   Electro: '#a855f7',
   Dendro: '#22c55e',
-  Cryo: '#93c5fd',
+  Cyro: '#93c5fd',
   Geo: '#f59e0b',
 };
 
@@ -53,7 +53,7 @@ const elementIcons: Record<GenshinElement, React.ReactNode> = {
   Anemo: <Wind className="w-4 h-4" />,
   Electro: <Zap className="w-4 h-4" />,
   Dendro: <Leaf className="w-4 h-4" />,
-  Cryo: <Snowflake className="w-4 h-4" />,
+  Cyro: <Snowflake className="w-4 h-4" />,
   Geo: <Mountain className="w-4 h-4" />,
 };
 
@@ -68,9 +68,36 @@ const weaponIcons: Record<GenshinWeapon, React.ReactNode> = {
 const CARD_FIELDS_STORAGE_KEY = 'genshin_card_fields';
 const DEFAULT_CARD_FIELDS: CardField[] = ['weapon', 'constellation', 'friendship'];
 
+// Helper function to normalize element names (capitalize first letter)
+const normalizeElement = (element: string): GenshinElement => {
+  if (!element) return 'Pyro'; // Default fallback
+  return (element.charAt(0).toUpperCase() + element.slice(1).toLowerCase()) as GenshinElement;
+};
+
+// Helper function to get element color safely
+const getElementColor = (element: string): string => {
+  const normalized = normalizeElement(element);
+  return elementColors[normalized] || elementColors.Pyro;
+};
+
+// Helper function to get element image path
+const getElementImage = (element: string): string | null => {
+  const normalized = normalizeElement(element);
+  const elementImageMap: Record<GenshinElement, string | null> = {
+    Pyro: '/images/logo/Pyro.png',
+    Hydro: '/images/logo/Hydro.png',
+    Anemo: '/images/logo/Anemo.png',
+    Electro: '/images/logo/Electro.png',
+    Dendro: '/images/logo/Dendro.png',
+    Cyro: '/images/logo/Cryo.png', // Note: database uses "Cyro" but file is "Cryo"
+    Geo: '/images/logo/Geo.png',
+  };
+  return elementImageMap[normalized] || null;
+};
+
 export default function GenshinPage() {
   const { genshinAccount, updateGenshinCharacter, deleteGenshinCharacter, updateGenshinAccount } = useData();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
   const [selectedElement, setSelectedElement] = useState<GenshinElement | 'all'>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -147,34 +174,54 @@ export default function GenshinPage() {
     acquaint: 0,
   };
 
-  const filteredCharacters = selectedElement === 'all'
-    ? account.characters
-    : account.characters.filter((c) => c.element === selectedElement);
+  const filteredCharacters = useMemo(() => {
+    if (selectedElement === 'all') {
+      return account.characters;
+    }
+    // Case-insensitive filtering to handle any case mismatches in database
+    return account.characters.filter((c) => 
+      c.element?.toLowerCase() === selectedElement.toLowerCase()
+    );
+  }, [account.characters, selectedElement]);
+
+  // Memoize element translations to ensure they update when language changes
+  const elementTranslations = useMemo(() => {
+    const translations: Record<GenshinElement, string> = {} as Record<GenshinElement, string>;
+    (Object.keys(elementColors) as GenshinElement[]).forEach((element) => {
+      const translationKey = `element.${element.toLowerCase()}`;
+      const translated = t(translationKey);
+      // If translation returns the key itself (not found) or is empty, use the element name
+      translations[element] = (translated && translated !== translationKey) ? translated : element;
+    });
+    return translations;
+  }, [language, t]);
 
   return (
-    <div className="min-h-screen bg-animated">
+    <div className="min-h-screen bg-animated" key={`genshin-${language}`}>
       {/* Hero Section - Only in Collection View */}
       {viewMode === 'collection' && (
         <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
+          {/* Background Gradient */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%)',
+            }}
+          />
           {/* Background Image */}
-          <div className="absolute inset-0">
-            <img
-              src="https://images8.alphacoders.com/120/1208200.jpg"
-              alt="Genshin Impact"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to gradient background if image fails to load
-                const parent = e.currentTarget.parentElement;
-                if (parent) {
-                  parent.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)';
-                  e.currentTarget.style.display = 'none';
-                }
-              }}
-            />
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-          </div>
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'url(/images/logo/Bluebg.png)',
+              backgroundSize: 'contain',
+              backgroundPosition: 'right center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'local',
+            }}
+          />
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
           {/* Content */}
           <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-8">
@@ -308,7 +355,10 @@ export default function GenshinPage() {
               {/* Element Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
                 {(Object.keys(elementColors) as GenshinElement[]).map((element) => {
-                  const elementCharacters = account.characters.filter((c) => c.element === element);
+                  // Case-insensitive filtering for element stats
+                  const elementCharacters = account.characters.filter((c) => 
+                    c.element?.toLowerCase() === element.toLowerCase()
+                  );
                   const totalCount = elementCharacters.length;
                   const ownedCount = elementCharacters.filter((c) => c.obtained).length;
                   
@@ -331,9 +381,11 @@ export default function GenshinPage() {
                         <div className="text-2xl font-bold text-foreground mb-1" style={{ color: elementColors[element] }}>
                           {totalCount}
                         </div>
-                        <div className="text-sm font-medium text-foreground mb-1">{element}</div>
+                        <div className="text-sm font-medium text-foreground mb-1">
+                          {elementTranslations[element]}
+                        </div>
                         <div className="text-xs text-foreground-muted">
-                          {ownedCount} owned
+                          {ownedCount} {t('genshin.owned')}
                         </div>
                       </Card>
                     </motion.div>
@@ -349,6 +401,11 @@ export default function GenshinPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="relative -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8"
+              style={{
+                backgroundColor: 'transparent',
+                minHeight: 'calc(100vh - 200px)',
+              }}
             >
               {/* Element Filter */}
               <div className="flex flex-wrap gap-2 mb-6">
@@ -364,7 +421,7 @@ export default function GenshinPage() {
                     color: 'var(--background)',
                   } : undefined}
                 >
-                  All
+                  {t('genshin.all')}
                 </button>
                 {(Object.keys(elementColors) as GenshinElement[]).map((element) => (
                   <button
@@ -380,7 +437,7 @@ export default function GenshinPage() {
                     }}
                   >
                     {elementIcons[element]}
-                    {element}
+                    {elementTranslations[element]}
                   </button>
                 ))}
               </div>
@@ -407,7 +464,7 @@ export default function GenshinPage() {
                       <div
                         className="relative aspect-[3/4]"
                         style={{
-                          background: `linear-gradient(135deg, ${elementColors[character.element]}40 0%, ${elementColors[character.element]}10 100%)`,
+                          background: `linear-gradient(135deg, ${getElementColor(character.element)}40 0%, ${getElementColor(character.element)}10 100%)`,
                         }}
                       >
                         {character.image && character.image.trim() ? (
@@ -421,8 +478,8 @@ export default function GenshinPage() {
                             <div
                               className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
                               style={{
-                                backgroundColor: `${elementColors[character.element]}30`,
-                                color: elementColors[character.element],
+                                backgroundColor: `${getElementColor(character.element)}30`,
+                                color: getElementColor(character.element),
                               }}
                             >
                               {character.name.charAt(0)}
@@ -441,20 +498,36 @@ export default function GenshinPage() {
                         </div>
 
                         {/* Element Badge */}
-                        <div
-                          className="absolute top-2 right-2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
-                          style={{ 
-                            backgroundColor: elementColors[character.element],
-                            boxShadow: `0 0 15px ${elementColors[character.element]}80`,
-                          }}
-                        >
-                          <ElementIcon 
-                            element={character.element} 
-                            size={24} 
-                            className="text-white"
-                            style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}
-                          />
-                        </div>
+                        {getElementImage(character.element) ? (
+                          <div
+                            className="absolute top-2 right-2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
+                            style={{ 
+                              backgroundColor: 'transparent',
+                              boxShadow: `0 0 15px ${getElementColor(character.element)}80`,
+                            }}
+                          >
+                            <img
+                              src={getElementImage(character.element)!}
+                              alt={normalizeElement(character.element)}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className="absolute top-2 right-2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
+                            style={{ 
+                              backgroundColor: getElementColor(character.element),
+                              boxShadow: `0 0 15px ${getElementColor(character.element)}80`,
+                            }}
+                          >
+                            <ElementIcon 
+                              element={normalizeElement(character.element)} 
+                              size={24} 
+                              className="text-white"
+                              style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}
+                            />
+                          </div>
+                        )}
 
                         {/* Level Badge */}
                         <div className="absolute bottom-2 right-2 px-2 py-1 rounded backdrop-blur-sm text-sm font-medium level-badge">
@@ -484,7 +557,7 @@ export default function GenshinPage() {
                           {cardFields.includes('friendship') && (
                             <div>
                               <div className="flex justify-between text-xs text-foreground-muted mb-1">
-                                <span>Friendship</span>
+                                <span>{t('genshin.friendship')}</span>
                                 <span>{character.friendship}/10</span>
                               </div>
                               <div className="h-1.5 bg-foreground/10 rounded-full overflow-hidden">
@@ -492,7 +565,7 @@ export default function GenshinPage() {
                                   className="h-full rounded-full transition-all"
                                   style={{
                                     width: `${(character.friendship / 10) * 100}%`,
-                                    backgroundColor: elementColors[character.element],
+                                    backgroundColor: getElementColor(character.element),
                                   }}
                                 />
                               </div>
@@ -500,7 +573,7 @@ export default function GenshinPage() {
                           )}
                           {cardFields.includes('level') && (
                             <div className="text-xs text-foreground-muted">
-                              Level: {character.level}
+                              {t('genshin.level')}: {character.level}
                             </div>
                           )}
                           {cardFields.includes('rarity') && (
@@ -512,8 +585,18 @@ export default function GenshinPage() {
                           )}
                           {cardFields.includes('element') && (
                             <div className="flex items-center gap-1 text-xs text-foreground-muted">
-                              <ElementIcon element={character.element} size={12} style={{ color: elementColors[character.element] }} />
-                              {character.element}
+                              {getElementImage(character.element) ? (
+                                <div className="w-3 h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+                                  <img
+                                    src={getElementImage(character.element)!}
+                                    alt={normalizeElement(character.element)}
+                                    className="w-full h-full object-contain"
+                                  />
+                                </div>
+                              ) : (
+                                <ElementIcon element={normalizeElement(character.element)} size={12} style={{ color: getElementColor(character.element) }} />
+                              )}
+                              {elementTranslations[normalizeElement(character.element)]}
                             </div>
                           )}
                         </div>

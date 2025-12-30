@@ -112,7 +112,7 @@ export const genshinCharacters = pgTable('genshin_characters', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull().references(() => genshinAccounts.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
-  element: text('element').notNull(), // 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cryo' | 'Geo'
+  element: text('element').notNull(), // 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cyro' | 'Geo'
   weapon: text('weapon').notNull(), // 'Sword' | 'Claymore' | 'Polearm' | 'Bow' | 'Catalyst'
   rarity: integer('rarity').notNull(), // 4 | 5
   constellation: integer('constellation').notNull().default(0),

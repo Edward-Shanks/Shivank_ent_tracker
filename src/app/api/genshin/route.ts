@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest) {
       if (body.primogems !== undefined) updateData.primogems = body.primogems;
       if (body.intertwined !== undefined) updateData.intertwined = body.intertwined;
       if (body.acquaint !== undefined) updateData.acquaint = body.acquaint;
-      updateData.updatedAt = new Date().toISOString();
+      updateData.updatedAt = new Date();
       
       await db.update(genshinAccounts).set(updateData)
         .where(eq(genshinAccounts.id, account[0].id));
@@ -103,8 +103,13 @@ export async function PATCH(request: NextRequest) {
         obtained: Boolean(char.obtained),
       })),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating genshin account:', error);
-    return NextResponse.json({ error: 'Failed to update genshin account' }, { status: 500 });
+    const errorMessage = error?.message || 'Failed to update genshin account';
+    const errorDetails = error?.details || error?.stack || '';
+    return NextResponse.json({ 
+      error: errorMessage,
+      details: errorDetails 
+    }, { status: 500 });
   }
 }

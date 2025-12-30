@@ -44,7 +44,7 @@ export default function AccountEditModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Account Info" size="md">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
         <Input
           label="Adventure Rank"
           type="number"
@@ -63,11 +63,11 @@ export default function AccountEditModal({
           onChange={(e) => setFormData({ ...formData, worldLevel: parseInt(e.target.value) || 0 })}
           required
         />
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             Save Changes
           </Button>
         </div>

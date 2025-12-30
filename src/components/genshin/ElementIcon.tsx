@@ -138,8 +138,8 @@ export function ElementIcon({ element, className = '', size = 24, style }: Eleme
         />
       </svg>
     ),
-    // Cryo - Cyan snowflake (six-pointed star)
-    Cryo: (
+    // Cyro - Cyan snowflake (six-pointed star)
+    Cyro: (
       <svg width={iconSize} height={iconSize} viewBox="0 0 100 100" className={className} style={style}>
         <path
           d="M50 10 L60 30 L80 25 L65 45 L85 50 L65 55 L80 75 L60 70 L50 90 L40 70 L20 75 L35 55 L15 50 L35 45 L20 25 L40 30 Z"

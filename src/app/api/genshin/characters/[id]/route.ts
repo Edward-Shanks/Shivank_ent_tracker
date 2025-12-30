@@ -29,7 +29,7 @@ export async function PATCH(
     const account = await db.select().from(genshinAccounts)
       .where(eq(genshinAccounts.id, character[0].accountId)).limit(1);
     
-    if (account[0].userId !== user.id) {
+    if (account.length === 0 || account[0].userId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     
@@ -41,13 +41,13 @@ export async function PATCH(
     if (body.constellation !== undefined) updateData.constellation = body.constellation;
     if (body.level !== undefined) updateData.level = body.level;
     if (body.friendship !== undefined) updateData.friendship = body.friendship;
-    if (body.image !== undefined) updateData.image = body.image;
+    if (body.image !== undefined) updateData.image = body.image || '';
     if (body.obtained !== undefined) updateData.obtained = body.obtained;
-    if (body.tier !== undefined) updateData.tier = body.tier;
-    if (body.type !== undefined) updateData.type = body.type;
-    if (body.type2 !== undefined) updateData.type2 = body.type2;
-    if (body.buildNotes !== undefined) updateData.buildNotes = body.buildNotes;
-    updateData.updatedAt = new Date().toISOString();
+    if (body.tier !== undefined) updateData.tier = body.tier || null;
+    if (body.type !== undefined) updateData.type = body.type || null;
+    if (body.type2 !== undefined) updateData.type2 = body.type2 || null;
+    if (body.buildNotes !== undefined) updateData.buildNotes = body.buildNotes || null;
+    updateData.updatedAt = new Date();
     
     await db.update(genshinCharacters).set(updateData)
       .where(eq(genshinCharacters.id, id));
@@ -59,9 +59,15 @@ export async function PATCH(
       ...updated[0],
       obtained: Boolean(updated[0].obtained),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating character:', error);
-    return NextResponse.json({ error: 'Failed to update character' }, { status: 500 });
+    const errorMessage = error?.message || 'Failed to update character';
+    const errorDetails = error?.cause?.message || error?.stack;
+    return NextResponse.json({ 
+      error: errorMessage,
+      details: errorDetails,
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    }, { status: 500 });
   }
 }
 
@@ -88,7 +94,7 @@ export async function DELETE(
     const account = await db.select().from(genshinAccounts)
       .where(eq(genshinAccounts.id, character[0].accountId)).limit(1);
     
-    if (account[0].userId !== user.id) {
+    if (account.length === 0 || account[0].userId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
     

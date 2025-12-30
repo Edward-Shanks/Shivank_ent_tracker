@@ -91,9 +91,9 @@ export default function EditKDramaModal({ isOpen, onClose, kdrama, onSave }: Edi
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit K-Drama" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit K-Drama" size="xl">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label="Title"
             value={formData.title}
@@ -194,11 +194,11 @@ export default function EditKDramaModal({ isOpen, onClose, kdrama, onSave }: Edi
           placeholder="Personal notes"
         />
 
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             Save Changes
           </Button>
         </div>

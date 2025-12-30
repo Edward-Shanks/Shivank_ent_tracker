@@ -6,6 +6,7 @@ import { Play, Plus, Info, Star } from 'lucide-react';
 import { Anime, WatchStatus } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface AnimeHeroProps {
   anime: Anime;
@@ -24,6 +25,7 @@ const mapWatchStatusToBadge = (watchStatus: WatchStatus): 'watching' | 'complete
 };
 
 export default function AnimeHero({ anime }: AnimeHeroProps) {
+  const { t } = useLanguage();
   return (
     <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
       {/* Background Image */}
@@ -97,9 +99,9 @@ export default function AnimeHero({ anime }: AnimeHeroProps) {
           {anime.episodes > 0 && (
             <div className="mb-6">
               <div className="flex justify-between text-sm text-white/70 mb-2">
-                <span>Progress</span>
+                <span>{t('sort.progress')}</span>
                 <span>
-                  {anime.episodesWatched} / {anime.episodes} episodes
+                  {anime.episodesWatched} / {anime.episodes} {t('anime.episodes')}
                 </span>
               </div>
               <div className="h-2 bg-white/20 rounded-full overflow-hidden w-64">

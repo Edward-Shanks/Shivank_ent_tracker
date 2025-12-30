@@ -13,11 +13,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 import { Sparkles, User, Star, TrendingUp, Swords } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Card, StatCard } from '@/components/ui/Card';
 import { GenshinElement } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 const elementColors: Record<GenshinElement, string> = {
   Pyro: '#ef4444',
@@ -25,7 +27,7 @@ const elementColors: Record<GenshinElement, string> = {
   Anemo: '#22d3ee',
   Electro: '#a855f7',
   Dendro: '#22c55e',
-  Cryo: '#93c5fd',
+  Cyro: '#93c5fd',
   Geo: '#f59e0b',
 };
 
@@ -33,6 +35,7 @@ const PIE_COLORS = ['#ef4444', '#3b82f6', '#22d3ee', '#a855f7', '#22c55e', '#93c
 
 export default function GenshinInsights() {
   const { genshinAccount } = useData();
+  const { t, language } = useLanguage();
 
   const characters = useMemo(() => genshinAccount?.characters || [], [genshinAccount]);
 
@@ -57,26 +60,46 @@ export default function GenshinInsights() {
     };
   }, [characters]);
 
-  // Element distribution
+  // Element distribution - Total vs Owned
   const elementDistribution = useMemo(() => {
-    const elementMap = new Map<GenshinElement, number>();
+    const elementMap = new Map<GenshinElement, { total: number; owned: number }>();
+    // Normalize element names to match expected case (capitalize first letter)
+    const normalizeElement = (element: string): GenshinElement => {
+      const normalized = element.charAt(0).toUpperCase() + element.slice(1).toLowerCase();
+      return normalized as GenshinElement;
+    };
+    
     characters.forEach((c) => {
-      elementMap.set(c.element, (elementMap.get(c.element) || 0) + 1);
+      const normalizedElement = normalizeElement(c.element || '');
+      const current = elementMap.get(normalizedElement) || { total: 0, owned: 0 };
+      elementMap.set(normalizedElement, {
+        total: current.total + 1,
+        owned: current.owned + (c.obtained ? 1 : 0),
+      });
     });
     return Array.from(elementMap.entries())
-      .map(([name, value]) => ({ name, value, color: elementColors[name] }))
-      .sort((a, b) => b.value - a.value);
+      .map(([name, counts]) => ({ 
+        name, 
+        total: counts.total, 
+        owned: counts.owned,
+        color: elementColors[name] || '#93c5fd' 
+      }))
+      .sort((a, b) => b.total - a.total);
   }, [characters]);
 
-  // Weapon distribution
+  // Weapon distribution - Total vs Owned
   const weaponDistribution = useMemo(() => {
-    const weaponMap = new Map<string, number>();
+    const weaponMap = new Map<string, { total: number; owned: number }>();
     characters.forEach((c) => {
-      weaponMap.set(c.weapon, (weaponMap.get(c.weapon) || 0) + 1);
+      const current = weaponMap.get(c.weapon) || { total: 0, owned: 0 };
+      weaponMap.set(c.weapon, {
+        total: current.total + 1,
+        owned: current.owned + (c.obtained ? 1 : 0),
+      });
     });
     return Array.from(weaponMap.entries())
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+      .map(([name, counts]) => ({ name, total: counts.total, owned: counts.owned }))
+      .sort((a, b) => b.total - a.total);
   }, [characters]);
 
   // Rarity distribution
@@ -85,26 +108,36 @@ export default function GenshinInsights() {
     { name: '4★', value: stats.fourStar, color: '#a855f7' },
   ].filter((item) => item.value > 0), [stats]);
 
-  // Rarity vs character count (bar chart format)
-  const rarityBarData = useMemo(() => [
-    { rarity: '5★', count: stats.fiveStar },
-    { rarity: '4★', count: stats.fourStar },
-  ], [stats]);
+  // Rarity vs character count (bar chart format) - Total vs Owned
+  const rarityBarData = useMemo(() => {
+    const fiveStarTotal = characters.filter((c) => c.rarity === 5).length;
+    const fiveStarOwned = characters.filter((c) => c.rarity === 5 && c.obtained).length;
+    const fourStarTotal = characters.filter((c) => c.rarity === 4).length;
+    const fourStarOwned = characters.filter((c) => c.rarity === 4 && c.obtained).length;
+    return [
+      { rarity: '5★', total: fiveStarTotal, owned: fiveStarOwned },
+      { rarity: '4★', total: fourStarTotal, owned: fourStarOwned },
+    ];
+  }, [characters]);
 
-  // Tier distribution
+  // Tier distribution - Total vs Owned
   const tierDistribution = useMemo(() => {
-    const tierMap = new Map<string, number>();
+    const tierMap = new Map<string, { total: number; owned: number }>();
     characters.forEach((c) => {
       if (c.tier) {
-        tierMap.set(c.tier, (tierMap.get(c.tier) || 0) + 1);
+        const current = tierMap.get(c.tier) || { total: 0, owned: 0 };
+        tierMap.set(c.tier, {
+          total: current.total + 1,
+          owned: current.owned + (c.obtained ? 1 : 0),
+        });
       }
     });
     return Array.from(tierMap.entries())
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+      .map(([name, counts]) => ({ name, total: counts.total, owned: counts.owned }))
+      .sort((a, b) => b.total - a.total);
   }, [characters]);
 
-  // Level distribution
+  // Level distribution - Total vs Owned
   const levelDistribution = useMemo(() => {
     const levelRanges = [
       { range: '1-20', min: 1, max: 20 },
@@ -113,10 +146,14 @@ export default function GenshinInsights() {
       { range: '61-80', min: 61, max: 80 },
       { range: '81-90', min: 81, max: 90 },
     ];
-    return levelRanges.map((range) => ({
-      range: range.range,
-      count: characters.filter((c) => (c.level || 0) >= range.min && (c.level || 0) <= range.max).length,
-    }));
+    return levelRanges.map((range) => {
+      const inRange = characters.filter((c) => (c.level || 0) >= range.min && (c.level || 0) <= range.max);
+      return {
+        range: range.range,
+        total: inRange.length,
+        owned: inRange.filter((c) => c.obtained).length,
+      };
+    });
   }, [characters]);
 
   if (!genshinAccount) {
@@ -130,9 +167,23 @@ export default function GenshinInsights() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-strong p-3 rounded-lg">
-          <p className="text-foreground font-medium">{label || payload[0].name}</p>
-          <p className="text-primary font-bold">{payload[0].value}</p>
+        <div 
+          className="p-3 rounded-lg border border-foreground/30"
+          style={{
+            backgroundColor: 'rgba(30, 30, 30, 0.98)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.7)',
+          }}
+        >
+          <p className="text-white font-semibold mb-2 text-base">{label || payload[0].name}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-white text-sm mb-1">
+              <span style={{ color: entry.color || entry.fill || '#ffffff', fontWeight: 600 }}>
+                {entry.name}:
+              </span>{' '}
+              <span className="font-bold text-white">{entry.value}</span>
+            </p>
+          ))}
         </div>
       );
     }
@@ -149,31 +200,31 @@ export default function GenshinInsights() {
       >
         <StatCard
           icon={User}
-          label="Total Character Count"
+          label={t('genshin.totalCharacterCount')}
           value={stats.total}
           color="#06b6d4"
         />
         <StatCard
           icon={Star}
-          label="5★ Characters"
+          label={t('genshin.fiveStar')}
           value={stats.fiveStar}
           color="#ffd700"
         />
         <StatCard
           icon={Star}
-          label="4★ Characters"
+          label={t('genshin.fourStar')}
           value={stats.fourStar}
           color="#a855f7"
         />
         <StatCard
           icon={TrendingUp}
-          label="Avg Level"
+          label={t('genshin.avgLevel')}
           value={stats.avgLevel}
           color="#22c55e"
         />
         <StatCard
           icon={User}
-          label="Obtained"
+          label={t('genshin.obtained')}
           value={stats.obtained}
           color="#3b82f6"
         />
@@ -190,30 +241,49 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Element Distribution
+              {t('genshin.elementDistribution')}
             </h3>
-            <div className="h-64 flex items-center justify-center chart-container">
+            <div className="h-64 chart-container">
               {elementDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={elementDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={4}
-                      dataKey="value"
+                  <BarChart data={elementDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
+                    <XAxis type="number" className="stroke-foreground-muted" />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={80}
+                      className="stroke-foreground-muted"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
                     >
                       {elementDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`total-${index}`} fill={entry.color} />
                       ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {elementDistribution.map((entry, index) => (
+                        <Cell key={`owned-${index}`} fill={`${entry.color}80`} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-foreground-muted">No element data available</div>
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No element data available
+                </div>
               )}
             </div>
           </Card>
@@ -228,29 +298,51 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Swords className="w-5 h-5 text-primary" />
-              Weapon Distribution
+              {t('genshin.weaponDistribution')}
             </h3>
             <div className="h-64 chart-container">
               {weaponDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weaponDistribution} layout="vertical">
+                  <BarChart 
+                    data={weaponDistribution} 
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
-                    <XAxis type="number" className="stroke-foreground-muted" />
+                    <XAxis 
+                      type="number" 
+                      className="stroke-foreground-muted"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
+                    />
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={80}
+                      width={100}
                       className="stroke-foreground-muted"
                       tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                      {weaponDistribution.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={PIE_COLORS[index % PIE_COLORS.length]}
-                        />
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {weaponDistribution.map((entry, index) => (
+                        <Cell key={`total-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {weaponDistribution.map((entry, index) => {
+                        const baseColor = PIE_COLORS[index % PIE_COLORS.length];
+                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -275,10 +367,10 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              Rarity vs Character Count
+              {t('genshin.rarityVsCount')}
             </h3>
             <div className="h-64 chart-container">
-              {rarityBarData.some(d => d.count > 0) ? (
+              {rarityBarData.some(d => d.total > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={rarityBarData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
@@ -289,11 +381,30 @@ export default function GenshinInsights() {
                     />
                     <YAxis className="stroke-foreground-muted" tick={{ fill: 'var(--foreground-muted)' }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[4, 4, 0, 0]}
+                    >
                       {rarityBarData.map((entry, index) => (
                         <Cell
-                          key={`cell-${index}`}
+                          key={`total-${index}`}
                           fill={entry.rarity === '5★' ? '#ffd700' : '#a855f7'}
+                        />
+                      ))}
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {rarityBarData.map((entry, index) => (
+                        <Cell
+                          key={`owned-${index}`}
+                          fill={entry.rarity === '5★' ? '#ffd70080' : '#a855f780'}
                         />
                       ))}
                     </Bar>
@@ -317,7 +428,7 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Swords className="w-5 h-5 text-primary" />
-              Character Count by Weapon Type
+              {t('genshin.characterCountByWeapon')}
             </h3>
             <div className="h-64 chart-container">
               {weaponDistribution.length > 0 ? (
@@ -333,13 +444,27 @@ export default function GenshinInsights() {
                       tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
                       {weaponDistribution.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={PIE_COLORS[index % PIE_COLORS.length]}
-                        />
+                        <Cell key={`total-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {weaponDistribution.map((_, index) => {
+                        const baseColor = PIE_COLORS[index % PIE_COLORS.length];
+                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -364,7 +489,7 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-purple-500" />
-              Character by Tier
+              {t('genshin.characterByTier')}
             </h3>
             <div className="h-64 chart-container">
               {tierDistribution.length > 0 ? (
@@ -380,13 +505,27 @@ export default function GenshinInsights() {
                       tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
                       {tierDistribution.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={PIE_COLORS[index % PIE_COLORS.length]}
-                        />
+                        <Cell key={`total-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {tierDistribution.map((_, index) => {
+                        const baseColor = PIE_COLORS[index % PIE_COLORS.length];
+                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -408,10 +547,10 @@ export default function GenshinInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-500" />
-              Level Distribution
+              {t('genshin.levelDistribution')}
             </h3>
             <div className="h-64 chart-container">
-              {levelDistribution.some(d => d.count > 0) ? (
+              {levelDistribution.some(d => d.total > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={levelDistribution}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-foreground/20" />
@@ -422,7 +561,28 @@ export default function GenshinInsights() {
                     />
                     <YAxis className="stroke-foreground-muted" tick={{ fill: 'var(--foreground-muted)' }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                    <Legend wrapperStyle={{ color: 'var(--foreground)' }} />
+                    <Bar 
+                      dataKey="total" 
+                      name="Total" 
+                      fill="transparent"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {levelDistribution.map((_, index) => (
+                        <Cell key={`total-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Bar>
+                    <Bar 
+                      dataKey="owned" 
+                      name={t('genshin.owned')} 
+                      fill="transparent"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {levelDistribution.map((_, index) => {
+                        const baseColor = PIE_COLORS[index % PIE_COLORS.length];
+                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                      })}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

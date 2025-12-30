@@ -89,9 +89,9 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('shows.editMovie')} size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('shows.editMovie')} size="xl">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('shows.movieTitle')}
             value={formData.title}
@@ -132,7 +132,7 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
           multiple
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('shows.posterImageUrl')}
             type="url"
@@ -163,11 +163,11 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
           placeholder={t('form.personalNotes')}
         />
 
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             {t('action.save')}
           </Button>
         </div>

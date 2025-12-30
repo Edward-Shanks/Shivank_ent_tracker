@@ -21,6 +21,7 @@ import { Tv, Clock, Star, TrendingUp, Film, Layers, Bookmark, Play, CheckCircle,
 import { useData } from '@/context/DataContext';
 import { Card, StatCard } from '@/components/ui/Card';
 import { AnimeStats } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 const COLORS = {
   watching: '#3b82f6',
@@ -56,6 +57,7 @@ const defaultStats: AnimeStats = {
 
 export default function AnimeInsights() {
   const { getAnimeStats, anime, refreshData } = useData();
+  const { t } = useLanguage();
   const [stats, setStats] = useState<AnimeStats>(defaultStats);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -76,12 +78,12 @@ export default function AnimeInsights() {
   }, [getAnimeStats, anime.length]); // Refresh when anime count changes
 
   const statusData = [
-    { name: 'Watching', value: stats.watchStatusCounts.watching, color: COLORS.watching },
-    { name: 'Completed', value: stats.watchStatusCounts.completed, color: COLORS.completed },
-    { name: 'YTW', value: stats.watchStatusCounts.ytw, color: COLORS.planning },
-    { name: 'Watch Later', value: stats.watchStatusCounts.watchLater, color: COLORS.planning },
-    { name: 'On Hold', value: stats.watchStatusCounts.onHold, color: COLORS['on-hold'] },
-    { name: 'Dropped', value: stats.watchStatusCounts.dropped, color: COLORS.dropped },
+    { name: t('status.watching'), value: stats.watchStatusCounts.watching, color: COLORS.watching },
+    { name: t('status.completed'), value: stats.watchStatusCounts.completed, color: COLORS.completed },
+    { name: t('anime.ytw'), value: stats.watchStatusCounts.ytw, color: COLORS.planning },
+    { name: t('anime.watchLater'), value: stats.watchStatusCounts.watchLater, color: COLORS.planning },
+    { name: t('status.onHold'), value: stats.watchStatusCounts.onHold, color: COLORS['on-hold'] },
+    { name: t('status.dropped'), value: stats.watchStatusCounts.dropped, color: COLORS.dropped },
   ].filter((item) => item.value > 0);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -115,48 +117,48 @@ export default function AnimeInsights() {
             </div>
           </div>
           <div className="text-2xl font-bold text-foreground mb-1">{stats.totalAnime}</div>
-          <div className="text-sm text-foreground-muted mb-2">Total Anime</div>
+          <div className="text-sm text-foreground-muted mb-2">{t('anime.totalAnimeLabel')}</div>
           <div className="pt-2 border-t border-white/10 mt-2">
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground-muted">
-              <span>YTA: <span className="font-medium text-foreground">{stats.airingStatusCounts.yta}</span></span>
-              <span>Airing: <span className="font-medium text-foreground">{stats.airingStatusCounts.airing}</span></span>
-              <span>Completed: <span className="font-medium text-foreground">{stats.airingStatusCounts.completed}</span></span>
+              <span>{t('anime.yetToAir')}: <span className="font-medium text-foreground">{stats.airingStatusCounts.yta}</span></span>
+              <span>{t('anime.airing')}: <span className="font-medium text-foreground">{stats.airingStatusCounts.airing}</span></span>
+              <span>{t('status.completed')}: <span className="font-medium text-foreground">{stats.airingStatusCounts.completed}</span></span>
             </div>
           </div>
         </Card>
         <StatCard
           icon={Calendar}
-          label="YTW"
+          label={t('anime.ytw')}
           value={stats.watchStatusCounts.ytw}
           color="#a855f7"
         />
         <StatCard
           icon={Play}
-          label="Watching"
+          label={t('status.watching')}
           value={stats.watchStatusCounts.watching}
           color="#3b82f6"
         />
         <StatCard
           icon={Bookmark}
-          label="Watch Later"
+          label={t('anime.watchLater')}
           value={stats.watchStatusCounts.watchLater}
           color="#ec4899"
         />
         <StatCard
           icon={CheckCircle}
-          label="Completed"
+          label={t('status.completed')}
           value={stats.watchStatusCounts.completed}
           color="#22c55e"
         />
         <StatCard
           icon={Pause}
-          label="On Hold"
+          label={t('status.onHold')}
           value={stats.watchStatusCounts.onHold}
           color="#eab308"
         />
         <StatCard
           icon={X}
-          label="Dropped"
+          label={t('status.dropped')}
           value={stats.watchStatusCounts.dropped}
           color="#ef4444"
         />
@@ -173,7 +175,7 @@ export default function AnimeInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Layers className="w-5 h-5 text-primary" />
-              Status Distribution
+              {t('anime.statusDistribution')}
             </h3>
             <div className="h-64 flex items-center justify-center chart-container">
               <ResponsiveContainer width="100%" height="100%">
@@ -212,7 +214,7 @@ export default function AnimeInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Top Genres
+              {t('anime.topGenres')}
             </h3>
             <div className="h-64">
               {stats.genreDistribution.length > 0 ? (
@@ -259,7 +261,7 @@ export default function AnimeInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              Score Distribution
+              {t('anime.scoreDistribution')}
             </h3>
             <div className="h-64 chart-container">
               {stats.scoreDistribution.some(d => d.count > 0) ? (
@@ -294,7 +296,7 @@ export default function AnimeInsights() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-500" />
-              Monthly Activity
+              {t('anime.monthlyActivity')}
             </h3>
             <div className="h-64 chart-container">
               {stats.monthlyActivity.length > 0 ? (
@@ -336,7 +338,7 @@ export default function AnimeInsights() {
       >
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-6">
-            Detailed Statistics
+            {t('anime.detailedStatistics')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {statusData.map((status) => (

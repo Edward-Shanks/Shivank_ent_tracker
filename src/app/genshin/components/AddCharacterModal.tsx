@@ -20,7 +20,7 @@ const elements: { value: GenshinElement; label: string }[] = [
   { value: 'Anemo', label: 'Anemo' },
   { value: 'Electro', label: 'Electro' },
   { value: 'Dendro', label: 'Dendro' },
-  { value: 'Cryo', label: 'Cryo' },
+  { value: 'Cyro', label: 'Cyro' },
   { value: 'Geo', label: 'Geo' },
 ];
 
@@ -43,12 +43,26 @@ const elementColors: Record<GenshinElement, string> = {
   Anemo: '#22d3ee',
   Electro: '#a855f7',
   Dendro: '#22c55e',
-  Cryo: '#93c5fd',
+  Cyro: '#93c5fd',
   Geo: '#f59e0b',
 };
 
 const getElementColor = (element: GenshinElement): string => {
   return elementColors[element];
+};
+
+// Helper function to get element image path
+const getElementImage = (element: GenshinElement): string | null => {
+  const elementImageMap: Record<GenshinElement, string | null> = {
+    Pyro: '/images/logo/Pyro.png',
+    Hydro: '/images/logo/Hydro.png',
+    Anemo: '/images/logo/Anemo.png',
+    Electro: '/images/logo/Electro.png',
+    Dendro: '/images/logo/Dendro.png',
+    Cyro: '/images/logo/Cryo.png', // Note: database uses "Cyro" but file is "Cryo"
+    Geo: '/images/logo/Geo.png',
+  };
+  return elementImageMap[element] || null;
 };
 
 export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModalProps) {
@@ -107,9 +121,9 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add Character" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Character" size="xl">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label="Character Name"
             value={formData.name}
@@ -117,22 +131,30 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
             required
           />
           <div>
-            <label className="block text-sm font-medium text-foreground-muted mb-2">
+            <label className="block text-xs font-medium text-foreground-muted mb-1.5">
               Element <span className="text-red-500">*</span>
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
                 style={{
-                  backgroundColor: `${getElementColor(formData.element)}20`,
+                  backgroundColor: 'transparent',
                 }}
               >
-                <ElementIcon
-                  element={formData.element}
-                  size={28}
-                  className="text-foreground"
-                  style={{ color: getElementColor(formData.element) }}
-                />
+                {getElementImage(formData.element) ? (
+                  <img
+                    src={getElementImage(formData.element)!}
+                    alt={formData.element}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <ElementIcon
+                    element={formData.element}
+                    size={24}
+                    className="text-foreground"
+                    style={{ color: getElementColor(formData.element) }}
+                  />
+                )}
               </div>
               <div className="flex-1">
                 <Dropdown
@@ -209,11 +231,11 @@ export default function AddCharacterModal({ isOpen, onClose }: AddCharacterModal
           onChange={(e) => setFormData({ ...formData, image: e.target.value })}
           placeholder="Optional"
         />
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             Add Character
           </Button>
         </div>

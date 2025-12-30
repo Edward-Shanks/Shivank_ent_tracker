@@ -21,7 +21,6 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useSidebar } from '@/context/SidebarContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
 import LanguageSelector from '@/components/ui/LanguageSelector';
 
 // navItems will be defined inside component to use translations
@@ -178,13 +177,8 @@ export default function Sidebar() {
           </AnimatePresence>
         </Link>
         
-        {/* Theme Toggler, Language & Logout - Single Row */}
+        {/* Language & Logout - Single Row */}
         <div className="flex items-center justify-center gap-3">
-          {/* Theme Toggler */}
-          <div className="w-10 h-10 rounded-full border-2 border-cyan-500/40 hover:border-cyan-400/60 hover:shadow-[0_0_10px_rgba(34,211,238,0.4),0_0_20px_rgba(34,211,238,0.2)] transition-all duration-200 flex items-center justify-center overflow-hidden group">
-            <AnimatedThemeToggler className="w-full h-full p-0 rounded-full border-0 hover:border-0 hover:shadow-none group-hover:scale-110 transition-transform" />
-          </div>
-          
           {/* Language Selector */}
           <LanguageSelector collapsed={true} />
           

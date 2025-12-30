@@ -10,7 +10,7 @@ images/
 │   ├── anemo.svg     # Anemo (Wind) element - Teal/Mint Green
 │   ├── dendro.svg    # Dendro (Nature) element - Teal/Emerald Green
 │   ├── electro.svg   # Electro (Lightning) element - Purple
-│   ├── cryo.svg      # Cryo (Ice) element - Teal Six-Pointed Star
+│   ├── Cyro.svg      # Cyro (Ice) element - Teal Six-Pointed Star
 │   ├── geo.svg       # Geo (Earth) element - Golden Orange Diamond
 │   └── hydro.svg     # Hydro (Water) element - Blue Water/Wave
 └── logo/             # Brand logos

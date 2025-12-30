@@ -110,7 +110,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('games.addGame')} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('games.addGame')} size="xl">
       {error && (
         <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
           <div className="flex items-start justify-between gap-2">
@@ -133,7 +133,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Game Title and Release Date */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('games.gameTitle')}
             value={formData.title}
@@ -151,7 +151,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
         </div>
 
         {/* Row 2: Play Status and Game Type */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
             label={t('games.playStatus')}
             options={statuses}
@@ -169,7 +169,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
         </div>
 
         {/* Row 3: Platforms and Genres */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
             label={t('games.platforms')}
             options={platforms}
@@ -190,7 +190,7 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
         </div>
 
         {/* Row 4: Download URL and Cover Image URL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('games.downloadUrl')}
             type="url"
@@ -215,11 +215,11 @@ export default function AddGameModal({ isOpen, onClose }: AddGameModalProps) {
           placeholder={t('games.personalNotes')}
         />
 
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             {t('games.addGame')}
           </Button>
         </div>

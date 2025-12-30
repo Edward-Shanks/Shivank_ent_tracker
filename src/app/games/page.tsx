@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gamepad2,
@@ -67,6 +67,23 @@ export default function GamesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<import('@/types').Game | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentBgImage, setCurrentBgImage] = useState(0);
+
+  const backgroundImages = [
+    '/images/logo/gamebg.jpg',
+    '/images/logo/gamebg2.jpg',
+  ];
+
+  // Rotate background images every 10 seconds
+  useEffect(() => {
+    if (viewMode === 'collection') {
+      const interval = setInterval(() => {
+        setCurrentBgImage((prev) => (prev + 1) % backgroundImages.length);
+      }, 10000); // 10 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [viewMode]);
 
   const filteredGames = useMemo(() => {
     let result = [...games];
@@ -105,23 +122,55 @@ export default function GamesPage() {
     <div className="min-h-screen bg-animated">
       {/* Hero Section - Only show in collection view */}
       {viewMode === 'collection' && (
-        <div className="relative overflow-hidden py-16">
-          <div className="absolute inset-0 gradient-radial opacity-50" />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
+          {/* Background Gradient */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%)',
+            }}
+          />
+          {/* Background Images with Crossfade Animation */}
+          <div className="absolute inset-0">
+            <AnimatePresence initial={false}>
+              {backgroundImages.map((image, index) => (
+                index === currentBgImage && (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5, ease: 'easeInOut' }}
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundAttachment: 'local',
+                    }}
+                  />
+                )
+              ))}
+            </AnimatePresence>
+          </div>
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+
+          {/* Content */}
+          <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-12"
+              transition={{ duration: 0.6 }}
+              className="max-w-2xl"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4">
-                <Gamepad2 className="w-5 h-5 text-green-500" />
-                <span className="text-foreground-muted">{t('games.gamingLibrary')}</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
                 {t('games.yourGamingCollection')}
               </h1>
-              <p className="text-foreground-muted text-lg max-w-2xl mx-auto">
-                {t('games.trackJourney')}
+              <p className="text-lg text-white/70 mb-4">
+                {games.length} {t('games.yourGamingCollection')}
               </p>
             </motion.div>
           </div>

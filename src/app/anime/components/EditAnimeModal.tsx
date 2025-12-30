@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Dropdown } from '@/components/ui/Dropdown';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface EditAnimeModalProps {
   isOpen: boolean;
@@ -14,25 +15,7 @@ interface EditAnimeModalProps {
   onSave: (updates: Partial<Anime>) => void;
 }
 
-const animeTypes: { value: AnimeType; label: string }[] = [
-  { value: 'Anime', label: 'Anime' },
-  { value: 'Donghua', label: 'Donghua' },
-];
-
-const airingStatuses: { value: AiringStatus; label: string }[] = [
-  { value: 'YTA', label: 'Yet To Air' },
-  { value: 'Airing', label: 'Airing' },
-  { value: 'Completed', label: 'Completed' },
-];
-
-const watchStatuses: { value: WatchStatus; label: string }[] = [
-  { value: 'YTW', label: 'Yet To Watch' },
-  { value: 'Watching', label: 'Watching' },
-  { value: 'Watch Later', label: 'Watch Later' },
-  { value: 'Completed', label: 'Completed' },
-  { value: 'On Hold', label: 'On Hold' },
-  { value: 'Dropped', label: 'Dropped' },
-];
+// These will be created inside component to use translations
 
 const daysOfWeek: { value: DayOfWeek; label: string }[] = [
   { value: 'Monday', label: 'Monday' },
@@ -51,6 +34,28 @@ const commonGenres = [
 ];
 
 export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditAnimeModalProps) {
+  const { t } = useLanguage();
+
+  const animeTypes: { value: AnimeType; label: string }[] = [
+    { value: 'Anime', label: 'Anime' },
+    { value: 'Donghua', label: 'Donghua' },
+  ];
+
+  const airingStatuses: { value: AiringStatus; label: string }[] = [
+    { value: 'YTA', label: t('anime.yetToAir') },
+    { value: 'Airing', label: t('anime.airing') },
+    { value: 'Completed', label: t('status.completed') },
+  ];
+
+  const watchStatuses: { value: WatchStatus; label: string }[] = [
+    { value: 'YTW', label: t('anime.yetToWatch') },
+    { value: 'Watching', label: t('status.watching') },
+    { value: 'Watch Later', label: t('anime.watchLater') },
+    { value: 'Completed', label: t('status.completed') },
+    { value: 'On Hold', label: t('status.onHold') },
+    { value: 'Dropped', label: t('status.dropped') },
+  ];
+
   const [formData, setFormData] = useState({
     title: anime.title,
     animeOtherName: anime.animeOtherName || '',
@@ -105,36 +110,36 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
 
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Anime" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('anime.editAnime')} size="xl">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
         {/* Row 1: Anime Name & Other Name */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
-            label="Anime"
+            label={t('anime.animeName')}
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
-            placeholder="Enter anime name"
+            placeholder={t('anime.enterAnimeName')}
           />
           <Input
-            label="Anime Other Name"
+            label={t('anime.animeOtherName')}
             value={formData.animeOtherName}
             onChange={(e) => setFormData({ ...formData, animeOtherName: e.target.value })}
-            placeholder="Alternative name (optional)"
+            placeholder={t('anime.alternativeName')}
           />
         </div>
 
         {/* Row 2: Anime Type & Airing Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
-            label="Anime Type"
+            label={t('anime.animeType')}
             options={animeTypes}
             value={formData.animeType}
             onChange={(value) => setFormData({ ...formData, animeType: value as AnimeType })}
             required
           />
           <Dropdown
-            label="Airing Status"
+            label={t('anime.airingStatus')}
             options={airingStatuses}
             value={formData.airingStatus}
             onChange={(value) => setFormData({ ...formData, airingStatus: value as AiringStatus })}
@@ -143,34 +148,34 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
         </div>
 
         {/* Row 3: Watch Status & Episode On */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
-            label="Watch Status"
+            label={t('anime.watchStatus')}
             options={watchStatuses}
             value={formData.watchStatus}
             onChange={(value) => setFormData({ ...formData, watchStatus: value as WatchStatus })}
             required
           />
           <Dropdown
-            label="Episode On"
-            options={[{ value: '', label: 'Select Day' }, ...daysOfWeek]}
+            label={t('anime.episodeOn')}
+            options={[{ value: '', label: t('anime.selectDay') }, ...daysOfWeek]}
             value={formData.episodeOn}
             onChange={(value) => setFormData({ ...formData, episodeOn: value as DayOfWeek | '' })}
-            placeholder="Select Day"
+            placeholder={t('anime.selectDay')}
           />
         </div>
 
         {/* Row 4: Website Link & Total Episodes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
-            label="Website Link"
+            label={t('anime.websiteLink')}
             type="url"
             value={formData.websiteLink}
             onChange={(e) => setFormData({ ...formData, websiteLink: e.target.value })}
             placeholder="https://example.com"
           />
           <Input
-            label="Total Episodes"
+            label={t('anime.totalEpisodes')}
             type="number"
             min="0"
             value={formData.episodes}
@@ -180,26 +185,26 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
         </div>
 
         {/* Genres & Season */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
-            label="Genres"
+            label={t('anime.genres')}
             options={commonGenres.map((g) => ({ value: g, label: g }))}
             value={formData.genres}
             onChange={(value) => setFormData({ ...formData, genres: value as string[] })}
-            placeholder="Select genres"
+            placeholder={t('anime.selectGenres')}
             multiple
           />
           <Input
-            label="Season"
+            label={t('anime.season')}
             value={formData.season}
             onChange={(e) => setFormData({ ...formData, season: e.target.value })}
-            placeholder="e.g., Spring 2024, Winter 2023"
+            placeholder={t('anime.seasonExample')}
           />
         </div>
 
         {/* Image URL */}
         <Input
-          label="Image URL (if any)"
+          label={t('anime.imageUrl')}
           type="url"
           value={formData.imageUrl}
           onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
@@ -207,12 +212,12 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
         />
 
         {/* Form Actions */}
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
+            {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="primary">
-            Save Changes
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
+            {t('anime.saveChanges')}
           </Button>
         </div>
       </form>

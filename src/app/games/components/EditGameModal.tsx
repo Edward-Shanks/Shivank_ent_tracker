@@ -105,10 +105,10 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('games.editGame')} size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('games.editGame')} size="xl">
+      <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
         {/* Row 1: Game Title and Release Date */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('games.gameTitle')}
             value={formData.title}
@@ -126,7 +126,7 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
         </div>
 
         {/* Row 2: Play Status and Game Type */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
             label={t('games.playStatus')}
             options={statuses}
@@ -144,7 +144,7 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
         </div>
 
         {/* Row 3: Platforms and Genres */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Dropdown
             label={t('games.platforms')}
             options={platforms}
@@ -165,7 +165,7 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
         </div>
 
         {/* Row 4: Download URL and Cover Image URL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input
             label={t('games.downloadUrl')}
             type="url"
@@ -190,11 +190,11 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
           placeholder={t('games.personalNotes')}
         />
 
-        <div className="flex gap-3 justify-end pt-4 border-t border-foreground/10">
-          <Button type="button" variant="secondary" onClick={onClose}>
+        <div className="flex gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs sm:text-sm px-3 py-1.5">
             {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" className="text-xs sm:text-sm px-3 py-1.5">
             {t('action.save')}
           </Button>
         </div>

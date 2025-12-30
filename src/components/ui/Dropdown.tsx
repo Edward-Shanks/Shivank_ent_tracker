@@ -87,7 +87,7 @@ export function Dropdown({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-foreground-muted mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -99,7 +99,7 @@ export function Dropdown({
           isOpen ? 'bg-foreground/10 border-foreground/30' : ''
         }`}
       >
-        <span className="text-sm truncate">{getDisplayText()}</span>
+        <span className="text-xs sm:text-sm truncate">{getDisplayText()}</span>
         <ChevronDown
           className={`w-4 h-4 text-foreground-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />

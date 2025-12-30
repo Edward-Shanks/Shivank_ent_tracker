@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-foreground-muted mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
             {label}
           </label>
         )}
@@ -105,7 +105,7 @@ export function Select({ label, options, error, className = '', ...props }: Sele
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-foreground-muted mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
           {label}
         </label>
       )}

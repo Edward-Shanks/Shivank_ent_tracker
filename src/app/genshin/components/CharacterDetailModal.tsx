@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Star, Shield, Swords, Sparkles } from 'lucide-react';
-import { GenshinCharacter, GenshinWeapon } from '@/types';
+import { GenshinCharacter, GenshinWeapon, GenshinElement } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -26,6 +26,33 @@ const weaponIcons: Record<GenshinWeapon, React.ReactNode> = {
   Catalyst: <Sparkles className="w-5 h-5" />,
 };
 
+// Helper function to normalize element names (capitalize first letter)
+const normalizeElement = (element: string): GenshinElement => {
+  if (!element) return 'Pyro'; // Default fallback
+  return (element.charAt(0).toUpperCase() + element.slice(1).toLowerCase()) as GenshinElement;
+};
+
+// Helper function to get element color safely
+const getElementColor = (element: string, elementColors: Record<string, string>): string => {
+  const normalized = normalizeElement(element);
+  return elementColors[normalized] || elementColors.Pyro || '#ef4444';
+};
+
+// Helper function to get element image path
+const getElementImage = (element: string): string | null => {
+  const normalized = normalizeElement(element);
+  const elementImageMap: Record<string, string | null> = {
+    Pyro: '/images/logo/Pyro.png',
+    Hydro: '/images/logo/Hydro.png',
+    Anemo: '/images/logo/Anemo.png',
+    Electro: '/images/logo/Electro.png',
+    Dendro: '/images/logo/Dendro.png',
+    Cyro: '/images/logo/Cryo.png', // Note: database uses "Cyro" but file is "Cryo"
+    Geo: '/images/logo/Geo.png',
+  };
+  return elementImageMap[normalized] || null;
+};
+
 export default function CharacterDetailModal({
   isOpen,
   onClose,
@@ -34,6 +61,9 @@ export default function CharacterDetailModal({
   onDelete,
   elementColors,
 }: CharacterDetailModalProps) {
+  const normalizedElement = normalizeElement(character.element);
+  const elementColor = getElementColor(character.element, elementColors);
+  
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="lg">
       <div className="relative">
@@ -41,7 +71,7 @@ export default function CharacterDetailModal({
         <div
           className="relative h-64 -mx-6 -mt-6 mb-6"
           style={{
-            background: `linear-gradient(135deg, ${elementColors[character.element]}40 0%, ${elementColors[character.element]}10 100%)`,
+            background: `linear-gradient(135deg, ${elementColor}40 0%, ${elementColor}10 100%)`,
           }}
         >
           {character.image && character.image.trim() ? (
@@ -52,15 +82,30 @@ export default function CharacterDetailModal({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold"
-                style={{
-                  backgroundColor: `${elementColors[character.element]}30`,
-                  color: elementColors[character.element],
-                }}
-              >
-                {character.name.charAt(0)}
-              </div>
+              {getElementImage(character.element) ? (
+                <div
+                  className="w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <img
+                    src={getElementImage(character.element)!}
+                    alt={normalizedElement}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div
+                  className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold"
+                  style={{
+                    backgroundColor: `${elementColor}30`,
+                    color: elementColor,
+                  }}
+                >
+                  {character.name.charAt(0)}
+                </div>
+              )}
             </div>
           )}
           
@@ -86,12 +131,20 @@ export default function CharacterDetailModal({
               <div className="text-sm text-foreground-muted mb-1">Element</div>
               <div className="flex items-center gap-2">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: elementColors[character.element] }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: 'transparent' }}
                 >
-                  <ElementIcon element={character.element} size={16} className="text-white" />
+                  {getElementImage(character.element) ? (
+                    <img
+                      src={getElementImage(character.element)!}
+                      alt={normalizedElement}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <ElementIcon element={normalizedElement} size={16} className="text-white" />
+                  )}
                 </div>
-                <span className="font-semibold text-foreground">{character.element}</span>
+                <span className="font-semibold text-foreground">{normalizedElement}</span>
               </div>
             </div>
 
@@ -121,7 +174,7 @@ export default function CharacterDetailModal({
                   className="h-full rounded-full transition-all"
                   style={{
                     width: `${(character.friendship / 10) * 100}%`,
-                    backgroundColor: elementColors[character.element],
+                    backgroundColor: elementColor,
                   }}
                 />
               </div>

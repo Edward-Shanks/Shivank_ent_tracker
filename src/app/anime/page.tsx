@@ -41,7 +41,7 @@ export default function AnimePage() {
     { value: 'Watching', label: t('status.watching') },
     { value: 'Completed', label: t('status.completed') },
     { value: 'YTW', label: t('status.planToWatch') },
-    { value: 'Watch Later', label: t('status.watchLater') || 'Watch Later' },
+    { value: 'Watch Later', label: t('anime.watchLater') || 'Watch Later' },
     { value: 'On Hold', label: t('status.onHold') },
     { value: 'Dropped', label: t('status.dropped') },
   ];
