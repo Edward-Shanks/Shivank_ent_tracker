@@ -282,7 +282,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': 'Anemo',
     'element.electro': 'Electro',
     'element.dendro': 'Dendro',
-    'element.cryo': 'Cryo',
+    'element.cyro': 'Cyro',
     'element.geo': 'Geo',
     
     // Common Form Fields
@@ -594,7 +594,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': '风',
     'element.electro': '雷',
     'element.dendro': '草',
-    'element.cryo': '冰',
+    'element.cyro': '冰',
     'element.geo': '岩',
     'genshin.editWorldLevel': '编辑世界等级',
     'genshin.customizeCard': '自定义卡片显示',
@@ -912,7 +912,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': '바람',
     'element.electro': '번개',
     'element.dendro': '풀',
-    'element.cryo': '얼음',
+    'element.cyro': '얼음',
     'element.geo': '바위',
     
     // Common Form Fields
@@ -1227,7 +1227,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': '風',
     'element.electro': '雷',
     'element.dendro': '草',
-    'element.cryo': '氷',
+    'element.cyro': '氷',
     'element.geo': '岩',
     
     // Common Form Fields
@@ -1542,7 +1542,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': 'Anemo',
     'element.electro': 'Electro',
     'element.dendro': 'Dendro',
-    'element.cryo': 'Cryo',
+    'element.cyro': 'Cyro',
     'element.geo': 'Geo',
     
     // Common Form Fields
@@ -2155,7 +2155,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'element.anemo': 'Anemo',
     'element.electro': 'Electro',
     'element.dendro': 'Dendro',
-    'element.cryo': 'Cryo',
+    'element.cyro': 'Cyro',
     'element.geo': 'Geo',
     
     // Common Form Fields

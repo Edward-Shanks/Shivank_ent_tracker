@@ -59,7 +59,7 @@ const getElementImage = (element: GenshinElement): string | null => {
     Anemo: '/images/logo/Anemo.png',
     Electro: '/images/logo/Electro.png',
     Dendro: '/images/logo/Dendro.png',
-    Cyro: '/images/logo/Cryo.png', // Note: database uses "Cyro" but file is "Cryo"
+    Cyro: '/images/logo/Cyro.png', // Note: database uses "Cyro" but file is "cyro"
     Geo: '/images/logo/Geo.png',
   };
   return elementImageMap[element] || null;
