@@ -91,7 +91,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updates = {
+    const updates: Partial<Anime> = {
       title: formData.title,
       animeOtherName: formData.animeOtherName || undefined,
       animeType: formData.animeType,
@@ -102,8 +102,15 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
       genres: formData.genres,
       season: formData.season || undefined,
       episodes: formData.episodes,
-      coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
     };
+
+    // Only update coverImage if user provided a new one, otherwise keep original
+    if (formData.imageUrl && formData.imageUrl.trim()) {
+      updates.coverImage = formData.imageUrl;
+    }
+    // If user cleared the image URL, keep the original (don't send coverImage in update)
+    // The card will show the first letter if coverImage is empty/null in the database
+
     onSave(updates);
     onClose();
   };

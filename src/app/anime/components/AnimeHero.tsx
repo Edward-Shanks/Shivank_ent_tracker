@@ -55,7 +55,7 @@ export default function AnimeHero({ anime, totalCount }: AnimeHeroProps) {
         >
           {/* Collection Title */}
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-            {t('anime.yourAnimeCollection') || 'Your Anime Collection'}
+            Your Anime Collection
           </h1>
           {totalCount !== undefined && (
             <p className="text-lg text-white/70 mb-4">

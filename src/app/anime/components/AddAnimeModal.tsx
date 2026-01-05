@@ -85,7 +85,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         season: formData.season || undefined,
         episodes: formData.episodes,
         episodesWatched: 0,
-        coverImage: formData.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image',
+        coverImage: formData.imageUrl || '',  // Empty string shows first letter in card
       });
 
       // Reset form

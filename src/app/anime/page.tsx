@@ -298,15 +298,15 @@ export default function AnimePage() {
                 >
                   {filteredAnime.map((item, index) => {
                     const badgeType = item.watchStatus === 'YTW' || item.watchStatus === 'Watch Later' 
-                      ? 'planning' 
-                      : item.watchStatus === 'On Hold' 
-                      ? 'on-hold' 
-                      : item.watchStatus === 'Watching'
-                      ? 'watching'
-                      : item.watchStatus === 'Completed'
-                      ? 'completed'
-                      : item.watchStatus === 'Dropped'
-                      ? 'dropped'
+                            ? 'planning' 
+                            : item.watchStatus === 'On Hold' 
+                            ? 'on-hold' 
+                            : item.watchStatus === 'Watching'
+                            ? 'watching'
+                            : item.watchStatus === 'Completed'
+                            ? 'completed'
+                            : item.watchStatus === 'Dropped'
+                            ? 'dropped'
                       : 'planning';
 
                     const badgeColors: Record<string, string> = {
@@ -329,13 +329,13 @@ export default function AnimePage() {
                         <Card 
                           hover 
                           className="p-0 overflow-hidden cursor-pointer h-full flex flex-col"
-                          onClick={() => {
-                            setSelectedAnime(item);
-                            setIsDetailModalOpen(true);
-                          }}
+                        onClick={() => {
+                          setSelectedAnime(item);
+                          setIsDetailModalOpen(true);
+                        }}
                         >
                           {/* Anime Cover Image */}
-                          <div className="relative aspect-[3/4] flex-shrink-0">
+                          <div className="relative aspect-[3/4] flex-shrink-0 overflow-hidden">
                             {item.coverImage && item.coverImage.trim() ? (
                               <img
                                 src={item.coverImage}
@@ -352,7 +352,7 @@ export default function AnimePage() {
 
                             {/* Watch Status Badge */}
                             {cardFields.includes('watchStatus') && item.watchStatus && (
-                              <div className="absolute top-2 left-2">
+                              <div className="absolute top-2 left-2 z-20">
                                 <span className={`px-2 py-1 rounded text-xs font-medium text-white ${badgeColors[badgeType] || 'bg-purple-500'}`}>
                                   {item.watchStatus}
                                 </span>
@@ -360,7 +360,7 @@ export default function AnimePage() {
                             )}
 
                             {/* Edit and Delete Icons */}
-                            <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -389,25 +389,38 @@ export default function AnimePage() {
                               </button>
                             </div>
 
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                            {/* Gradient Overlay - ensures no text appears on image */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pointer-events-none" />
                           </div>
 
                           {/* Anime Info */}
                           <div className="p-3 bg-background flex-shrink-0 min-h-[100px] flex flex-col justify-between">
-                            <h3 className="font-semibold text-foreground truncate mb-2">
+                            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 mb-2">
                               {item.title}
                             </h3>
                             <div className="space-y-1.5 text-xs">
-                              {item.animeType && (
-                                <div className="flex items-center gap-1 text-foreground-muted">
-                                  <span className="font-medium">{t('anime.type') || 'Type'}:</span>
-                                  <span>{item.animeType}</span>
-                                </div>
-                              )}
+                              {/* Type Badge and Season in one row */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {item.animeType && (
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                    item.animeType === 'Anime' 
+                                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white' 
+                                      : item.animeType === 'Donghua'
+                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white'
+                                      : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white'
+                                  }`}>
+                                    {item.animeType}
+                                  </span>
+                                )}
+                                {item.season && (
+                                  <span className="text-foreground-muted">
+                                    {item.season}
+                                  </span>
+                                )}
+                              </div>
                               {item.airingStatus && (
                                 <div className="flex items-center gap-1 text-foreground-muted">
-                                  <span className="font-medium">{t('anime.airingStatus') || 'Airing'}:</span>
+                                  <span className="font-medium">{t('anime.airingStatus') || 'Status'}:</span>
                                   <span>{item.airingStatus}</span>
                                 </div>
                               )}
@@ -420,7 +433,7 @@ export default function AnimePage() {
                             </div>
                           </div>
                         </Card>
-                      </motion.div>
+                    </motion.div>
                     );
                   })}
                 </motion.div>
