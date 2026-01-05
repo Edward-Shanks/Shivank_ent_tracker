@@ -10,6 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 
 interface AnimeHeroProps {
   anime: Anime;
+  totalCount?: number;
 }
 
 const mapWatchStatusToBadge = (watchStatus: WatchStatus): 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later' => {
@@ -24,7 +25,7 @@ const mapWatchStatusToBadge = (watchStatus: WatchStatus): 'watching' | 'complete
   }
 };
 
-export default function AnimeHero({ anime }: AnimeHeroProps) {
+export default function AnimeHero({ anime, totalCount }: AnimeHeroProps) {
   const { t } = useLanguage();
   return (
     <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
@@ -52,6 +53,15 @@ export default function AnimeHero({ anime }: AnimeHeroProps) {
           transition={{ duration: 0.6 }}
           className="max-w-2xl"
         >
+          {/* Collection Title */}
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+            {t('anime.yourAnimeCollection') || 'Your Anime Collection'}
+          </h1>
+          {totalCount !== undefined && (
+            <p className="text-lg text-white/70 mb-4">
+              {totalCount} Anime in your Collection List
+            </p>
+          )}
           {/* Badges */}
           <div className="flex items-center gap-3 mb-4">
             <StatusBadge status={mapWatchStatusToBadge(anime.watchStatus)} />

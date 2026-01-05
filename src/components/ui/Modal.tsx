@@ -59,7 +59,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`relative w-full ${sizeStyles[size]} ${size === 'xl' ? 'h-[95vh]' : ''} rounded-2xl overflow-hidden flex flex-col`}
+            className={`relative w-full ${sizeStyles[size]} ${size === 'xl' ? 'max-h-[95vh]' : ''} rounded-2xl overflow-hidden flex flex-col`}
             style={{
               background: 'var(--modal-bg)',
               backdropFilter: 'blur(24px)',
@@ -85,7 +85,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
               size === 'full' 
                 ? 'p-3 sm:p-4 md:p-6 overflow-y-auto' 
                 : size === 'xl' 
-                ? 'px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6' 
+                ? 'px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 overflow-y-auto' 
                 : size === 'lg' 
                 ? 'px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 overflow-y-auto' 
                 : 'p-3 sm:p-4 md:p-6'

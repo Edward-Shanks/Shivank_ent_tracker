@@ -153,7 +153,7 @@ export async function GET(
           releaseDate: null,
           gameType: null,
           downloadUrl: null,
-        });
+    });
       } catch (retryError) {
         console.error('Error fetching game (retry):', retryError);
         return NextResponse.json({ error: 'Failed to fetch game' }, { status: 500 });
@@ -305,22 +305,22 @@ export async function PATCH(
         if (!user) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        const { id } = await params;
-        const body = await request.json();
-        const updateData: Record<string, unknown> = {};
-        if (body.title !== undefined) updateData.title = body.title;
-        if (body.coverImage !== undefined) updateData.coverImage = body.coverImage;
-        if (body.platform !== undefined) updateData.platform = JSON.stringify(body.platform);
-        if (body.status !== undefined) updateData.status = body.status;
+    const { id } = await params;
+    const body = await request.json();
+    const updateData: Record<string, unknown> = {};
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.coverImage !== undefined) updateData.coverImage = body.coverImage;
+    if (body.platform !== undefined) updateData.platform = JSON.stringify(body.platform);
+    if (body.status !== undefined) updateData.status = body.status;
         // Skip gameType and downloadUrl if columns don't exist
-        if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
-        if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate;
-        if (body.notes !== undefined) updateData.notes = body.notes;
-        updateData.updatedAt = new Date().toISOString();
-        
-        await db.update(games).set(updateData)
-          .where(and(eq(games.id, id), eq(games.userId, user.id)));
-        
+    if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
+    if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate;
+    if (body.notes !== undefined) updateData.notes = body.notes;
+    updateData.updatedAt = new Date().toISOString();
+    
+    await db.update(games).set(updateData)
+      .where(and(eq(games.id, id), eq(games.userId, user.id)));
+    
         const updated = await db
           .select({
             id: games.id,
@@ -337,12 +337,12 @@ export async function PATCH(
           .from(games)
           .where(and(eq(games.id, id), eq(games.userId, user.id)))
           .limit(1);
-        
-        if (updated.length === 0) {
-          return NextResponse.json({ error: 'Game not found' }, { status: 404 });
-        }
-        
-        const item = updated[0];
+    
+    if (updated.length === 0) {
+      return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+    }
+    
+    const item = updated[0];
         
         // Safely parse platform and genres
         let platform: string[] = [];
@@ -364,14 +364,14 @@ export async function PATCH(
           genres = [];
         }
         
-        return NextResponse.json({
-          ...item,
+    return NextResponse.json({
+      ...item,
           platform,
           genres,
           releaseDate: null,
           gameType: null,
           downloadUrl: null,
-        });
+    });
       } catch (retryError) {
         console.error('Error updating game (retry):', retryError);
         return NextResponse.json({ error: 'Failed to update game' }, { status: 500 });

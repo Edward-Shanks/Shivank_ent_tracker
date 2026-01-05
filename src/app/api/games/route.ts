@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       }
       
       return {
-        ...item,
+      ...item,
         platform,
         genres,
         releaseDate: releaseDates[item.id] || null,

@@ -60,26 +60,26 @@ export async function PATCH(
     
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
-    if (body.titleJapanese !== undefined) updateData.titleJapanese = body.titleJapanese;
-    if (body.animeOtherName !== undefined) updateData.animeOtherName = body.animeOtherName;
+    if (body.titleJapanese !== undefined) updateData.titleJapanese = body.titleJapanese || null;
+    if (body.animeOtherName !== undefined) updateData.animeOtherName = body.animeOtherName || null;
     if (body.animeType !== undefined) updateData.animeType = body.animeType;
     if (body.airingStatus !== undefined) updateData.airingStatus = body.airingStatus;
     if (body.watchStatus !== undefined) updateData.watchStatus = body.watchStatus;
-    if (body.websiteLink !== undefined) updateData.websiteLink = body.websiteLink;
-    if (body.episodeOn !== undefined) updateData.episodeOn = body.episodeOn;
+    if (body.websiteLink !== undefined) updateData.websiteLink = body.websiteLink || null;
+    if (body.episodeOn !== undefined) updateData.episodeOn = body.episodeOn || null;
     if (body.coverImage !== undefined) updateData.coverImage = body.coverImage;
-    if (body.bannerImage !== undefined) updateData.bannerImage = body.bannerImage;
+    if (body.bannerImage !== undefined) updateData.bannerImage = body.bannerImage || null;
     if (body.episodes !== undefined) updateData.episodes = body.episodes;
     if (body.episodesWatched !== undefined) updateData.episodesWatched = body.episodesWatched;
-    if (body.score !== undefined) updateData.score = body.score;
-    if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres);
-    if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
-    if (body.season !== undefined) updateData.season = body.season;
-    if (body.year !== undefined) updateData.year = body.year;
-    if (body.startDate !== undefined) updateData.startDate = body.startDate;
-    if (body.endDate !== undefined) updateData.endDate = body.endDate;
-    if (body.notes !== undefined) updateData.notes = body.notes;
-    updateData.updatedAt = new Date().toISOString();
+    if (body.score !== undefined) updateData.score = body.score || null;
+    if (body.genres !== undefined) updateData.genres = JSON.stringify(body.genres || []);
+    if (body.synopsis !== undefined) updateData.synopsis = body.synopsis || null;
+    if (body.season !== undefined) updateData.season = body.season || null;
+    if (body.year !== undefined) updateData.year = body.year || null;
+    if (body.startDate !== undefined) updateData.startDate = body.startDate || null;
+    if (body.endDate !== undefined) updateData.endDate = body.endDate || null;
+    if (body.notes !== undefined) updateData.notes = body.notes || null;
+    updateData.updatedAt = new Date();
     
     await db
       .update(anime)

@@ -235,38 +235,50 @@ export default function ReportsPage() {
           Type: item.animeType || '',
           'Airing Status': item.airingStatus || '',
           'Watch Status': item.watchStatus || item.status,
-          Episodes: item.episodes,
-          'Episodes Watched': item.episodesWatched,
-          Genres: item.genres?.join(', ') || '',
           'Episode On': item.episodeOn || '',
           'Website Link': item.websiteLink || '',
-          Year: item.year || '',
+          'Total Episodes': item.episodes,
+          'Episodes Watched': item.episodesWatched,
+          Genres: item.genres?.join(', ') || '',
           Season: item.season || '',
+          'Image URL (if any)': item.coverImage || '',
         }));
         break;
       case 'shows':
-        worksheetData = filteredData.map((item) => ({
+        worksheetData = filteredData.map((item) => {
+          const isKDrama = 'year' in item;
+          return {
           Title: item.title,
-          Type: 'year' in item ? 'K-Drama' : 'Movie',
+            'Korean Title': isKDrama ? (item as any).titleKorean || '' : '',
+            Type: isKDrama ? 'K-Drama' : 'Movie',
           Status: item.status,
+            'Release Date': isKDrama ? '' : (item.releaseDate ? new Date(item.releaseDate).toISOString().split('T')[0] : ''),
+            Year: isKDrama ? (item as any).year || '' : (item.releaseDate ? new Date(item.releaseDate).getFullYear() : ''),
+            Episodes: isKDrama ? (item as any).episodes || '' : '',
+            'Episodes Watched': isKDrama ? (item as any).episodesWatched || '' : '',
+            Network: isKDrama ? (item as any).network || '' : '',
+            Score: isKDrama ? ((item as any).score || '') : '',
           Genres: item.genres?.join(', ') || '',
-          Year: 'year' in item ? item.year : (item.releaseDate ? new Date(item.releaseDate).getFullYear() : ''),
-          Episodes: 'episodes' in item ? item.episodes : '',
-          'Episodes Watched': 'episodesWatched' in item ? item.episodesWatched : '',
-          Network: 'network' in item ? item.network : '',
-        }));
+            Synopsis: (item as any).synopsis || '',
+            Cast: isKDrama ? ((item as any).cast?.join(', ') || '') : '',
+            'Poster Image URL': (item as any).posterImage || '',
+            'Backdrop Image URL': !isKDrama ? ((item as any).backdropImage || '') : '',
+            'Review Type': !isKDrama ? ((item as any).reviewType || '') : '',
+            Notes: (item as any).notes || '',
+          };
+        });
         break;
       case 'games':
         worksheetData = filteredData.map((item) => ({
           Title: item.title,
-          Status: item.status,
-          Platform: item.platform,
-          Score: item.score || '',
-          'Hours Played': item.hoursPlayed,
+          'Play Status': item.status,
+          Platform: Array.isArray(item.platform) ? item.platform.join(', ') : item.platform,
+          'Game Type': (item as any).gameType || '',
+          'Download URL': (item as any).downloadUrl || '',
           Genres: item.genres?.join(', ') || '',
           'Release Date': item.releaseDate || '',
-          Developer: item.developer || '',
-          Publisher: item.publisher || '',
+          'Cover Image URL': (item as any).coverImage || '',
+          Notes: (item as any).notes || '',
         }));
         break;
       case 'genshin':
@@ -277,11 +289,11 @@ export default function ReportsPage() {
           Rarity: `${item.rarity}★`,
           Level: item.level,
           Constellation: item.constellation,
-          Friendship: item.friendship,
           Owned: item.obtained ? 'Yes' : 'No',
           Tier: item.tier || '',
           Type: item.type || '',
           'Type 2': item.type2 || '',
+          'Image URL': item.image || '',
         }));
         break;
       case 'credentials':
@@ -290,7 +302,9 @@ export default function ReportsPage() {
           Category: item.category,
           Email: item.email || '',
           Username: item.username || '',
+          Password: item.password || '',
           URL: item.url || '',
+          Notes: item.notes || '',
           'Last Updated': new Date(item.lastUpdated).toLocaleDateString(),
         }));
         break;
@@ -299,8 +313,10 @@ export default function ReportsPage() {
           Name: item.name,
           URL: item.url,
           Category: item.category || '',
+          Description: item.description || '',
+          'Favicon URL': item.favicon || '',
+          'Is Favorite': item.isFavorite ? 'Yes' : 'No',
           'Last Visited': item.lastVisited ? new Date(item.lastVisited).toLocaleDateString() : '',
-          Notes: item.notes || '',
         }));
         break;
     }
@@ -423,13 +439,61 @@ export default function ReportsPage() {
           sampleRow[field.label] = category === 'credentials' ? 'Example Service' : category === 'websites' ? 'Example Website' : 'Example Name';
           break;
         case 'url':
+        case 'websiteLink':
+        case 'downloadUrl':
+        case 'favicon':
           sampleRow[field.label] = 'https://example.com';
+          break;
+        case 'coverImage':
+        case 'posterImage':
+        case 'backdropImage':
+        case 'image':
+          sampleRow[field.label] = 'https://example.com/image.jpg';
           break;
         case 'password':
           sampleRow[field.label] = '********';
           break;
         case 'category':
-          sampleRow[field.label] = 'other';
+          sampleRow[field.label] = category === 'credentials' ? 'streaming' : category === 'websites' ? 'anime' : 'other';
+          break;
+        case 'animeOtherName':
+          sampleRow[field.label] = 'Alternative Name';
+          break;
+        case 'animeType':
+          sampleRow[field.label] = 'Anime';
+          break;
+        case 'episodeOn':
+          sampleRow[field.label] = 'Monday';
+          break;
+        case 'season':
+          sampleRow[field.label] = 'Spring 2024';
+          break;
+        case 'titleKorean':
+          sampleRow[field.label] = '한국어 제목';
+          break;
+        case 'type':
+          sampleRow[field.label] = category === 'shows' ? 'Movie' : category === 'genshin' ? 'DPS' : '';
+          break;
+        case 'type2':
+          sampleRow[field.label] = 'Support';
+          break;
+        case 'synopsis':
+          sampleRow[field.label] = 'A brief description of the story...';
+          break;
+        case 'cast':
+          sampleRow[field.label] = 'Actor 1, Actor 2, Actor 3';
+          break;
+        case 'reviewType':
+          sampleRow[field.label] = 'Good';
+          break;
+        case 'gameType':
+          sampleRow[field.label] = 'good';
+          break;
+        case 'description':
+          sampleRow[field.label] = 'Brief description of the website';
+          break;
+        case 'isFavorite':
+          sampleRow[field.label] = 'Yes';
           break;
         default:
           sampleRow[field.label] = '';
@@ -456,36 +520,44 @@ export default function ReportsPage() {
           { field: 'animeType', label: 'Type', required: false },
           { field: 'airingStatus', label: 'Airing Status', required: false },
           { field: 'watchStatus', label: 'Watch Status', required: false },
-          { field: 'episodes', label: 'Episodes', required: true },
-          { field: 'episodesWatched', label: 'Episodes Watched', required: true },
-          { field: 'status', label: 'Status', required: true },
-          { field: 'genres', label: 'Genres', required: false },
           { field: 'episodeOn', label: 'Episode On', required: false },
           { field: 'websiteLink', label: 'Website Link', required: false },
-          { field: 'year', label: 'Year', required: false },
+          { field: 'episodes', label: 'Total Episodes', required: true },
+          { field: 'episodesWatched', label: 'Episodes Watched', required: false },
+          { field: 'genres', label: 'Genres', required: false },
           { field: 'season', label: 'Season', required: false },
+          { field: 'coverImage', label: 'Image URL (if any)', required: false },
         ];
       case 'shows':
         return [
           { field: 'title', label: 'Title', required: true },
+          { field: 'titleKorean', label: 'Korean Title', required: false },
           { field: 'type', label: 'Type (Movie/K-Drama)', required: false },
           { field: 'status', label: 'Status', required: true },
-          { field: 'genres', label: 'Genres', required: false },
+          { field: 'releaseDate', label: 'Release Date', required: false },
+          { field: 'year', label: 'Year', required: false },
           { field: 'episodes', label: 'Episodes', required: false },
           { field: 'episodesWatched', label: 'Episodes Watched', required: false },
           { field: 'network', label: 'Network', required: false },
-          { field: 'year', label: 'Year', required: false },
-          { field: 'releaseDate', label: 'Release Date', required: false },
+          { field: 'score', label: 'Score', required: false },
+          { field: 'genres', label: 'Genres', required: false },
+          { field: 'synopsis', label: 'Synopsis', required: false },
+          { field: 'cast', label: 'Cast', required: false },
+          { field: 'posterImage', label: 'Poster Image URL', required: false },
+          { field: 'backdropImage', label: 'Backdrop Image URL', required: false },
+          { field: 'reviewType', label: 'Review Type', required: false },
+          { field: 'notes', label: 'Notes', required: false },
         ];
       case 'games':
         return [
           { field: 'title', label: 'Title', required: true },
-          { field: 'playStatus', label: 'Play Status', required: true },
+          { field: 'status', label: 'Play Status', required: true },
           { field: 'platform', label: 'Platform', required: true },
           { field: 'gameType', label: 'Game Type', required: false },
           { field: 'downloadUrl', label: 'Download URL', required: false },
           { field: 'genres', label: 'Genres', required: false },
           { field: 'releaseDate', label: 'Release Date', required: false },
+          { field: 'coverImage', label: 'Cover Image URL', required: false },
           { field: 'notes', label: 'Notes', required: false },
         ];
       case 'genshin':
@@ -517,10 +589,9 @@ export default function ReportsPage() {
           { field: 'name', label: 'Name', required: true },
           { field: 'url', label: 'URL', required: true },
           { field: 'category', label: 'Category', required: true },
-          { field: 'isFavorite', label: 'Is Favorite', required: true },
           { field: 'description', label: 'Description', required: false },
-          { field: 'favicon', label: 'Favicon', required: false },
-          { field: 'lastVisited', label: 'Last Visited', required: false },
+          { field: 'favicon', label: 'Favicon URL', required: false },
+          { field: 'isFavorite', label: 'Is Favorite', required: false },
         ];
       default:
         return [];
@@ -624,15 +695,13 @@ export default function ReportsPage() {
                 animeType: mappedRow.animeType as any,
                 airingStatus: mappedRow.airingStatus as any,
                 watchStatus: (mappedRow.watchStatus || 'YTW') as WatchStatus,
-                episodes: parseInt(mappedRow.episodes || '0'),
-                episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
-                score: mappedRow.score ? parseFloat(mappedRow.score) : undefined,
-                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 episodeOn: mappedRow.episodeOn as any,
                 websiteLink: mappedRow.websiteLink,
-                year: mappedRow.year ? parseInt(mappedRow.year) : undefined,
+                episodes: parseInt(mappedRow.episodes || '0'),
+                episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
+                genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 season: mappedRow.season,
-                coverImage: '',
+                coverImage: mappedRow.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
               });
               uploadedCount++;
               break;
@@ -642,6 +711,7 @@ export default function ReportsPage() {
               if (type === 'K-Drama' || mappedRow.year) {
                 await addKDrama({
                   title: mappedRow.title || '',
+                  titleKorean: mappedRow.titleKorean,
                   episodes: parseInt(mappedRow.episodes || '0'),
                   episodesWatched: parseInt(mappedRow.episodesWatched || '0'),
                   status: (mappedRow.status || 'watching') as KDramaStatus,
@@ -649,15 +719,22 @@ export default function ReportsPage() {
                   genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                   year: mappedRow.year ? parseInt(mappedRow.year) : undefined,
                   network: mappedRow.network,
-                  posterImage: '',
+                  synopsis: mappedRow.synopsis,
+                  cast: mappedRow.cast ? (Array.isArray(mappedRow.cast) ? mappedRow.cast : String(mappedRow.cast).split(',').map((c: string) => c.trim())) : [],
+                  notes: mappedRow.notes,
+                  posterImage: mappedRow.posterImage || 'https://via.placeholder.com/300x450?text=No+Image',
                 });
               } else {
                 await addMovie({
                   title: mappedRow.title || '',
                   releaseDate: mappedRow.releaseDate || new Date().toISOString(),
                   status: (mappedRow.status || 'watched') as MovieStatus,
+                  reviewType: mappedRow.reviewType as any,
                   genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
-                  posterImage: '',
+                  synopsis: mappedRow.synopsis,
+                  notes: mappedRow.notes,
+                  posterImage: mappedRow.posterImage || 'https://via.placeholder.com/300x450?text=No+Image',
+                  backdropImage: mappedRow.backdropImage,
                 });
               }
               uploadedCount++;
@@ -667,13 +744,13 @@ export default function ReportsPage() {
               await addGame({
                 title: mappedRow.title || '',
                 platform: mappedRow.platform ? (Array.isArray(mappedRow.platform) ? mappedRow.platform : String(mappedRow.platform).split(',').map((p: string) => p.trim() as GamePlatform)) : ['PC'],
-                status: (mappedRow.status || 'playing') as GameStatus,
+                status: (mappedRow.status || mappedRow.playStatus || 'playing') as GameStatus,
                 gameType: mappedRow.gameType,
                 downloadUrl: mappedRow.downloadUrl,
                 genres: mappedRow.genres ? (Array.isArray(mappedRow.genres) ? mappedRow.genres : String(mappedRow.genres).split(',').map((g: string) => g.trim())) : [],
                 releaseDate: mappedRow.releaseDate,
                 notes: mappedRow.notes,
-                coverImage: '',
+                coverImage: mappedRow.coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
               });
               uploadedCount++;
               break;
@@ -716,10 +793,10 @@ export default function ReportsPage() {
                 name: mappedRow.name || '',
                 url: mappedRow.url || '',
                 category: (mappedRow.category || 'other') as WebsiteCategory,
-                isFavorite: mappedRow.isFavorite === 'Yes' || mappedRow.isFavorite === true || mappedRow.isFavorite === 'true' || mappedRow.isFavorite === 'yes',
-                lastVisited: mappedRow.lastVisited ? new Date(mappedRow.lastVisited).toISOString() : new Date().toISOString(),
                 description: mappedRow.description,
                 favicon: mappedRow.favicon,
+                isFavorite: mappedRow.isFavorite === 'Yes' || mappedRow.isFavorite === true || mappedRow.isFavorite === 'true' || mappedRow.isFavorite === 'yes',
+                lastVisited: mappedRow.lastVisited ? new Date(mappedRow.lastVisited).toISOString() : new Date().toISOString(),
               });
               uploadedCount++;
               break;

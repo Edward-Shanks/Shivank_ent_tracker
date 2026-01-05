@@ -16,9 +16,10 @@ import {
   BarChart3,
   Edit,
   Trash2,
+  RefreshCw,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { GameStatus, GamePlatform } from '@/types';
+import { GameStatus, GamePlatform, Game } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard, StatCard, Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +28,7 @@ import { Badge } from '@/components/ui/Badge';
 import GamesInsights from './components/GamesInsights';
 import AddGameModal from './components/AddGameModal';
 import EditGameModal from './components/EditGameModal';
+import BulkUpdateGamesModal from './components/BulkUpdateGamesModal';
 
 type ViewMode = 'insights' | 'collection';
 type SortOption = 'title' | 'releaseDate';
@@ -67,6 +69,7 @@ export default function GamesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<import('@/types').Game | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isBulkUpdateModalOpen, setIsBulkUpdateModalOpen] = useState(false);
   const [currentBgImage, setCurrentBgImage] = useState(0);
 
   const backgroundImages = [
@@ -84,6 +87,14 @@ export default function GamesPage() {
       return () => clearInterval(interval);
     }
   }, [viewMode]);
+
+  // Calculate game counts
+  const gameCounts = useMemo(() => {
+    return {
+      completed: games.filter((g) => g.status === 'completed').length,
+      playing: games.filter((g) => g.status === 'playing').length,
+    };
+  }, [games]);
 
   const filteredGames = useMemo(() => {
     let result = [...games];
@@ -170,7 +181,7 @@ export default function GamesPage() {
                 {t('games.yourGamingCollection')}
               </h1>
               <p className="text-lg text-white/70 mb-4">
-                {games.length} {t('games.yourGamingCollection')}
+                {games.length} Games in your Collection List
               </p>
             </motion.div>
           </div>
@@ -188,7 +199,7 @@ export default function GamesPage() {
             <p className="text-foreground-muted mt-1">
               {viewMode === 'insights'
                 ? t('games.insightsDesc')
-                : `${games.length} ${t('games.collectionDesc')}`}
+                : `${t('status.completed')}: ${gameCounts.completed} • ${t('status.playing')}: ${gameCounts.playing}`}
             </p>
           </div>
 
@@ -259,13 +270,15 @@ export default function GamesPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Status Pills */}
-              <div className="flex flex-wrap gap-2 mb-6">
+              {/* All Controls in Single Row */}
+              <div className="flex flex-wrap items-center gap-2 mb-8">
+                {/* Status Filter Buttons */}
+                <div className="flex items-center gap-2 flex-wrap">
                 {statusFilters.map((filter) => (
                   <button
                     key={filter.value}
                     onClick={() => setStatusFilter(filter.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
                       statusFilter === filter.value
                         ? 'bg-green-500 text-white'
                         : 'glass text-foreground-muted hover:text-foreground'
@@ -276,27 +289,33 @@ export default function GamesPage() {
                 ))}
               </div>
 
-              {/* Search and Sort */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="flex-1">
+                {/* Search, Sort, and Bulk Update on Right */}
+                <div className="flex items-center gap-2 flex-1 min-w-[200px] justify-end ml-8">
+                  <div className="flex-1 min-w-[200px] max-w-xs">
                   <SearchInput
                     placeholder={t('games.searchGames')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Select
-                    options={sortOptions}
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-40"
-                  />
                   <Button
                     variant="secondary"
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="px-2 py-1.5"
                   >
                     {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    leftIcon={<RefreshCw className="w-4 h-4" />}
+                    onClick={() => setIsBulkUpdateModalOpen(true)}
+                    className="text-xs px-3 py-1.5"
+                    style={{
+                      background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                      boxShadow: '0 0 20px rgba(34, 197, 94, 0.4)',
+                    }}
+                  >
+                    {t('games.bulkUpdate') || 'Bulk Update'}
                   </Button>
                 </div>
               </div>
@@ -452,6 +471,14 @@ export default function GamesPage() {
           }}
         />
       )}
+
+      {/* Bulk Update Modal */}
+      <BulkUpdateGamesModal
+        isOpen={isBulkUpdateModalOpen}
+        onClose={() => setIsBulkUpdateModalOpen(false)}
+        games={games}
+        onUpdate={() => setIsBulkUpdateModalOpen(false)}
+      />
     </div>
   );
 }
