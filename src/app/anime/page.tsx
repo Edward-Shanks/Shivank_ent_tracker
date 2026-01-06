@@ -24,6 +24,7 @@ import AnimeHero from './components/AnimeHero';
 import AddAnimeModal from './components/AddAnimeModal';
 import AnimeDetailModal from './components/AnimeDetailModal';
 import EditAnimeModal from './components/EditAnimeModal';
+import BulkUpdateAnimeModal from './components/BulkUpdateAnimeModal';
 import { AnimeCardField } from './components/AnimeCardCustomizationModal';
 
 type ViewMode = 'collection' | 'insights';
@@ -103,13 +104,14 @@ export default function AnimePage() {
       result = result.filter((a) => a.animeType === 'H-Ecchi');
     }
 
-    // Apply search
+    // Apply search (case-insensitive)
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase().trim();
       result = result.filter(
         (a) =>
           a.title.toLowerCase().includes(query) ||
           a.titleJapanese?.toLowerCase().includes(query) ||
+          a.animeOtherName?.toLowerCase().includes(query) ||
           a.genres.some((g) => g.toLowerCase().includes(query))
       );
     }
@@ -334,6 +336,24 @@ export default function AnimePage() {
                       'planning': 'bg-purple-500',
                     };
 
+                    // Helper function to check if URL is valid
+                    const isValidUrl = (url: string | undefined): boolean => {
+                      if (!url || !url.trim()) return false;
+                      try {
+                        const parsed = new URL(url);
+                        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                      } catch {
+                        return false;
+                      }
+                    };
+
+                    // Handle double click to open website link
+                    const handleDoubleClick = () => {
+                      if (isValidUrl(item.websiteLink)) {
+                        window.open(item.websiteLink, '_blank', 'noopener,noreferrer');
+                      }
+                    };
+
                     return (
                       <motion.div
                         key={item.id}
@@ -342,6 +362,9 @@ export default function AnimePage() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.05 }}
                         className="group"
+                        onDoubleClick={handleDoubleClick}
+                        style={{ cursor: isValidUrl(item.websiteLink) ? 'pointer' : 'default' }}
+                        title={isValidUrl(item.websiteLink) ? 'Double-click to open website' : undefined}
                       >
                         <Card 
                           hover 
@@ -452,10 +475,10 @@ export default function AnimePage() {
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4">🔍</div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">
-                    {t('common.noResults') || 'No anime found'}
+                    No Search Result Found
                   </h3>
                   <p className="text-foreground-muted">
-                    {t('common.tryAdjusting') || 'Try adjusting your search or filters'}
+                    Try adjusting your search or filters
                   </p>
                 </div>
               )}
@@ -516,6 +539,15 @@ export default function AnimePage() {
         </>
       )}
 
+      {/* Bulk Update Anime Modal */}
+      <BulkUpdateAnimeModal
+        isOpen={isBulkUpdateModalOpen}
+        onClose={() => setIsBulkUpdateModalOpen(false)}
+        animeList={anime}
+        onUpdate={() => {
+          // Data will be refreshed automatically via context
+        }}
+      />
     </div>
   );
 }
