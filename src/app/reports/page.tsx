@@ -187,7 +187,10 @@ export default function ReportsPage() {
           : anime;
         break;
       case 'shows':
-        const allShows = [...movies, ...kdrama];
+        // Add _type property to distinguish between movies and k-dramas
+        const allMovies = movies.map(m => ({ ...m, _type: 'movie' as const }));
+        const allKDramas = kdrama.map(k => ({ ...k, _type: 'kdrama' as const }));
+        const allShows = [...allMovies, ...allKDramas];
         data = filters.status && filters.status !== 'all'
           ? allShows.filter((s) => s.status === filters.status)
           : allShows;
@@ -245,26 +248,26 @@ export default function ReportsPage() {
         }));
         break;
       case 'shows':
-        worksheetData = filteredData.map((item) => {
-          const isKDrama = 'year' in item;
+        worksheetData = filteredData.map((item: any) => {
+          const isKDrama = item._type === 'kdrama';
           return {
           Title: item.title,
-            'Korean Title': isKDrama ? (item as any).titleKorean || '' : '',
+            'Korean Title': isKDrama ? item.titleKorean || '' : '',
             Type: isKDrama ? 'K-Drama' : 'Movie',
           Status: item.status,
             'Release Date': isKDrama ? '' : (item.releaseDate ? new Date(item.releaseDate).toISOString().split('T')[0] : ''),
-            Year: isKDrama ? (item as any).year || '' : (item.releaseDate ? new Date(item.releaseDate).getFullYear() : ''),
-            Episodes: isKDrama ? (item as any).episodes || '' : '',
-            'Episodes Watched': isKDrama ? (item as any).episodesWatched || '' : '',
-            Network: isKDrama ? (item as any).network || '' : '',
-            Score: isKDrama ? ((item as any).score || '') : '',
+            Year: isKDrama ? item.year || '' : (item.releaseDate ? new Date(item.releaseDate).getFullYear() : ''),
+            Episodes: isKDrama ? item.episodes || '' : '',
+            'Episodes Watched': isKDrama ? item.episodesWatched || '' : '',
+            Network: isKDrama ? item.network || '' : '',
+            Score: isKDrama ? (item.score || '') : '',
           Genres: item.genres?.join(', ') || '',
-            Synopsis: (item as any).synopsis || '',
-            Cast: isKDrama ? ((item as any).cast?.join(', ') || '') : '',
-            'Poster Image URL': (item as any).posterImage || '',
-            'Backdrop Image URL': !isKDrama ? ((item as any).backdropImage || '') : '',
-            'Review Type': !isKDrama ? ((item as any).reviewType || '') : '',
-            Notes: (item as any).notes || '',
+            Synopsis: item.synopsis || '',
+            Cast: isKDrama ? (item.cast?.join(', ') || '') : '',
+            'Poster Image URL': item.posterImage || '',
+            'Backdrop Image URL': !isKDrama ? (item.backdropImage || '') : '',
+            'Review Type': !isKDrama ? (item.reviewType || '') : '',
+            Notes: item.notes || '',
           };
         });
         break;
@@ -338,49 +341,74 @@ export default function ReportsPage() {
     setIsDeleting(true);
     setIsDeleteModalOpen(false);
 
-    // Delete all filtered items
-    try {
-      const deleteCount = filteredData.length;
-      
-      switch (selectedCategory) {
-        case 'anime':
-          await Promise.all(filteredData.map((item: any) => deleteAnime(item.id)));
-          break;
-        case 'shows':
-          await Promise.all(filteredData.map((item: any) => {
-            if ('year' in item) {
-              return deleteKDrama(item.id);
-            } else {
-              return deleteMovie(item.id);
-            }
-          }));
-          break;
-        case 'games':
-          await Promise.all(filteredData.map((item: any) => deleteGame(item.id)));
-          break;
-        case 'genshin':
-          if (genshinAccount) {
-            await Promise.all(filteredData.map((item: any) => deleteGenshinCharacter(item.id)));
-          }
-          break;
-        case 'credentials':
-          await Promise.all(filteredData.map((item: any) => deleteCredential(item.id)));
-          break;
-        case 'websites':
-          await Promise.all(filteredData.map((item: any) => deleteWebsite(item.id)));
-          break;
-      }
+    // Delete all filtered items with individual error handling
+    let successCount = 0;
+    let failCount = 0;
+    const totalCount = filteredData.length;
 
-      // Show success animation
-      setDeletedCount(deleteCount);
-      setDeleteSuccess(true);
-      setTimeout(() => {
-        setDeleteSuccess(false);
+    try {
+      const deletePromises = filteredData.map(async (item: any) => {
+        try {
+          switch (selectedCategory) {
+            case 'anime':
+              await deleteAnime(item.id);
+              break;
+            case 'shows':
+              // Use _type property to determine the type
+              if (item._type === 'kdrama') {
+                await deleteKDrama(item.id);
+              } else {
+                await deleteMovie(item.id);
+              }
+              break;
+            case 'games':
+              await deleteGame(item.id);
+              break;
+            case 'genshin':
+              if (genshinAccount) {
+                await deleteGenshinCharacter(item.id);
+              }
+              break;
+            case 'credentials':
+              await deleteCredential(item.id);
+              break;
+            case 'websites':
+              await deleteWebsite(item.id);
+              break;
+          }
+          successCount++;
+        } catch (err) {
+          console.error(`Error deleting item ${item.id}:`, err);
+          failCount++;
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      if (successCount > 0) {
+        // Show success animation
+        setDeletedCount(successCount);
+        setDeleteSuccess(true);
+        setTimeout(() => {
+          setDeleteSuccess(false);
+          setIsDeleting(false);
+          setFilters({});
+          setDeletedCount(0);
+        }, 2000);
+      } else if (failCount === totalCount) {
+        // All deletions failed
         setIsDeleting(false);
-        setFilters({});
-        setDeletedCount(0);
-      }, 2000);
+        alert(`Failed to delete all ${totalCount} items. Please check console for details.`);
+      }
+      
+      if (failCount > 0 && successCount > 0) {
+        // Partial success - show message after success animation
+        setTimeout(() => {
+          alert(`Successfully deleted ${successCount} items. Failed to delete ${failCount} items.`);
+        }, 2100);
+      }
     } catch (error) {
+      console.error('Error in delete operation:', error);
       setIsDeleting(false);
       alert('Error deleting items. Please try again.');
     }
@@ -1014,7 +1042,7 @@ export default function ReportsPage() {
                       </p>
                     </div>
                     <div className="p-4 rounded-lg" style={{ backgroundColor: `${config.color}10` }}>
-                      <p className="text-sm text-foreground-muted mb-2">Records to Export:</p>
+                      <p className="text-sm text-foreground-muted mb-2">Records to Export/Delete:</p>
                       <p className="text-2xl font-bold text-foreground">{filteredData.length}</p>
                     </div>
                     <Button
