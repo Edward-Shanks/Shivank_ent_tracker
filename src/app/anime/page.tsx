@@ -423,8 +423,6 @@ export default function AnimePage() {
                               </button>
                             </div>
 
-                            {/* Gradient Overlay - ensures no text appears on image */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pointer-events-none" />
                           </div>
 
                           {/* Anime Info */}
