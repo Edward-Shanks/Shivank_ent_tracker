@@ -118,8 +118,86 @@ export default function RegisterPage() {
     }
   };
 
+  // Generate floating lines data
+  const floatingLines = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    width: Math.random() * 150 + 50,
+    left: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: Math.random() * 10 + 15,
+    opacity: Math.random() * 0.3 + 0.1,
+  }));
+
   return (
     <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center justify-center p-3 sm:p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      {/* Floating Lines Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {floatingLines.map((line) => (
+          <motion.div
+            key={line.id}
+            className="absolute h-[1px] bg-gradient-to-r from-transparent via-accent-cyan/40 to-transparent"
+            style={{
+              width: line.width,
+              left: `${line.left}%`,
+              opacity: line.opacity,
+            }}
+            initial={{ top: '-5%', rotate: -15 }}
+            animate={{
+              top: '105%',
+              rotate: 15,
+            }}
+            transition={{
+              duration: line.duration,
+              delay: line.delay,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+        {/* Vertical floating lines */}
+        {Array.from({ length: 10 }, (_, i) => (
+          <motion.div
+            key={`v-${i}`}
+            className="absolute w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent"
+            style={{
+              height: Math.random() * 100 + 50,
+              top: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.2 + 0.1,
+            }}
+            initial={{ left: '-5%' }}
+            animate={{ left: '105%' }}
+            transition={{
+              duration: Math.random() * 15 + 20,
+              delay: Math.random() * 5,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+        {/* Diagonal accent lines */}
+        {Array.from({ length: 8 }, (_, i) => (
+          <motion.div
+            key={`d-${i}`}
+            className="absolute bg-gradient-to-r from-transparent via-accent-purple/20 to-transparent"
+            style={{
+              width: Math.random() * 200 + 100,
+              height: '2px',
+              left: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.3 + 0.1,
+              transform: `rotate(${Math.random() * 60 - 30}deg)`,
+            }}
+            initial={{ top: '-10%' }}
+            animate={{ top: '110%' }}
+            transition={{
+              duration: Math.random() * 12 + 18,
+              delay: Math.random() * 8,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+      </div>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div

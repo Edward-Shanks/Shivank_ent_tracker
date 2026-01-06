@@ -345,37 +345,37 @@ export default function ReportsPage() {
     let successCount = 0;
     let failCount = 0;
     const totalCount = filteredData.length;
-
+      
     try {
       const deletePromises = filteredData.map(async (item: any) => {
         try {
-          switch (selectedCategory) {
-            case 'anime':
+      switch (selectedCategory) {
+        case 'anime':
               await deleteAnime(item.id);
-              break;
-            case 'shows':
+          break;
+        case 'shows':
               // Use _type property to determine the type
               if (item._type === 'kdrama') {
                 await deleteKDrama(item.id);
-              } else {
+            } else {
                 await deleteMovie(item.id);
-              }
-              break;
-            case 'games':
+            }
+          break;
+        case 'games':
               await deleteGame(item.id);
-              break;
-            case 'genshin':
-              if (genshinAccount) {
+          break;
+        case 'genshin':
+          if (genshinAccount) {
                 await deleteGenshinCharacter(item.id);
-              }
-              break;
-            case 'credentials':
-              await deleteCredential(item.id);
-              break;
-            case 'websites':
-              await deleteWebsite(item.id);
-              break;
           }
+          break;
+        case 'credentials':
+              await deleteCredential(item.id);
+          break;
+        case 'websites':
+              await deleteWebsite(item.id);
+          break;
+      }
           successCount++;
         } catch (err) {
           console.error(`Error deleting item ${item.id}:`, err);
@@ -386,15 +386,15 @@ export default function ReportsPage() {
       await Promise.all(deletePromises);
 
       if (successCount > 0) {
-        // Show success animation
+      // Show success animation
         setDeletedCount(successCount);
-        setDeleteSuccess(true);
-        setTimeout(() => {
-          setDeleteSuccess(false);
-          setIsDeleting(false);
-          setFilters({});
-          setDeletedCount(0);
-        }, 2000);
+      setDeleteSuccess(true);
+      setTimeout(() => {
+        setDeleteSuccess(false);
+        setIsDeleting(false);
+        setFilters({});
+        setDeletedCount(0);
+      }, 2000);
       } else if (failCount === totalCount) {
         // All deletions failed
         setIsDeleting(false);

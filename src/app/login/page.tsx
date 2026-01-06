@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
 import { useAuth } from '@/context/AuthContext';
+import LightPillar from '@/components/LightPillar';
+import GradientText from '@/components/GradientText';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -94,8 +96,103 @@ export default function LoginPage() {
     }
   };
 
+  // Generate floating lines data
+  const floatingLines = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    width: Math.random() * 150 + 50, // 50-200px width
+    left: Math.random() * 100, // 0-100% left position
+    delay: Math.random() * 5, // 0-5s delay
+    duration: Math.random() * 10 + 15, // 15-25s duration
+    opacity: Math.random() * 0.3 + 0.1, // 0.1-0.4 opacity
+  }));
+
   return (
-    <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center justify-center p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+    <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      {/* Floating Lines Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {floatingLines.map((line) => (
+          <motion.div
+            key={line.id}
+            className="absolute h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+            style={{
+              width: line.width,
+              left: `${line.left}%`,
+              opacity: line.opacity,
+            }}
+            initial={{ top: '-5%', rotate: -15 }}
+            animate={{
+              top: '105%',
+              rotate: 15,
+            }}
+            transition={{
+              duration: line.duration,
+              delay: line.delay,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+        {/* Vertical floating lines */}
+        {Array.from({ length: 10 }, (_, i) => (
+          <motion.div
+            key={`v-${i}`}
+            className="absolute w-[1px] bg-gradient-to-b from-transparent via-accent-cyan/30 to-transparent"
+            style={{
+              height: Math.random() * 100 + 50,
+              top: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.2 + 0.1,
+            }}
+            initial={{ left: '-5%' }}
+            animate={{ left: '105%' }}
+            transition={{
+              duration: Math.random() * 15 + 20,
+              delay: Math.random() * 5,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+        {/* Diagonal accent lines */}
+        {Array.from({ length: 8 }, (_, i) => (
+          <motion.div
+            key={`d-${i}`}
+            className="absolute bg-gradient-to-r from-transparent via-accent-purple/20 to-transparent"
+            style={{
+              width: Math.random() * 200 + 100,
+              height: '2px',
+              left: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.3 + 0.1,
+              transform: `rotate(${Math.random() * 60 - 30}deg)`,
+            }}
+            initial={{ top: '-10%' }}
+            animate={{ top: '110%' }}
+            transition={{
+              duration: Math.random() * 12 + 18,
+              delay: Math.random() * 8,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Light Pillar Background Effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-70">
+        <LightPillar
+          topColor="#00d4ff"
+          bottomColor="#E50914"
+          intensity={1.0}
+          rotationSpeed={0.3}
+          interactive={false}
+          glowAmount={0.006}
+          pillarWidth={2.5}
+          pillarHeight={0.5}
+          noiseIntensity={0.6}
+          mixBlendMode="screen"
+          pillarRotation={15}
+        />
+      </div>
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -153,42 +250,56 @@ export default function LoginPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative z-10 w-full max-w-md"
+        className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 h-full flex items-center"
       >
-        {/* Logo and Title */}
-        <motion.div variants={itemVariants} className="text-center mb-8">
-          <motion.div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden mb-6 shadow-lg"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        <div className="flex flex-col md:flex-row items-center md:items-center justify-between gap-8 md:gap-12 w-full">
+          {/* Logo and Title - Left Side */}
+          <motion.div 
+            variants={itemVariants} 
+            className="flex flex-col items-start md:items-start text-left md:w-1/2"
           >
-            <img 
-              src="/images/logo/Nexaverse_logo.png" 
-              alt="NexaVerse" 
-              className="w-full h-full object-cover"
-            />
+            <motion.div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden mb-6 shadow-lg"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            >
+              <img 
+                src="/images/logo/Nexaverse_logo.png" 
+                alt="NexaVerse" 
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+            <motion.h1
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-3 flex items-center gap-2 flex-wrap"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              Welcome Back{' '}
+              <GradientText
+                className="text-4xl md:text-5xl lg:text-6xl font-bold"
+                colors={['#E50914', '#00d4ff', '#a855f7']}
+                animationSpeed={8}
+                direction="horizontal"
+                pauseOnHover={false}
+                yoyo={true}
+              >
+                NexaVerse
+              </GradientText>
+            </motion.h1>
+            <motion.p
+              className="text-white text-lg md:text-xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              Sign in to continue your entertainment journey
+            </motion.p>
           </motion.div>
-          <motion.h1
-            className="text-4xl md:text-5xl font-bold text-foreground mb-3"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            Welcome to{' '}
-            <span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-purple bg-clip-text text-transparent">
-              NexaVerse
-            </span>
-          </motion.h1>
-          <motion.p
-            className="text-foreground-muted text-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            Sign in to continue your entertainment journey
-          </motion.p>
-        </motion.div>
+
+          {/* Login Form - Right Side */}
+          <div className="w-full md:w-1/2 max-w-md md:max-w-lg">
 
         {/* Login Card */}
         <motion.div
@@ -203,7 +314,7 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-foreground-muted"
+                className="block text-sm font-medium text-black"
               >
                 Email Address
               </label>
@@ -213,7 +324,7 @@ export default function LoginPage() {
                     className={`w-5 h-5 transition-colors ${
                       isFocused === 'email'
                         ? 'text-primary'
-                        : 'text-foreground-muted'
+                        : 'text-black'
                     }`}
                   />
                 </div>
@@ -225,7 +336,7 @@ export default function LoginPage() {
                   onFocus={() => setIsFocused('email')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-black focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 {isFocused === 'email' && (
@@ -246,7 +357,7 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-foreground-muted"
+                className="block text-sm font-medium text-black"
               >
                 Password
               </label>
@@ -256,7 +367,7 @@ export default function LoginPage() {
                     className={`w-5 h-5 transition-colors ${
                       isFocused === 'password'
                         ? 'text-primary'
-                        : 'text-foreground-muted'
+                        : 'text-black'
                     }`}
                   />
                 </div>
@@ -268,13 +379,13 @@ export default function LoginPage() {
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Enter your password"
-                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-black focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 <motion.button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-foreground-muted hover:text-foreground transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-black hover:text-foreground transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -305,7 +416,7 @@ export default function LoginPage() {
                   type="checkbox"
                   className="w-4 h-4 rounded border-foreground/20 text-primary focus:ring-primary/50 focus:ring-offset-0 cursor-pointer"
                 />
-                <span className="ml-2 text-foreground-muted group-hover:text-foreground transition-colors">
+                <span className="ml-2 text-black group-hover:text-foreground transition-colors">
                   Remember me
                 </span>
               </label>
@@ -334,15 +445,12 @@ export default function LoginPage() {
               <motion.button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-primary via-primary-hover to-primary-muted shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 px-6 rounded-lg font-semibold text-white shadow-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 active:bg-[#FF9FFC]"
+                style={{ backgroundColor: '#E50914' }}
                 whileHover={!isSubmitting && !isLoading ? { scale: 1.02, boxShadow: '0 10px 30px rgba(229, 9, 20, 0.4)' } : {}}
-                whileTap={!isSubmitting && !isLoading ? { scale: 0.98 } : {}}
+                whileTap={!isSubmitting && !isLoading ? { scale: 0.98, backgroundColor: '#FF9FFC' } : {}}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary-hover via-primary to-primary-muted opacity-0 group-hover:opacity-100 transition-opacity"
-                  initial={false}
-                />
                 <span className="relative flex items-center justify-center gap-2">
                   {isSubmitting ? (
                     <>
@@ -375,7 +483,7 @@ export default function LoginPage() {
               className="relative flex items-center py-4"
             >
               <div className="flex-1 border-t border-foreground/20" />
-              <span className="px-4 text-sm text-foreground-muted">or</span>
+              <span className="px-4 text-sm text-black">or</span>
               <div className="flex-1 border-t border-foreground/20" />
             </motion.div>
 
@@ -384,7 +492,7 @@ export default function LoginPage() {
               variants={itemVariants}
               className="text-center"
             >
-              <p className="text-foreground-muted text-sm">
+              <p className="text-black text-sm">
                 Don't have an account?{' '}
                 <Link
                   href="/register"
@@ -402,7 +510,7 @@ export default function LoginPage() {
           variants={itemVariants}
           className="text-center mt-8"
         >
-          <p className="text-foreground-muted text-sm">
+          <p className="text-black text-sm">
             By signing in, you agree to our{' '}
             <a href="#" className="text-primary hover:underline">
               Terms of Service
@@ -413,6 +521,8 @@ export default function LoginPage() {
             </a>
           </p>
         </motion.div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

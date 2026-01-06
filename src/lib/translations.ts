@@ -95,7 +95,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'msg.selectPlatform': 'Please select at least one platform',
     
     // Dashboard
-    'dashboard.welcome': 'Welcome to',
+    'dashboard.welcome': 'Welcome Back',
     'dashboard.subtitle': 'Your personal entertainment hub. Track anime, movies, games, and more—all in one beautiful dashboard.',
     'dashboard.totalEntries': 'Total Entries',
     'dashboard.currentlyActive': 'Currently Active',

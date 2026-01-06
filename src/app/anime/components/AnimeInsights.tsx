@@ -470,21 +470,21 @@ export default function AnimeInsights() {
           <h3 className="text-lg font-semibold text-foreground mb-6">
             {t('anime.detailedStatistics')}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
             {statusData.map((status) => (
               <div key={status.name} className="text-center">
                 <div
-                  className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-2 flex items-center justify-center"
                   style={{ backgroundColor: `${status.color}20` }}
                 >
                   <span
-                    className="text-2xl font-bold"
+                    className="text-xl sm:text-2xl font-bold"
                     style={{ color: status.color }}
                   >
                     {status.value}
                   </span>
                 </div>
-                <p className="text-foreground-muted text-sm">{status.name}</p>
+                <p className="text-foreground-muted text-xs sm:text-sm">{status.name}</p>
               </div>
             ))}
           </div>

@@ -156,8 +156,8 @@ export default function AnimePage() {
   return (
     <div className="min-h-screen bg-animated">
       {/* Hero Section */}
-      {viewMode === 'collection' && featuredAnime && (
-        <AnimeHero anime={featuredAnime} totalCount={anime.length} />
+      {viewMode === 'collection' && (
+        <AnimeHero totalCount={anime.length} />
       )}
 
       {/* Main Content */}
@@ -398,8 +398,8 @@ export default function AnimePage() {
                             {/* Edit and Delete Icons */}
                             <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                               <button
-                                onClick={() => {
-                                  setSelectedAnime(item);
+                        onClick={() => {
+                          setSelectedAnime(item);
                                   setIsEditModalOpen(true);
                                 }}
                                 className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
