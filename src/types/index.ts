@@ -8,7 +8,7 @@ export interface User {
 }
 
 // ===== ANIME TYPES =====
-export type AnimeType = 'Anime' | 'Donghua';
+export type AnimeType = 'Anime' | 'Donghua' | 'H-Ecchi';
 export type AiringStatus = 'YTA' | 'Airing' | 'Completed';
 export type WatchStatus = 'YTW' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped';
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
@@ -35,6 +35,8 @@ export interface Anime {
   startDate?: string;
   endDate?: string;
   notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ===== MOVIE TYPES =====

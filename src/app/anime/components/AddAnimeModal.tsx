@@ -39,6 +39,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
   const animeTypes: { value: AnimeType; label: string }[] = [
     { value: 'Anime', label: 'Anime' },
     { value: 'Donghua', label: 'Donghua' },
+    { value: 'H-Ecchi', label: 'H-Ecchi' },
   ];
 
   const airingStatuses: { value: AiringStatus; label: string }[] = [

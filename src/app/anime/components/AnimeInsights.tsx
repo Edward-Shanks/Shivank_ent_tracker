@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
-  PieChart,
-  Pie,
   Cell,
   BarChart,
   Bar,
@@ -17,9 +15,9 @@ import {
   Line,
   Legend,
 } from 'recharts';
-import { Tv, Clock, Star, TrendingUp, Film, Layers, Bookmark, Play, CheckCircle, Pause, X, Calendar } from 'lucide-react';
+import { Tv, Clock, TrendingUp, Film, Layers } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card, StatCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { AnimeStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -60,6 +58,53 @@ export default function AnimeInsights() {
   const { t } = useLanguage();
   const [stats, setStats] = useState<AnimeStats>(defaultStats);
   const [isLoading, setIsLoading] = useState(true);
+  const activityScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll effect for recent activity
+  useEffect(() => {
+    const scrollContainer = activityScrollRef.current;
+    if (!scrollContainer || anime.length === 0) return;
+
+    let animationFrameId: number;
+    let scrollPosition = 0;
+    const scrollSpeed = 0.3; // pixels per frame (slow pace)
+
+    const autoScroll = () => {
+      if (scrollContainer) {
+        scrollPosition += scrollSpeed;
+        
+        // Reset to top when reaching the bottom
+        if (scrollPosition >= scrollContainer.scrollHeight - scrollContainer.clientHeight) {
+          scrollPosition = 0;
+        }
+        
+        scrollContainer.scrollTop = scrollPosition;
+      }
+      animationFrameId = requestAnimationFrame(autoScroll);
+    };
+
+    // Start auto-scroll after a short delay
+    const timeoutId = setTimeout(() => {
+      animationFrameId = requestAnimationFrame(autoScroll);
+    }, 2000);
+
+    // Pause on hover
+    const handleMouseEnter = () => cancelAnimationFrame(animationFrameId);
+    const handleMouseLeave = () => {
+      scrollPosition = scrollContainer.scrollTop;
+      animationFrameId = requestAnimationFrame(autoScroll);
+    };
+
+    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      clearTimeout(timeoutId);
+      cancelAnimationFrame(animationFrameId);
+      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [anime.length]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -86,6 +131,38 @@ export default function AnimeInsights() {
     { name: t('status.dropped'), value: stats.watchStatusCounts.dropped, color: COLORS.dropped },
   ].filter((item) => item.value > 0);
 
+  // Calculate Anime Type vs Watch Status data
+  const animeTypeWatchStatusData = React.useMemo(() => {
+    const animeCount = {
+      Watching: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Watching').length,
+      Completed: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Completed').length,
+      'Watch Later': anime.filter(a => a.animeType === 'Anime' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'On Hold': anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'On Hold').length,
+      Dropped: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Dropped').length,
+    };
+    const donghuaCount = {
+      Watching: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Watching').length,
+      Completed: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Completed').length,
+      'Watch Later': anime.filter(a => a.animeType === 'Donghua' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'On Hold': anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'On Hold').length,
+      Dropped: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Dropped').length,
+    };
+    const hEcchiCount = {
+      Watching: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Watching').length,
+      Completed: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Completed').length,
+      'Watch Later': anime.filter(a => a.animeType === 'H-Ecchi' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'On Hold': anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'On Hold').length,
+      Dropped: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Dropped').length,
+    };
+    return [
+      { status: 'Watching', Anime: animeCount.Watching, Donghua: donghuaCount.Watching, 'H-Ecchi': hEcchiCount.Watching },
+      { status: 'Completed', Anime: animeCount.Completed, Donghua: donghuaCount.Completed, 'H-Ecchi': hEcchiCount.Completed },
+      { status: 'Watch Later', Anime: animeCount['Watch Later'], Donghua: donghuaCount['Watch Later'], 'H-Ecchi': hEcchiCount['Watch Later'] },
+      { status: 'On Hold', Anime: animeCount['On Hold'], Donghua: donghuaCount['On Hold'], 'H-Ecchi': hEcchiCount['On Hold'] },
+      { status: 'Dropped', Anime: animeCount.Dropped, Donghua: donghuaCount.Dropped, 'H-Ecchi': hEcchiCount.Dropped },
+    ].filter(d => d.Anime > 0 || d.Donghua > 0 || d['H-Ecchi'] > 0);
+  }, [anime]);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -100,11 +177,11 @@ export default function AnimeInsights() {
 
   return (
     <div className="space-y-8">
-      {/* Stats Overview */}
+      {/* Stats Overview with Recent Activity */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-2 lg:grid-cols-7 gap-4"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-4"
       >
         {/* Total Anime Card with Airing Status Breakdown */}
         <Card className="p-5">
@@ -126,47 +203,80 @@ export default function AnimeInsights() {
             </div>
           </div>
         </Card>
-        <StatCard
-          icon={Calendar}
-          label={t('anime.ytw')}
-          value={stats.watchStatusCounts.ytw}
-          color="#a855f7"
-        />
-        <StatCard
-          icon={Play}
-          label={t('status.watching')}
-          value={stats.watchStatusCounts.watching}
-          color="#3b82f6"
-        />
-        <StatCard
-          icon={Bookmark}
-          label={t('anime.watchLater')}
-          value={stats.watchStatusCounts.watchLater}
-          color="#ec4899"
-        />
-        <StatCard
-          icon={CheckCircle}
-          label={t('status.completed')}
-          value={stats.watchStatusCounts.completed}
-          color="#22c55e"
-        />
-        <StatCard
-          icon={Pause}
-          label={t('status.onHold')}
-          value={stats.watchStatusCounts.onHold}
-          color="#eab308"
-        />
-        <StatCard
-          icon={X}
-          label={t('status.dropped')}
-          value={stats.watchStatusCounts.dropped}
-          color="#ef4444"
-        />
+
+        {/* Recent Activity Box */}
+        <Card className="p-4 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: '#3b82f620' }}
+            >
+              <Clock className="w-4 h-4" style={{ color: '#3b82f6' }} />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">Recent Activity</div>
+              <div className="text-[10px] text-foreground-muted">Your latest anime updates</div>
+            </div>
+          </div>
+          <div 
+            ref={activityScrollRef}
+            className="h-28 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pr-1"
+          >
+            {anime.length > 0 ? (
+              [...anime]
+                .sort((a, b) => {
+                  const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                  const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                  return dateB - dateA;
+                })
+                .slice(0, 20)
+                .map((item, index) => {
+                  const statusColors: Record<string, string> = {
+                    'Watching': '#3b82f6',
+                    'Completed': '#22c55e',
+                    'Watch Later': '#a855f7',
+                    'YTW': '#a855f7',
+                    'On Hold': '#eab308',
+                    'Dropped': '#ef4444',
+                  };
+                  const color = statusColors[item.watchStatus] || '#666';
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-2 p-1.5 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+                    >
+                      <div 
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: color }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-foreground truncate">{item.title}</div>
+                        <div className="text-[10px] text-foreground-muted">
+                          <span style={{ color }}>{item.watchStatus}</span>
+                          {item.episodesWatched > 0 && ` • Ep ${item.episodesWatched}/${item.episodes || '?'}`}
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-foreground-muted flex-shrink-0">
+                        {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </motion.div>
+                  );
+                })
+            ) : (
+              <div className="h-full flex items-center justify-center text-foreground-muted text-xs">
+                No recent activity
+              </div>
+            )}
+          </div>
+        </Card>
       </motion.div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
+        {/* Status Distribution - Horizontal Progress Bar Chart */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -177,39 +287,95 @@ export default function AnimeInsights() {
               <Layers className="w-5 h-5 text-primary" />
               {t('anime.statusDistribution')}
             </h3>
-            <div className="h-64 flex items-center justify-center chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    formatter={(value) => (
-                      <span className="text-foreground-muted text-sm">{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-64 flex flex-col justify-between">
+              {statusData.length > 0 ? (
+                statusData.map((status, index) => {
+                  const maxValue = Math.max(...statusData.map(s => s.value));
+                  const percentage = maxValue > 0 ? (status.value / maxValue) * 100 : 0;
+                  return (
+                    <div key={status.name} className="space-y-1">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-foreground-muted">{status.name}</span>
+                        <span className="font-semibold text-foreground">{status.value}</span>
+                      </div>
+                      <div className="h-5 bg-white/5 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ duration: 0.8, delay: index * 0.1 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: status.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No status data available
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
 
-        {/* Genre Distribution */}
+        {/* Anime Type vs Watch Status */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
+        >
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Film className="w-5 h-5 text-purple-500" />
+              Anime Type vs Watch Status
+            </h3>
+            <div className="h-64 chart-container">
+              {animeTypeWatchStatusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={animeTypeWatchStatusData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
+                    <XAxis
+                      dataKey="status"
+                      stroke="#666"
+                      tick={{ fill: '#a3a3a3', fontSize: 11 }}
+                    />
+                    <YAxis hide={true} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(0,0,0,0.9)', 
+                        border: '1px solid #333',
+                        borderRadius: '8px',
+                        color: '#fff'
+                      }}
+                    />
+                    <Legend 
+                      formatter={(value) => (
+                        <span className="text-foreground-muted text-sm">{value}</span>
+                      )}
+                    />
+                    <Bar dataKey="Anime" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Donghua" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="H-Ecchi" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-foreground-muted">
+                  No anime type data available
+                </div>
+              )}
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Top Genres & Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Genre Distribution */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
         >
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
@@ -228,6 +394,8 @@ export default function AnimeInsights() {
                       width={80}
                       stroke="#666"
                       tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]}>
@@ -243,44 +411,6 @@ export default function AnimeInsights() {
               ) : (
                 <div className="h-full flex items-center justify-center text-foreground-muted">
                   No genre data available
-                </div>
-              )}
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Score Distribution & Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Score Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              {t('anime.scoreDistribution')}
-            </h3>
-            <div className="h-64 chart-container">
-              {stats.scoreDistribution.some(d => d.count > 0) ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.scoreDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis
-                      dataKey="score"
-                      stroke="#666"
-                      tick={{ fill: '#a3a3a3' }}
-                    />
-                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" fill="#e50914" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-foreground-muted">
-                  No score data available
                 </div>
               )}
             </div>
@@ -302,13 +432,13 @@ export default function AnimeInsights() {
               {stats.monthlyActivity.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.monthlyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
                     <XAxis
                       dataKey="month"
                       stroke="#666"
                       tick={{ fill: '#a3a3a3' }}
                     />
-                    <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                    <YAxis hide={true} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"

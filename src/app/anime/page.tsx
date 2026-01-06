@@ -8,8 +8,6 @@ import {
   Filter,
   Search,
   Plus,
-  SortAsc,
-  SortDesc,
   ChevronDown,
   Edit,
   Trash2,
@@ -29,7 +27,6 @@ import EditAnimeModal from './components/EditAnimeModal';
 import { AnimeCardField } from './components/AnimeCardCustomizationModal';
 
 type ViewMode = 'collection' | 'insights';
-type SortOption = 'score' | 'progress' | 'recent';
 
 // Status filters and sort options will be created inside component to use translations
 
@@ -48,19 +45,23 @@ export default function AnimePage() {
     { value: 'Dropped', label: t('status.dropped') },
   ];
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'score', label: t('sort.score') },
-    { value: 'progress', label: t('sort.progress') },
-    { value: 'recent', label: t('sort.recent') },
+  // Combined filter options
+  type FilterOption = 'a-z' | 'z-a' | 'type-anime' | 'type-donghua' | 'type-h-ecchi';
+  const filterOptions: { value: FilterOption; label: string }[] = [
+    { value: 'a-z', label: 'A-Z' },
+    { value: 'z-a', label: 'Z-A' },
+    { value: 'type-anime', label: 'Type: Anime' },
+    { value: 'type-donghua', label: 'Type: Donghua' },
+    { value: 'type-h-ecchi', label: 'Type: H-Ecchi' },
   ];
   const [statusFilter, setStatusFilter] = useState<WatchStatus | 'all'>('all');
+  const [combinedFilter, setCombinedFilter] = useState<FilterOption>('a-z');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isBulkUpdateModalOpen, setIsBulkUpdateModalOpen] = useState(false);
   
   const CARD_FIELDS_STORAGE_KEY = 'anime_card_fields';
   const DEFAULT_CARD_FIELDS: AnimeCardField[] = ['watchStatus', 'score', 'episodes', 'airingStatus'];
@@ -93,6 +94,15 @@ export default function AnimePage() {
       result = result.filter((a) => a.watchStatus === statusFilter);
     }
 
+    // Apply combined filter (type filtering)
+    if (combinedFilter === 'type-anime') {
+      result = result.filter((a) => a.animeType === 'Anime');
+    } else if (combinedFilter === 'type-donghua') {
+      result = result.filter((a) => a.animeType === 'Donghua');
+    } else if (combinedFilter === 'type-h-ecchi') {
+      result = result.filter((a) => a.animeType === 'H-Ecchi');
+    }
+
     // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -104,30 +114,20 @@ export default function AnimePage() {
       );
     }
 
-    // Apply sorting
+    // Apply sorting based on combined filter
     result.sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case 'score':
-          comparison = (b.score || 0) - (a.score || 0);
-          break;
-        case 'progress':
-          const progressA = a.episodes > 0 ? a.episodesWatched / a.episodes : 0;
-          const progressB = b.episodes > 0 ? b.episodesWatched / b.episodes : 0;
-          comparison = progressB - progressA;
-          break;
-        case 'recent':
-          comparison = 0; // Would use date if available
-          break;
-        default:
-          comparison = a.title.localeCompare(b.title);
-          break;
+      if (combinedFilter === 'a-z') {
+        return a.title.localeCompare(b.title);
+      } else if (combinedFilter === 'z-a') {
+        return b.title.localeCompare(a.title);
+      } else {
+        // For type filters, sort alphabetically
+        return a.title.localeCompare(b.title);
       }
-      return sortOrder === 'asc' ? comparison : -comparison;
     });
 
     return result;
-  }, [anime, statusFilter, searchQuery, sortBy, sortOrder]);
+  }, [anime, statusFilter, combinedFilter, searchQuery]);
 
   // Calculate anime counts
   const animeCounts = useMemo(() => {
@@ -173,8 +173,24 @@ export default function AnimePage() {
             </p>
           </div>
 
-          {/* View Toggle */}
+          {/* Search and View Toggle */}
           <div className="flex items-center gap-2">
+            {/* Search Bar - Only show in Collection view */}
+            {viewMode === 'collection' && (
+              <div 
+                className="w-36 rounded-lg"
+                style={{
+                  boxShadow: '0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3), inset 0 0 5px rgba(168, 85, 247, 0.1)',
+                  border: '1px solid rgba(168, 85, 247, 0.6)',
+                }}
+              >
+                <SearchInput
+                  placeholder={t('anime.searchAnime')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            )}
             <div className="glass rounded-lg p-1 flex">
               <button
                 onClick={() => setViewMode('insights')}
@@ -267,25 +283,26 @@ export default function AnimePage() {
               })}
               </div>
 
-                {/* Search and Sort on Right */}
+                {/* Type Filter and Bulk Update on Right */}
                 <div className="flex items-center gap-2 flex-1 min-w-[200px] justify-end ml-8">
-                  <div className="flex-1 min-w-[200px] max-w-xs">
-                  <SearchInput
-                    placeholder={t('anime.searchAnime')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+                  {/* Combined Filter Dropdown */}
+                  <select
+                    value={combinedFilter}
+                    onChange={(e) => setCombinedFilter(e.target.value as FilterOption)}
+                    className="px-2 py-1.5 rounded-lg text-xs bg-background border border-foreground/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    {filterOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                   <Button
                     variant="secondary"
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="px-2 py-1.5"
+                    onClick={() => setIsBulkUpdateModalOpen(true)}
+                    className="px-3 py-1.5 text-xs whitespace-nowrap"
                   >
-                    {sortOrder === 'asc' ? (
-                      <SortAsc className="w-4 h-4" />
-                    ) : (
-                      <SortDesc className="w-4 h-4" />
-                    )}
+                    Bulk Update
                   </Button>
                 </div>
               </div>
@@ -328,11 +345,7 @@ export default function AnimePage() {
                       >
                         <Card 
                           hover 
-                          className="p-0 overflow-hidden cursor-pointer h-full flex flex-col"
-                        onClick={() => {
-                          setSelectedAnime(item);
-                          setIsDetailModalOpen(true);
-                        }}
+                          className="p-0 overflow-hidden h-full flex flex-col"
                         >
                           {/* Anime Cover Image */}
                           <div className="relative aspect-[3/4] flex-shrink-0 overflow-hidden">
@@ -362,8 +375,7 @@ export default function AnimePage() {
                             {/* Edit and Delete Icons */}
                             <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
+                                onClick={() => {
                                   setSelectedAnime(item);
                                   setIsEditModalOpen(true);
                                 }}
@@ -373,8 +385,7 @@ export default function AnimePage() {
                                 <Edit className="w-4 h-4 text-white" />
                               </button>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
+                                onClick={() => {
                                   if (window.confirm(`${t('msg.deleteConfirm') || 'Are you sure you want to delete'} ${item.title}?`)) {
                                     deleteAnime(item.id).catch((error) => {
                                       console.error('Error deleting anime:', error);

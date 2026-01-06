@@ -39,6 +39,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
   const animeTypes: { value: AnimeType; label: string }[] = [
     { value: 'Anime', label: 'Anime' },
     { value: 'Donghua', label: 'Donghua' },
+    { value: 'H-Ecchi', label: 'H-Ecchi' },
   ];
 
   const airingStatuses: { value: AiringStatus; label: string }[] = [

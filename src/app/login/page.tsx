@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
 import { useAuth } from '@/context/AuthContext';
 
@@ -158,12 +158,16 @@ export default function LoginPage() {
         {/* Logo and Title */}
         <motion.div variants={itemVariants} className="text-center mb-8">
           <motion.div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary mb-6 shadow-lg"
+            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden mb-6 shadow-lg"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
-            <Sparkles className="w-10 h-10 text-white" />
+            <img 
+              src="/images/logo/Nexaverse_logo.png" 
+              alt="NexaVerse" 
+              className="w-full h-full object-cover"
+            />
           </motion.div>
           <motion.h1
             className="text-4xl md:text-5xl font-bold text-foreground mb-3"

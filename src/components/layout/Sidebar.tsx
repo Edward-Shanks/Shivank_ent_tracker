@@ -57,8 +57,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
         <Link href="/" className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-white font-bold text-xl">N</span>
+          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+            <img 
+              src="/images/logo/Nexaverse_logo.png" 
+              alt="NexaVerse" 
+              className="w-full h-full object-cover"
+            />
           </div>
           <AnimatePresence>
             {!isCollapsed && (
