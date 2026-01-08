@@ -326,6 +326,8 @@ export default function GamesPage() {
                   <p className="text-foreground-muted text-lg mb-4">
                     {games.length === 0 
                       ? t('games.noGames') || 'No games found. Add your first game!'
+                      : searchQuery
+                      ? 'No Searched Game Found'
                       : t('games.noFilteredGames') || `No games match your filters. (${games.length} total games)`}
                   </p>
                   {games.length === 0 && (

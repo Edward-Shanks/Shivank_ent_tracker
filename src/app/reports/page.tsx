@@ -1347,7 +1347,7 @@ export default function ReportsPage() {
                               >
                                 {step.id === 1 && 'Select category & download template ↓'}
                                 {step.id === 2 && 'Select your file ↓'}
-                                {step.id === 3 && 'Uploading... ↓'}
+                                {step.id === 3 && 'Uploading... ↑'}
                               </motion.div>
                             </motion.div>
                           )}
