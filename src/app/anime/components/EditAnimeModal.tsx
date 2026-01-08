@@ -49,7 +49,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
   ];
 
   const watchStatuses: { value: WatchStatus; label: string }[] = [
-    { value: 'YTW', label: t('anime.yetToWatch') },
+    { value: 'Yet to Air for Watch', label: t('anime.yetToWatch') },
     { value: 'Watching', label: t('status.watching') },
     { value: 'Watch Later', label: t('anime.watchLater') },
     { value: 'Completed', label: t('status.completed') },
@@ -62,7 +62,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
     animeOtherName: anime.animeOtherName || '',
     animeType: anime.animeType || 'Anime' as AnimeType,
     airingStatus: anime.airingStatus || 'Airing' as AiringStatus,
-    watchStatus: anime.watchStatus || 'YTW' as WatchStatus,
+    watchStatus: anime.watchStatus || 'Yet to Air for Watch' as WatchStatus,
     websiteLink: anime.websiteLink || '',
     genres: anime.genres || [],
     season: anime.season || '',
@@ -78,7 +78,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
         animeOtherName: anime.animeOtherName || '',
         animeType: anime.animeType || 'Anime' as AnimeType,
         airingStatus: anime.airingStatus || 'Airing' as AiringStatus,
-        watchStatus: anime.watchStatus || 'YTW' as WatchStatus,
+        watchStatus: anime.watchStatus || 'Yet to Air for Watch' as WatchStatus,
         websiteLink: anime.websiteLink || '',
         genres: anime.genres || [],
         season: anime.season || '',

@@ -3,7 +3,7 @@
 
 -- First, update any null watchStatus values to a default value
 UPDATE "anime" 
-SET "watch_status" = 'YTW' 
+SET "watch_status" = 'Yet to Air for Watch' 
 WHERE "watch_status" IS NULL;
 
 -- Make watchStatus not null

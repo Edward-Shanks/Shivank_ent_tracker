@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate watch status counts
     const watchStatusCounts = {
-      ytw: parsedAnime.filter((a) => a.watchStatus === 'YTW').length,
+      Yet to Air for Watch: parsedAnime.filter((a) => a.watchStatus === 'Yet to Air for Watch').length,
       watching: parsedAnime.filter((a) => a.watchStatus === 'Watching').length,
       watchLater: parsedAnime.filter((a) => a.watchStatus === 'Watch Later').length,
       completed: parsedAnime.filter((a) => a.watchStatus === 'Completed').length,

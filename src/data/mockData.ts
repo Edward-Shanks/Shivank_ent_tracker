@@ -98,7 +98,7 @@ export const mockAnime: Anime[] = [
     coverImage: 'https://cdn.myanimelist.net/images/anime/1170/124312.jpg',
     episodes: 24,
     episodesWatched: 0,
-    watchStatus: 'YTW',
+    watchStatus: 'Yet to Air for Watch',
     genres: ['Action', 'Adventure', 'Drama'],
     season: 'Winter',
     year: 2023,

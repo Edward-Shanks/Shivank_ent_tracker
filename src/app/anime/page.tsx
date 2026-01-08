@@ -40,7 +40,7 @@ export default function AnimePage() {
     { value: 'all', label: t('anime.allAnime') },
     { value: 'Watching', label: t('status.watching') },
     { value: 'Completed', label: t('status.completed') },
-    { value: 'YTW', label: t('status.planToWatch') },
+    { value: 'Yet to Air for Watch', label: t('status.planToWatch') },
     { value: 'Watch Later', label: t('anime.watchLater') || 'Watch Later' },
     { value: 'On Hold', label: t('status.onHold') },
     { value: 'Dropped', label: t('status.dropped') },
@@ -145,7 +145,7 @@ export default function AnimePage() {
       all: anime.length,
       Watching: anime.filter((a) => a.watchStatus === 'Watching').length,
       Completed: anime.filter((a) => a.watchStatus === 'Completed').length,
-      YTW: anime.filter((a) => a.watchStatus === 'YTW').length,
+      Yet to Air for Watch: anime.filter((a) => a.watchStatus === 'Yet to Air for Watch').length,
       'Watch Later': anime.filter((a) => a.watchStatus === 'Watch Later').length,
       'On Hold': anime.filter((a) => a.watchStatus === 'On Hold').length,
       Dropped: anime.filter((a) => a.watchStatus === 'Dropped').length,
@@ -316,7 +316,7 @@ export default function AnimePage() {
                   className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 items-stretch"
                 >
                   {filteredAnime.map((item, index) => {
-                    const badgeType = item.watchStatus === 'YTW' || item.watchStatus === 'Watch Later' 
+                    const badgeType = item.watchStatus === 'Yet to Air for Watch' || item.watchStatus === 'Watch Later' 
                             ? 'planning' 
                             : item.watchStatus === 'On Hold' 
                             ? 'on-hold' 

@@ -48,7 +48,7 @@ export default function BulkUpdateAnimeModal({
     { value: 'all', label: t('anime.allAnime') || 'All Anime' },
     { value: 'Watching', label: t('status.watching') || 'Watching' },
     { value: 'Completed', label: t('status.completed') || 'Completed' },
-    { value: 'YTW', label: t('status.planToWatch') || 'Plan to Watch' },
+    { value: 'Yet to Air for Watch', label: t('status.planToWatch') || 'Plan to Watch' },
     { value: 'Watch Later', label: t('anime.watchLater') || 'Watch Later' },
     { value: 'On Hold', label: t('status.onHold') || 'On Hold' },
     { value: 'Dropped', label: t('status.dropped') || 'Dropped' },

@@ -49,7 +49,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
   ];
 
   const watchStatuses: { value: WatchStatus; label: string }[] = [
-    { value: 'YTW', label: t('anime.yetToWatch') },
+    { value: 'Yet to Air for Watch', label: t('anime.yetToWatch') },
     { value: 'Watching', label: t('status.watching') },
     { value: 'Watch Later', label: t('anime.watchLater') },
     { value: 'Completed', label: t('status.completed') },
@@ -61,7 +61,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
     animeOtherName: '',
     animeType: 'Anime' as AnimeType,
     airingStatus: 'Airing' as AiringStatus,
-    watchStatus: 'YTW' as WatchStatus,
+    watchStatus: 'Yet to Air for Watch' as WatchStatus,
     websiteLink: '',
     genres: [] as string[],
     season: '',
@@ -95,7 +95,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         animeOtherName: '',
         animeType: 'Anime',
         airingStatus: 'Airing',
-        watchStatus: 'YTW',
+        watchStatus: 'Yet to Air for Watch',
         websiteLink: '',
         genres: [],
         season: '',

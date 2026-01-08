@@ -633,7 +633,7 @@ export default function Dashboard() {
                     { name: t('status.watching') || 'Watching', value: stats.anime.watching + stats.kdrama.watching, color: '#3b82f6' },
                     { name: t('status.completed') || 'Completed', value: stats.movies.watched + (kdrama.filter(k => k.status === 'completed').length) + (games.filter(g => g.status === 'completed').length), color: '#22c55e' },
                     { name: t('status.playing') || 'Playing', value: stats.games.playing, color: '#22c55e' },
-                    { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.watchStatus === 'YTW' || a.watchStatus === 'Watch Later').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: '#a855f7' },
+                    { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.watchStatus === 'Yet to Air for Watch' || a.watchStatus === 'Watch Later').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: '#a855f7' },
                     { name: t('status.onHold') || 'On Hold', value: (anime.filter(a => a.watchStatus === 'On Hold').length) + (kdrama.filter(k => k.status === 'on-hold').length) + (games.filter(g => g.status === 'on-hold').length), color: '#eab308' },
                     { name: t('status.dropped') || 'Dropped', value: (anime.filter(a => a.watchStatus === 'Dropped').length) + (kdrama.filter(k => k.status === 'dropped').length) + (games.filter(g => g.status === 'dropped').length), color: '#ef4444' },
                   ].filter(item => item.value > 0);

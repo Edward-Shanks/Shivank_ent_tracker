@@ -36,7 +36,7 @@ const defaultStats: AnimeStats = {
   totalEpisodes: 0,
   meanScore: 0,
   watchStatusCounts: {
-    ytw: 0,
+    Yet to Air for Watch: 0,
     watching: 0,
     watchLater: 0,
     completed: 0,
@@ -125,7 +125,7 @@ export default function AnimeInsights() {
   const statusData = [
     { name: t('status.watching'), value: stats.watchStatusCounts.watching, color: COLORS.watching },
     { name: t('status.completed'), value: stats.watchStatusCounts.completed, color: COLORS.completed },
-    { name: t('anime.ytw'), value: stats.watchStatusCounts.ytw, color: COLORS.planning },
+    { name: t('anime.Yet to Air for Watch'), value: stats.watchStatusCounts.Yet to Air for Watch, color: COLORS.planning },
     { name: t('anime.watchLater'), value: stats.watchStatusCounts.watchLater, color: COLORS.planning },
     { name: t('status.onHold'), value: stats.watchStatusCounts.onHold, color: COLORS['on-hold'] },
     { name: t('status.dropped'), value: stats.watchStatusCounts.dropped, color: COLORS.dropped },
@@ -136,21 +136,21 @@ export default function AnimeInsights() {
     const animeCount = {
       Watching: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Watching').length,
       Completed: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Completed').length,
-      'Watch Later': anime.filter(a => a.animeType === 'Anime' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'Watch Later': anime.filter(a => a.animeType === 'Anime' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'Yet to Air for Watch')).length,
       'On Hold': anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'On Hold').length,
       Dropped: anime.filter(a => a.animeType === 'Anime' && a.watchStatus === 'Dropped').length,
     };
     const donghuaCount = {
       Watching: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Watching').length,
       Completed: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Completed').length,
-      'Watch Later': anime.filter(a => a.animeType === 'Donghua' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'Watch Later': anime.filter(a => a.animeType === 'Donghua' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'Yet to Air for Watch')).length,
       'On Hold': anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'On Hold').length,
       Dropped: anime.filter(a => a.animeType === 'Donghua' && a.watchStatus === 'Dropped').length,
     };
     const hEcchiCount = {
       Watching: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Watching').length,
       Completed: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Completed').length,
-      'Watch Later': anime.filter(a => a.animeType === 'H-Ecchi' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'YTW')).length,
+      'Watch Later': anime.filter(a => a.animeType === 'H-Ecchi' && (a.watchStatus === 'Watch Later' || a.watchStatus === 'Yet to Air for Watch')).length,
       'On Hold': anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'On Hold').length,
       Dropped: anime.filter(a => a.animeType === 'H-Ecchi' && a.watchStatus === 'Dropped').length,
     };
@@ -235,7 +235,7 @@ export default function AnimeInsights() {
                     'Watching': '#3b82f6',
                     'Completed': '#22c55e',
                     'Watch Later': '#a855f7',
-                    'YTW': '#a855f7',
+                    'Yet to Air for Watch': '#a855f7',
                     'On Hold': '#eab308',
                     'Dropped': '#ef4444',
                   };

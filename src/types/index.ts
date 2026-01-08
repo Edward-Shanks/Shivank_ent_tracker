@@ -10,7 +10,7 @@ export interface User {
 // ===== ANIME TYPES =====
 export type AnimeType = 'Anime' | 'Donghua' | 'H-Ecchi';
 export type AiringStatus = 'YTA' | 'Airing' | 'Completed';
-export type WatchStatus = 'YTW' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped';
+export type WatchStatus = 'Yet to Air for Watch' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped';
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
 export interface Anime {
@@ -161,7 +161,7 @@ export interface AnimeStats {
   totalEpisodes: number;
   meanScore: number;
   watchStatusCounts: {
-    ytw: number;
+    Yet to Air for Watch: number;
     watching: number;
     watchLater: number;
     completed: number;

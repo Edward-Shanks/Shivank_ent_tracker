@@ -89,7 +89,7 @@ interface MediaCardProps {
   title: string;
   subtitle?: string;
   badge?: string;
-  badgeType?: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later';
+  badgeType?: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'Yet to Air for Watch' | 'watch-later';
   progress?: { current: number; total: number };
   score?: number;
   customFields?: {

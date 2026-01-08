@@ -29,7 +29,7 @@ export default function AnimeDetailModal({
     switch (watchStatus) {
       case 'Watching': return '#3b82f6';
       case 'Completed': return '#22c55e';
-      case 'YTW': return '#a855f7';
+      case 'Yet to Air for Watch': return '#a855f7';
       case 'Watch Later': return '#a855f7';
       case 'On Hold': return '#f59e0b';
       case 'Dropped': return '#ef4444';
@@ -37,11 +37,11 @@ export default function AnimeDetailModal({
     }
   };
 
-  const mapWatchStatusToBadge = (watchStatus: string): 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'ytw' | 'watch-later' => {
+  const mapWatchStatusToBadge = (watchStatus: string): 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'Yet to Air for Watch' | 'watch-later' => {
     switch (watchStatus) {
       case 'Watching': return 'watching';
       case 'Completed': return 'completed';
-      case 'YTW': return 'ytw';
+      case 'Yet to Air for Watch': return 'Yet to Air for Watch';
       case 'Watch Later': return 'watch-later';
       case 'On Hold': return 'on-hold';
       case 'Dropped': return 'dropped';

@@ -40,7 +40,7 @@ export function Badge({ children, variant = 'default', size = 'md', className = 
 }
 
 interface StatusBadgeProps {
-  status: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'watched' | 'playing' | 'rewatching' | 'ytw' | 'watch-later';
+  status: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'watched' | 'playing' | 'rewatching' | 'Yet to Air for Watch' | 'watch-later';
   size?: 'sm' | 'md';
 }
 
@@ -53,7 +53,7 @@ const statusLabels: Record<string, string> = {
   watched: 'Watched',
   playing: 'Playing',
   rewatching: 'Rewatching',
-  ytw: 'Yet To Watch',
+  Yet to Air for Watch: 'Yet To Watch',
   'watch-later': 'Watch Later',
 };
 
@@ -66,7 +66,7 @@ const statusVariants: Record<string, BadgeVariant> = {
   watched: 'completed',
   playing: 'watching',
   rewatching: 'watching',
-  ytw: 'planning',
+  Yet to Air for Watch: 'planning',
   'watch-later': 'planning',
 };
 
