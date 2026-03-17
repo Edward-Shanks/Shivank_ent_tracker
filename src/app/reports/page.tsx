@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -10,7 +10,6 @@ import {
   Film,
   Gamepad2,
   Sparkles,
-  KeyRound,
   Globe,
   Trash2,
   AlertTriangle,
@@ -21,10 +20,12 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import Link from 'next/link';
 import { 
   WatchStatus,
   GameStatus,
@@ -34,13 +35,12 @@ import {
   GenshinElement,
   GenshinWeapon,
   GenshinRarity,
-  CredentialCategory,
   WebsiteCategory,
 } from '@/types';
 import * as XLSX from 'xlsx';
 import ProcessFlow from './components/ProcessFlow';
 
-type ReportCategory = 'anime' | 'shows' | 'games' | 'genshin' | 'credentials' | 'websites';
+type ReportCategory = 'anime' | 'shows' | 'games' | 'genshin' | 'websites';
 
 interface FilterOptions {
   status?: string;
@@ -48,28 +48,64 @@ interface FilterOptions {
   [key: string]: any;
 }
 
+function useCountUp(end: number, duration = 450) {
+  const [value, setValue] = useState(end);
+  useEffect(() => {
+    const startValue = value;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const next = Math.round(startValue + (end - startValue) * t);
+      setValue(next);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [end]);
+  return value;
+}
+
+type ReportHistoryItem =
+  | {
+      id: string;
+      kind: 'export';
+      category: ReportCategory;
+      filters: FilterOptions;
+      rowCount: number;
+      timestamp: number;
+    }
+  | {
+      id: string;
+      kind: 'upload';
+      category: ReportCategory;
+      fileName: string;
+      totalRows: number;
+      importedRows: number;
+      timestamp: number;
+    };
+
 export default function ReportsPage() {
+  const { user } = useAuth();
   const { 
     anime, 
     movies, 
     kdrama, 
     games, 
     genshinAccount, 
-    credentials, 
     websites,
     addAnime,
     addMovie,
     addKDrama,
     addGame,
     addGenshinCharacter,
-    addCredential,
     addWebsite,
     deleteAnime,
     deleteMovie,
     deleteKDrama,
     deleteGame,
     deleteGenshinCharacter,
-    deleteCredential,
     deleteWebsite,
   } = useData();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory>('anime');
@@ -92,6 +128,39 @@ export default function ReportsPage() {
   const [uploadCategory, setUploadCategory] = useState<ReportCategory | null>(null);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+
+  const currentPlan = ((user as any)?.plan as 'free' | 'pro' | 'premium' | undefined) ?? 'free';
+  const isEligible = currentPlan === 'pro' || currentPlan === 'premium';
+
+  const historyStorageKey = useMemo(() => {
+    const uid = user?.id || 'anon';
+    return `reports.history.v1.${uid}`;
+  }, [user?.id]);
+
+  const [historyItems, setHistoryItems] = useState<ReportHistoryItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(historyStorageKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setHistoryItems(parsed.slice(0, 10));
+    } catch {
+      // ignore
+    }
+  }, [historyStorageKey]);
+
+  const pushHistory = (item: ReportHistoryItem) => {
+    setHistoryItems((prev) => {
+      const next = [item, ...prev].slice(0, 10);
+      try {
+        localStorage.setItem(historyStorageKey, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   const categoryConfig = {
     anime: {
@@ -144,18 +213,6 @@ export default function ReportsPage() {
         { value: 'all', label: 'All Characters' },
         { value: 'obtained', label: 'Owned Characters' },
         { value: 'not-obtained', label: 'Not Owned' },
-      ],
-    },
-    credentials: {
-      icon: KeyRound,
-      label: 'Credentials',
-      color: '#f59e0b',
-      statusOptions: [
-        { value: 'all', label: 'All Credentials' },
-        { value: 'streaming', label: 'Streaming' },
-        { value: 'gaming', label: 'Gaming' },
-        { value: 'social', label: 'Social' },
-        { value: 'other', label: 'Other' },
       ],
     },
     websites: {
@@ -211,11 +268,6 @@ export default function ReportsPage() {
           }
         }
         break;
-      case 'credentials':
-        data = filters.status && filters.status !== 'all'
-          ? credentials.filter((c) => c.category === filters.status)
-          : credentials;
-        break;
       case 'websites':
         data = filters.status && filters.status !== 'all'
           ? websites.filter((w) => w.category === filters.status)
@@ -224,7 +276,9 @@ export default function ReportsPage() {
     }
 
     return data;
-  }, [selectedCategory, filters, anime, movies, kdrama, games, genshinAccount, credentials, websites]);
+  }, [selectedCategory, filters, anime, movies, kdrama, games, genshinAccount, websites]);
+
+  const filteredCount = useCountUp(filteredData.length);
 
   const exportToExcel = () => {
     const config = categoryConfig[selectedCategory];
@@ -299,18 +353,6 @@ export default function ReportsPage() {
           'Image URL': item.image || '',
         }));
         break;
-      case 'credentials':
-        worksheetData = filteredData.map((item) => ({
-          Name: item.name,
-          Category: item.category,
-          Email: item.email || '',
-          Username: item.username || '',
-          Password: item.password || '',
-          URL: item.url || '',
-          Notes: item.notes || '',
-          'Last Updated': new Date(item.lastUpdated).toLocaleDateString(),
-        }));
-        break;
       case 'websites':
         worksheetData = filteredData.map((item) => ({
           Name: item.name,
@@ -330,6 +372,17 @@ export default function ReportsPage() {
 
     const fileName = `${config.label}_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
+
+    if (isEligible) {
+      pushHistory({
+        id: `exp_${Date.now()}`,
+        kind: 'export',
+        category: selectedCategory,
+        filters,
+        rowCount: filteredData.length,
+        timestamp: Date.now(),
+      });
+    }
   };
 
   const handleDelete = () => {
@@ -368,9 +421,6 @@ export default function ReportsPage() {
           if (genshinAccount) {
                 await deleteGenshinCharacter(item.id);
           }
-          break;
-        case 'credentials':
-              await deleteCredential(item.id);
           break;
         case 'websites':
               await deleteWebsite(item.id);
@@ -464,7 +514,7 @@ export default function ReportsPage() {
           sampleRow[field.label] = 'Yes';
           break;
         case 'name':
-          sampleRow[field.label] = category === 'credentials' ? 'Example Service' : category === 'websites' ? 'Example Website' : 'Example Name';
+          sampleRow[field.label] = category === 'websites' ? 'Example Website' : 'Example Name';
           break;
         case 'url':
         case 'websiteLink':
@@ -482,7 +532,7 @@ export default function ReportsPage() {
           sampleRow[field.label] = '********';
           break;
         case 'category':
-          sampleRow[field.label] = category === 'credentials' ? 'streaming' : category === 'websites' ? 'anime' : 'other';
+          sampleRow[field.label] = category === 'websites' ? 'anime' : 'other';
           break;
         case 'animeOtherName':
           sampleRow[field.label] = 'Alternative Name';
@@ -601,16 +651,6 @@ export default function ReportsPage() {
           { field: 'type', label: 'Type', required: false },
           { field: 'type2', label: 'Type 2', required: false },
           { field: 'image', label: 'Image URL', required: false },
-        ];
-      case 'credentials':
-        return [
-          { field: 'name', label: 'Name', required: true },
-          { field: 'category', label: 'Category', required: true },
-          { field: 'username', label: 'Username', required: false },
-          { field: 'email', label: 'Email', required: false },
-          { field: 'password', label: 'Password', required: true },
-          { field: 'url', label: 'URL', required: false },
-          { field: 'notes', label: 'Notes', required: false },
         ];
       case 'websites':
         return [
@@ -792,6 +832,7 @@ export default function ReportsPage() {
                   rarity: parseInt(String(mappedRow.rarity).replace('★', '') || '5') as GenshinRarity,
                   level: parseInt(mappedRow.level || '1'),
                   constellation: parseInt(mappedRow.constellation || '0'),
+                  friendship: parseInt(mappedRow.friendship || '1'),
                   obtained: mappedRow.obtained === 'Yes' || mappedRow.obtained === true || mappedRow.obtained === 'true' || mappedRow.obtained === 'yes',
                   tier: mappedRow.tier,
                   type: mappedRow.type,
@@ -800,20 +841,6 @@ export default function ReportsPage() {
                 });
                 uploadedCount++;
               }
-              break;
-
-            case 'credentials':
-              await addCredential({
-                name: mappedRow.name || '',
-                category: (mappedRow.category || 'other') as CredentialCategory,
-                username: mappedRow.username,
-                email: mappedRow.email,
-                password: mappedRow.password || '',
-                url: mappedRow.url,
-                notes: mappedRow.notes,
-                lastUpdated: new Date().toISOString(),
-              });
-              uploadedCount++;
               break;
 
             case 'websites':
@@ -837,6 +864,19 @@ export default function ReportsPage() {
 
       setUploadedCount(uploadedCount);
       setUploadSuccess(true);
+
+      if (isEligible && uploadCategory) {
+        pushHistory({
+          id: `upl_${Date.now()}`,
+          kind: 'upload',
+          category: uploadCategory,
+          fileName: uploadedFile?.name || 'Upload',
+          totalRows: uploadFileData.length,
+          importedRows: uploadedCount,
+          timestamp: Date.now(),
+        });
+      }
+
       setTimeout(() => {
         setUploadSuccess(false);
         setIsUploading(false);
@@ -892,21 +932,93 @@ export default function ReportsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 sm:mb-6 md:mb-8"
         >
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-card/70 backdrop-blur-md p-5 sm:p-6">
             <div
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${config.color}20` }}
-            >
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: config.color }} />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Reports</h1>
-              <p className="text-xs sm:text-sm md:text-base text-foreground-muted mt-1">
-                Generate and download filtered reports in Excel format
-              </p>
+              className="absolute inset-0 opacity-70"
+              style={{
+                background: 'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.22) 0%, transparent 55%), radial-gradient(circle at 80% 30%, rgba(236,72,153,0.18) 0%, transparent 55%), radial-gradient(circle at 40% 90%, rgba(34,197,94,0.10) 0%, transparent 60%)',
+              }}
+            />
+            <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-primary/15 border border-primary/20">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Reports</h1>
+                  <p className="text-sm text-foreground-muted mt-1">
+                    Advanced exports and import function for <span className="font-medium text-foreground">{user?.username || 'your account'}</span> (Pro & Premium only).
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-foreground/5 border border-foreground/10 text-foreground">
+                      Included in Pro / Premium
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-foreground/5 border border-foreground/10 text-foreground-muted">
+                      Exports are generated as Excel (.xlsx), optimized for up to 10,000 rows.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {!isEligible && (
+                <div className="flex items-center gap-2">
+                  <Link href="/pricing" className="inline-flex">
+                    <Button
+                      variant="primary"
+                      style={{
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                        boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
+                      }}
+                    >
+                      Upgrade to unlock Reports
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
+
+        {/* Gated view wrapper */}
+        <div className="relative">
+          {!isEligible && (
+            <div className="absolute inset-0 z-10 flex items-start justify-center pt-24 sm:pt-28 pointer-events-none">
+              <div className="pointer-events-auto max-w-xl w-full mx-3 sm:mx-0">
+                <Card className="p-5 sm:p-6 border border-foreground/10 bg-card/90 backdrop-blur-xl">
+                  <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    Reports is a Pro feature
+                  </h2>
+                  <p className="text-sm text-foreground-muted mt-2">
+                    Unlock bulk upload, Excel exports, and mass cleanup tools.
+                  </p>
+                  <ul className="mt-4 space-y-2 text-sm text-foreground-muted">
+                    <li>• Bulk upload via templates</li>
+                    <li>• Export filtered records to Excel</li>
+                    <li>• Mass delete for cleanup & migrations</li>
+                  </ul>
+                  <div className="mt-5 flex gap-2">
+                    <Link href="/pricing" className="inline-flex">
+                      <Button
+                        variant="primary"
+                        style={{
+                          background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                          boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
+                        }}
+                      >
+                        Upgrade now
+                      </Button>
+                    </Link>
+                    <Button variant="secondary" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                      Learn more
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          <div className={isEligible ? '' : 'filter blur-[6px] opacity-80 select-none pointer-events-none'}>
 
         {/* Reports Download Section */}
         <motion.div
@@ -1014,8 +1126,16 @@ export default function ReportsPage() {
                       />
                     </div>
                     <div className="pt-4 border-t border-foreground/10">
-                      <p className="text-sm text-foreground-muted mb-2">
-                        Filtered Results: <span className="font-semibold text-foreground">{filteredData.length}</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm text-foreground-muted">
+                          Filtered Results
+                        </p>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-primary/10 border border-primary/20 text-primary">
+                          {filteredCount}
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground-muted mt-2">
+                        Includes all visible filtered records
                       </p>
                     </div>
                   </div>
@@ -1056,7 +1176,7 @@ export default function ReportsPage() {
                         boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)',
                       }}
                     >
-                      Download Excel Report
+                      Download Excel ({filteredData.length} rows)
                     </Button>
                     <Button
                       variant="secondary"
@@ -1074,8 +1194,17 @@ export default function ReportsPage() {
                         color: filteredData.length > 0 && !isDeleting ? 'white' : undefined,
                       }}
                     >
-                      {isDeleting ? 'Deleting...' : `Delete ${filteredData.length} Record${filteredData.length !== 1 ? 's' : ''}`}
+                      {isDeleting ? 'Deleting...' : 'Delete records'}
                     </Button>
+                    <p className="text-xs text-foreground-muted mt-3">
+                      Selected: <span className="text-foreground">{config.label}</span>
+                      {filters.status && filters.status !== 'all' ? (
+                        <>
+                          {' · '}
+                          Status: <span className="text-foreground">{filters.status}</span>
+                        </>
+                      ) : null}
+                    </p>
                     {filteredData.length === 0 && (
                       <p className="text-xs text-foreground-muted text-center mt-3">
                         No data available
@@ -1621,6 +1750,99 @@ export default function ReportsPage() {
 
           </Card>
         </motion.div>
+
+        {/* History (Pro/Premium) */}
+        {isEligible && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8"
+          >
+            <Card className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground">History</h2>
+                  <p className="text-sm text-foreground-muted mt-1">Last exports and uploads for quick auditing.</p>
+                </div>
+                {historyItems.length > 0 && (
+                  <Button
+                    variant="secondary"
+                    className="text-xs px-3 py-1.5"
+                    onClick={() => {
+                      setHistoryItems([]);
+                      try { localStorage.removeItem(historyStorageKey); } catch {}
+                    }}
+                  >
+                    Clear history
+                  </Button>
+                )}
+              </div>
+
+              {historyItems.length === 0 ? (
+                <div className="text-sm text-foreground-muted">
+                  No recent exports or uploads yet. Your last 10 actions will appear here.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3">Last exports</h3>
+                    <div className="space-y-2">
+                      {historyItems.filter((x) => x.kind === 'export').slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-foreground/5">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-foreground truncate">
+                              Export · {categoryConfig[item.category].label}
+                            </div>
+                            <div className="text-xs text-foreground-muted mt-0.5">
+                              {item.filters?.status && item.filters.status !== 'all' ? `Status: ${item.filters.status} · ` : ''}
+                              {new Date(item.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-sm font-semibold text-foreground">{item.rowCount}</div>
+                            <div className="text-xs text-foreground-muted">rows</div>
+                          </div>
+                        </div>
+                      ))}
+                      {historyItems.filter((x) => x.kind === 'export').length === 0 && (
+                        <div className="text-xs text-foreground-muted">No exports yet.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3">Last uploads</h3>
+                    <div className="space-y-2">
+                      {historyItems.filter((x) => x.kind === 'upload').slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-foreground/5">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-foreground truncate">
+                              Upload · {categoryConfig[item.category].label}
+                            </div>
+                            <div className="text-xs text-foreground-muted mt-0.5 truncate">
+                              {item.fileName} · {new Date(item.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-sm font-semibold text-foreground">{item.importedRows}/{item.totalRows}</div>
+                            <div className="text-xs text-foreground-muted">imported</div>
+                          </div>
+                        </div>
+                      ))}
+                      {historyItems.filter((x) => x.kind === 'upload').length === 0 && (
+                        <div className="text-xs text-foreground-muted">No uploads yet.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+
+          </div>
+        </div>
 
         {/* Delete Success Animation */}
         <AnimatePresence>

@@ -20,7 +20,7 @@ interface EditGameModalProps {
 const commonGenres = [
   'Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Sports', 'Racing',
   'Fighting', 'Puzzle', 'Horror', 'Shooter', 'Platformer', 'Indie', 'MMO',
-  'Roguelike', 'Metroidvania', 'Open World', 'Survival',
+  'Roguelike', 'Metroidvania', 'Open World', 'Survival','Base Building', 'City Building', 'Sandbox', 'Survival','Tower Defence','Turn Based Strategy',
 ];
 
 export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGameModalProps) {

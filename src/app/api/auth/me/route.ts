@@ -19,6 +19,7 @@ export async function GET() {
         email: user.email,
         username: user.username,
         avatar: user.avatar,
+        plan: user.plan || 'free',
       },
     });
   } catch (error) {

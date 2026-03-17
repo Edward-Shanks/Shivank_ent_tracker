@@ -7,6 +7,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password: text('password').notNull(),
   avatar: text('avatar'),
+  plan: text('plan').notNull().default('free'), // 'free' | 'pro' | 'premium'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -126,22 +127,6 @@ export const genshinCharacters = pgTable('genshin_characters', {
   buildNotes: text('build_notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-// Credentials table
-export const credentials = pgTable('credentials', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  category: text('category').notNull(), // 'streaming' | 'gaming' | 'social' | 'email' | 'finance' | 'shopping' | 'other'
-  username: text('username'),
-  email: text('email'),
-  password: text('password').notNull(),
-  url: text('url'),
-  notes: text('notes'),
-  icon: text('icon'),
-  lastUpdated: timestamp('last_updated').notNull().defaultNow(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // Websites table

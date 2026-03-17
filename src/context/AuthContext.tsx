@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.user.email,
           username: data.user.username,
           avatar: data.user.avatar,
+          plan: data.user.plan || 'free',
           createdAt: data.user.createdAt || new Date().toISOString(),
         });
       } else {
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.user.email,
         username: data.user.username,
         avatar: data.user.avatar,
+        plan: data.user.plan || 'free',
         createdAt: data.user.createdAt || new Date().toISOString(),
       });
 

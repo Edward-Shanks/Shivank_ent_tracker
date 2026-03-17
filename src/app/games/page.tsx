@@ -6,19 +6,22 @@ import {
   Gamepad2,
   Plus,
   Search,
-  SortAsc,
-  SortDesc,
   Clock,
   Star,
   Trophy,
   Monitor,
   LayoutGrid,
+  List,
   BarChart3,
   Edit,
   Trash2,
   RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 import { GameStatus, GamePlatform, Game } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MediaCard, StatCard, Card } from '@/components/ui/Card';
@@ -31,7 +34,18 @@ import EditGameModal from './components/EditGameModal';
 import BulkUpdateGamesModal from './components/BulkUpdateGamesModal';
 
 type ViewMode = 'insights' | 'collection';
-type SortOption = 'title' | 'releaseDate';
+type SortOption = 'title' | 'releaseDate' | 'recent' | 'status' | 'platform';
+
+const STATUS_ORDER: GameStatus[] = ['playing', 'completed', 'planning', 'on-hold', 'dropped'];
+
+const statusLabelKey = (status: GameStatus) => {
+  switch (status) {
+    case 'on-hold':
+      return 'status.onHold';
+    default:
+      return `status.${status}` as const;
+  }
+};
 
 // Status filters and sort options will be created inside component to use translations
 
@@ -45,9 +59,17 @@ const platformColors: Record<GamePlatform, string> = {
 };
 
 export default function GamesPage() {
+  const { user } = useAuth();
   const { games, updateGame, deleteGame } = useData();
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
+  const username = user?.username || 'Player';
+  const platformSet = useMemo(() => {
+    const set = new Set<string>();
+    games.forEach((g) => (g.platform || []).forEach((p) => set.add(p)));
+    return set;
+  }, [games]);
+  const platformLabel = platformSet.size > 1 ? 'Multi-platform' : platformSet.size === 1 ? Array.from(platformSet)[0] : '—';
   
   const statusFilters: { value: GameStatus | 'all'; label: string }[] = [
     { value: 'all', label: t('games.allGames') },
@@ -59,13 +81,23 @@ export default function GamesPage() {
   ];
 
   const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'recent', label: t('sort.recent') },
     { value: 'title', label: t('sort.title') },
     { value: 'releaseDate', label: t('sort.releaseDate') },
+    { value: 'status', label: t('sort.status') },
+    { value: 'platform', label: t('sort.platform') },
   ];
   const [statusFilter, setStatusFilter] = useState<GameStatus | 'all'>('all');
+  const [collectionView, setCollectionView] = useState<'list' | 'grid'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('title');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [collapsedSections, setCollapsedSections] = useState<Record<GameStatus, boolean>>({
+    playing: false,
+    completed: false,
+    planning: false,
+    'on-hold': false,
+    dropped: false,
+  });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<import('@/types').Game | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -88,13 +120,27 @@ export default function GamesPage() {
     }
   }, [viewMode]);
 
-  // Calculate game counts
+  // Calculate game counts and backlog health
   const gameCounts = useMemo(() => {
-    return {
-      completed: games.filter((g) => g.status === 'completed').length,
-      playing: games.filter((g) => g.status === 'playing').length,
-    };
+    const completed = games.filter((g) => g.status === 'completed').length;
+    const playing = games.filter((g) => g.status === 'playing').length;
+    const planning = games.filter((g) => g.status === 'planning').length;
+    const onHold = games.filter((g) => g.status === 'on-hold').length;
+    const dropped = games.filter((g) => g.status === 'dropped').length;
+    return { completed, playing, planning, onHold, dropped, total: games.length };
   }, [games]);
+
+  const backlogHealthLabel = useMemo(() => {
+    const { completed, planning, dropped, total } = gameCounts;
+    if (total === 0) return t('games.casualCollector');
+    const completedRatio = completed / total;
+    const planningRatio = planning / total;
+    const droppedRatio = dropped / total;
+    if (completedRatio >= 0.5 && droppedRatio <= 0.1) return t('games.disciplinedFinisher');
+    if (planningRatio >= 0.5) return t('games.backlogBeast');
+    if (completedRatio >= 0.3 && planningRatio >= 0.2) return t('games.balancedPlayer');
+    return t('games.casualCollector');
+  }, [gameCounts, t]);
 
   const filteredGames = useMemo(() => {
     let result = [...games];
@@ -113,6 +159,9 @@ export default function GamesPage() {
       );
     }
 
+    const sortOrder: 'asc' | 'desc' =
+      sortBy === 'title' || sortBy === 'status' || sortBy === 'platform' ? 'asc' : 'desc';
+    const gameCreated = (g: Game) => new Date((g as Game & { createdAt?: string }).createdAt || 0).getTime();
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
@@ -122,15 +171,81 @@ export default function GamesPage() {
         case 'releaseDate':
           comparison = new Date(b.releaseDate || 0).getTime() - new Date(a.releaseDate || 0).getTime();
           break;
+        case 'recent':
+          comparison = gameCreated(a) - gameCreated(b);
+          break;
+        case 'status':
+          comparison = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
+          break;
+        case 'platform':
+          comparison = (a.platform[0] || '').localeCompare(b.platform[0] || '');
+          break;
+        default:
+          comparison = a.title.localeCompare(b.title);
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
     return result;
-  }, [games, statusFilter, searchQuery, sortBy, sortOrder]);
+  }, [games, statusFilter, searchQuery, sortBy]);
+
+  const gamesByStatus = useMemo(() => {
+    const map: Record<GameStatus, Game[]> = { playing: [], completed: [], planning: [], 'on-hold': [], dropped: [] };
+    filteredGames.forEach((g) => {
+      const rawStatus = (g as unknown as { status?: string }).status || 'planning';
+      const normalized: GameStatus =
+        rawStatus === 'onHold' || rawStatus === 'on_hold' || rawStatus === 'on-hold'
+          ? 'on-hold'
+          : rawStatus === 'playing' || rawStatus === 'completed' || rawStatus === 'planning' || rawStatus === 'dropped'
+            ? (rawStatus as GameStatus)
+            : 'planning';
+      map[normalized].push(g);
+    });
+    return map;
+  }, [filteredGames]);
 
   return (
-    <div className="min-h-screen bg-animated">
+    <div
+      className={`min-h-screen transition-colors duration-500 ${
+        viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-animated'
+      }`}
+    >
+      {/* Insights Hero Bar - Only in insights view */}
+      {viewMode === 'insights' && (
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0 h-48"
+            style={{
+              background: 'linear-gradient(135deg, #065f46 0%, #10b981 45%, #22c55e 100%)',
+              opacity: 0.95,
+            }}
+          />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                  {t('games.insights')}
+                </h1>
+                <p className="text-white/90 mt-1 text-sm md:text-base">
+                  Your gaming profile dashboard — stats and insights from your library.
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
+              >
+                <span className="truncate max-w-[120px]">{username}</span>
+                <span className="text-white/70">·</span>
+                <span>{games.length} games</span>
+                <span className="text-white/70">·</span>
+                <span>{platformLabel}</span>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section - Only show in collection view */}
       {viewMode === 'collection' && (
         <div className="relative h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden">
@@ -191,17 +306,18 @@ export default function GamesPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? t('games.insights') : t('games.collection')}
-            </h1>
-            <p className="text-foreground-muted mt-1">
-              {viewMode === 'insights'
-                ? t('games.insightsDesc')
-                : `${t('status.completed')}: ${gameCounts.completed} • ${t('status.playing')}: ${gameCounts.playing}`}
-            </p>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          {viewMode === 'collection' && (
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {t('games.collection')}
+              </h1>
+              <p className="text-foreground-muted mt-1">
+                {t('games.smartBacklogLabel')}
+              </p>
+            </div>
+          )}
+          {viewMode === 'insights' && <div />}
 
           {/* View Toggle */}
           <div className="flex items-center gap-2">
@@ -250,6 +366,11 @@ export default function GamesPage() {
             </Button>
           </div>
         </div>
+        {viewMode === 'insights' && (
+          <p className="text-xs text-foreground-muted mt-2 mb-6">
+            Insights are calculated from your library data and public metadata from free game APIs.
+          </p>
+        )}
 
         <AnimatePresence mode="wait">
           {viewMode === 'insights' ? (
@@ -260,7 +381,7 @@ export default function GamesPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <GamesInsights />
+              <GamesInsights onSwitchToCollection={() => setViewMode('collection')} />
             </motion.div>
           ) : (
             <motion.div
@@ -270,57 +391,123 @@ export default function GamesPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* All Controls in Single Row */}
-              <div className="flex flex-wrap items-center gap-2 mb-8">
-                {/* Status Filter Buttons */}
-                <div className="flex items-center gap-2 flex-wrap">
-                {statusFilters.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setStatusFilter(filter.value)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                      statusFilter === filter.value
-                        ? 'bg-green-500 text-white'
-                        : 'glass text-foreground-muted hover:text-foreground'
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
+              {/* Backlog health meter */}
+              {games.length > 0 && (
+                <div className="mb-4 p-4 rounded-xl border border-foreground/10 bg-foreground/[0.03] backdrop-blur-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground-muted">{backlogHealthLabel}</p>
+                      <div className="flex gap-2 mt-2">
+                        <div className="h-2 flex-1 min-w-[60px] max-w-[120px] rounded-full bg-foreground/10 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{ width: `${(gameCounts.completed / Math.max(gameCounts.total, 1)) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-foreground-muted">{gameCounts.completed} completed</span>
+                        <div className="h-2 flex-1 min-w-[60px] max-w-[120px] rounded-full bg-foreground/10 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-amber-500"
+                            style={{ width: `${(gameCounts.planning / Math.max(gameCounts.total, 1)) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-foreground-muted">{gameCounts.planning} planning</span>
+                        <div className="h-2 flex-1 min-w-[60px] max-w-[120px] rounded-full bg-foreground/10 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-red-500/70"
+                            style={{ width: `${(gameCounts.dropped / Math.max(gameCounts.total, 1)) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-foreground-muted">{gameCounts.dropped} dropped</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Summary bar */}
+              <div className="text-sm text-foreground-muted mb-3">
+                {filteredGames.length} {filteredGames.length === 1 ? t('games.game') : t('games.games')}
+                {' — '}{gameCounts.completed} {t('status.completed').toLowerCase()}
+                {' — '}{gameCounts.playing} {t('status.playing').toLowerCase()}
+                {' — '}{t('games.filterByStatus')}: {statusFilter === 'all' ? t('games.allGames') : t(statusLabelKey(statusFilter))}
               </div>
 
-                {/* Search, Sort, and Bulk Update on Right */}
-                <div className="flex items-center gap-2 flex-1 min-w-[200px] justify-end ml-8">
-                  <div className="flex-1 min-w-[200px] max-w-xs">
-                  <SearchInput
-                    placeholder={t('games.searchGames')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="px-2 py-1.5"
-                  >
-                    {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    leftIcon={<RefreshCw className="w-4 h-4" />}
-                    onClick={() => setIsBulkUpdateModalOpen(true)}
-                    className="text-xs px-3 py-1.5"
-                    style={{
-                      background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
-                      boxShadow: '0 0 20px rgba(34, 197, 94, 0.4)',
-                    }}
-                  >
-                    {t('games.bulkUpdate') || 'Bulk Update'}
-                  </Button>
+              {/* Sticky filters + search header */}
+              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                  {/* Status Filter Buttons */}
+                  <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
+                    {statusFilters.map((filter) => (
+                      <button
+                        key={filter.value}
+                        onClick={() => setStatusFilter(filter.value)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                          statusFilter === filter.value
+                            ? 'bg-green-500 text-white'
+                            : 'glass text-foreground-muted hover:text-foreground'
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* View toggle, Sort, Search, Bulk Update, Add */}
+                  <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap justify-start lg:justify-end">
+                    <div className="glass rounded-lg p-1 flex">
+                      <button
+                        type="button"
+                        onClick={() => setCollectionView('list')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          collectionView === 'list' ? 'bg-foreground/10 text-foreground' : 'text-foreground-muted hover:text-foreground'
+                        }`}
+                        title="List view"
+                      >
+                        <List className="w-4 h-4" />
+                        List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCollectionView('grid')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          collectionView === 'grid' ? 'bg-foreground/10 text-foreground' : 'text-foreground-muted hover:text-foreground'
+                        }`}
+                        title="Grid view"
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                        Grid
+                      </button>
+                    </div>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as SortOption)}
+                      className="input-glass text-[11px] py-1.5 px-2 rounded-lg border border-foreground/20 max-w-[150px]"
+                    >
+                      {sortOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <div className="min-w-[200px] max-w-[260px]">
+                      <SearchInput
+                        placeholder={t('games.searchGames')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      variant="secondary"
+                      leftIcon={<RefreshCw className="w-4 h-4" />}
+                      onClick={() => setIsBulkUpdateModalOpen(true)}
+                      className="text-xs px-3 py-1.5"
+                    >
+                      {t('games.bulkUpdate') || 'Bulk Update'}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* Games Grid */}
+              {/* Collapsible sections by status */}
               {filteredGames.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-foreground-muted text-lg mb-4">
@@ -345,101 +532,175 @@ export default function GamesPage() {
                   )}
                 </div>
               ) : (
-              <motion.div
-                layout
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              >
-                {filteredGames.map((game, index) => (
-                  <motion.div
-                    key={game.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Card hover className="p-0 overflow-hidden group">
-                      {/* Game Cover */}
-                      <div className="relative aspect-[3/4]">
-                        {game.coverImage && game.coverImage.trim() ? (
-                          <img
-                            src={game.coverImage}
-                            alt={game.title}
-                            className="w-full h-full object-cover"
+              <div className="games-scroll-area max-h-[calc(100vh-320px)] overflow-y-auto pr-1 space-y-4">
+                {STATUS_ORDER.map((status) => {
+                  const sectionGames = gamesByStatus[status];
+                  if (sectionGames.length === 0) return null;
+                  const isCollapsed = collapsedSections[status];
+                  const totalForProgress = gameCounts.total || 1;
+                  const pct = (sectionGames.length / totalForProgress) * 100;
+                  return (
+                    <div key={status} className="rounded-xl border border-foreground/10 bg-foreground/[0.02] overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedSections((s) => ({ ...s, [status]: !s[status] }))}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-foreground/5 transition-colors"
+                      >
+                        {isCollapsed ? <ChevronRight className="w-5 h-5 text-foreground-muted" /> : <ChevronDown className="w-5 h-5 text-foreground-muted" />}
+                        <span className="font-medium text-foreground">{t(statusLabelKey(status))}</span>
+                        <span className="text-sm text-foreground-muted">({sectionGames.length})</span>
+                        <div className="flex-1 min-w-0 max-w-[200px] h-2 rounded-full bg-foreground/10 overflow-hidden ml-2">
+                          <div
+                            className="h-full rounded-full bg-emerald-500/80"
+                            style={{ width: `${pct}%` }}
                           />
+                        </div>
+                      </button>
+                      {!isCollapsed && (
+                        collectionView === 'list' ? (
+                          <ul className="divide-y divide-foreground/5">
+                            {sectionGames.map((game) => (
+                              <li key={game.id} className="group flex items-center gap-3 px-4 py-2.5 hover:bg-foreground/5 transition-colors">
+                                {/* Cover thumbnail */}
+                                <div className="w-12 h-16 shrink-0 rounded-md overflow-hidden bg-foreground/10">
+                                  {game.coverImage && game.coverImage.trim() ? (
+                                    <img src={game.coverImage} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-xs font-medium text-foreground-muted bg-gradient-to-br from-foreground/10 to-foreground/5">
+                                      {game.title.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-foreground truncate">{game.title}</p>
+                                  <div className="flex flex-wrap gap-1 mt-0.5">
+                                    {game.platform.map((p) => (
+                                      <span
+                                        key={p}
+                                        className="px-1.5 py-0.5 rounded text-[10px] font-medium text-white"
+                                        style={{ backgroundColor: platformColors[p] }}
+                                      >
+                                        {p}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <Badge variant={game.status === 'playing' ? 'watching' : game.status === 'completed' ? 'completed' : 'planning'} className="shrink-0 text-xs">
+                                  {t(statusLabelKey(game.status))}
+                                </Badge>
+                                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    onClick={() => { setSelectedGame(game); setIsEditModalOpen(true); }}
+                                    className="p-1.5 rounded-md hover:bg-foreground/10 text-foreground-muted hover:text-foreground"
+                                    title={t('games.editGame')}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                  {game.downloadUrl && (
+                                    <a
+                                      href={game.downloadUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="p-1.5 rounded-md hover:bg-foreground/10 text-foreground-muted hover:text-foreground"
+                                      title={t('games.openDetails')}
+                                    >
+                                      <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
+                                        deleteGame(game.id).catch((e) => { console.error(e); alert(t('msg.failedDelete')); });
+                                      }
+                                    }}
+                                    className="p-1.5 rounded-md hover:bg-red-500/20 text-foreground-muted hover:text-red-500"
+                                    title={t('games.deleteGame')}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                            <span className="text-gray-500 text-sm">No Image</span>
+                          <div className="p-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                              {sectionGames.map((game) => (
+                                <div key={game.id} className="group rounded-xl overflow-hidden border border-foreground/10 bg-foreground/[0.03] hover:bg-foreground/[0.05] transition-colors">
+                                  <div className="relative aspect-[3/4]">
+                                    {game.coverImage && game.coverImage.trim() ? (
+                                      <img src={game.coverImage} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-xl font-bold text-foreground-muted bg-gradient-to-br from-foreground/10 to-foreground/5">
+                                        {game.title.slice(0, 2).toUpperCase()}
+                                      </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                                      {game.platform.slice(0, 2).map((p) => (
+                                        <span
+                                          key={p}
+                                          className="px-1.5 py-0.5 rounded text-[10px] font-medium text-white"
+                                          style={{ backgroundColor: platformColors[p] }}
+                                        >
+                                          {p}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <button
+                                        type="button"
+                                        onClick={() => { setSelectedGame(game); setIsEditModalOpen(true); }}
+                                        className="p-1.5 rounded-md bg-background/60 hover:bg-background/80 text-white"
+                                        title={t('games.editGame')}
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
+                                            deleteGame(game.id).catch((e) => { console.error(e); alert(t('msg.failedDelete')); });
+                                          }
+                                        }}
+                                        className="p-1.5 rounded-md bg-background/60 hover:bg-red-600/80 text-white"
+                                        title={t('games.deleteGame')}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <div className="absolute bottom-2 left-2 right-2">
+                                      <p className="text-sm font-semibold text-white line-clamp-2">{game.title}</p>
+                                      <div className="flex items-center justify-between mt-1">
+                                        <Badge variant={game.status === 'playing' ? 'watching' : game.status === 'completed' ? 'completed' : 'planning'} className="text-[10px]">
+                                          {t(statusLabelKey(game.status))}
+                                        </Badge>
+                                        {game.downloadUrl && (
+                                          <a
+                                            href={game.downloadUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-white/80 hover:text-white"
+                                            title={t('games.openDetails')}
+                                          >
+                                            <ExternalLink className="w-4 h-4" />
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-                        {/* Platform Badges */}
-                        <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-                          {game.platform.map((p) => (
-                            <span
-                              key={p}
-                              className="px-2 py-0.5 rounded text-xs font-medium text-white"
-                              style={{ backgroundColor: platformColors[p] }}
-                            >
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Edit and Delete Icons */}
-                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedGame(game);
-                              setIsEditModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
-                            title={t('games.editGame')}
-                          >
-                            <Edit className="w-4 h-4 text-white" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
-                                deleteGame(game.id).catch((error) => {
-                                  console.error('Error deleting game:', error);
-                                  alert(t('msg.failedDelete'));
-                                });
-                              }
-                            }}
-                            className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
-                            title={t('games.deleteGame')}
-                          >
-                            <Trash2 className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
-
-                        {/* Content Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <h3 className="text-lg font-bold text-white mb-1 line-clamp-2">
-                            {game.title}
-                          </h3>
-                          {game.gameType && (
-                            <p className="text-white/70 text-sm mb-2">{game.gameType}</p>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <Badge variant={game.status === 'playing' ? 'watching' : game.status === 'completed' ? 'completed' : 'planning'}>
-                              {t(`status.${game.status}`)}
-                            </Badge>
-                            {game.gameType && (
-                              <span className="text-white/60 text-sm">
-                                {game.gameType}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
+                        )
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
               )}
             </motion.div>
           )}
@@ -450,6 +711,7 @@ export default function GamesPage() {
       <AddGameModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        games={games}
       />
 
       {/* Edit Game Modal */}

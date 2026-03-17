@@ -92,6 +92,21 @@ export default function EditKDramaModal({ isOpen, onClose, kdrama, onSave }: Edi
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit K-Drama" size="xl">
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-foreground-muted">
+            <span className="font-medium text-foreground">ID:</span> {kdrama.id}
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setFormData((d) => ({ ...d, episodesWatched: Math.min((d.episodes || 0), (d.episodesWatched || 0) + 1) }))}
+            className="text-xs px-3 py-1.5"
+          >
+            Mark next episode watched
+          </Button>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input

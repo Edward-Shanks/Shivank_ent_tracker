@@ -86,7 +86,7 @@ export default function AnimeDetailModal({
           <div className="absolute bottom-2 left-2 right-2">
             <div className="flex items-center gap-1.5 mb-1">
               {anime.score && (
-                <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-sm">
+                <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-background/80 backdrop-blur-sm">
                   <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                   <span className="text-white font-semibold text-xs">{anime.score}</span>
                 </div>

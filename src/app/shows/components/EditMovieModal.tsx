@@ -90,6 +90,31 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('shows.editMovie')} size="xl">
+      <div className="px-4 sm:px-6 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-foreground-muted">
+            <span className="font-medium text-foreground">ID:</span> {movie.id}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFormData((d) => ({ ...d, status: 'watched' }))}
+              className="text-xs px-3 py-1.5"
+            >
+              Mark as Watched
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFormData((d) => ({ ...d, status: 'planning' }))}
+              className="text-xs px-3 py-1.5"
+            >
+              Move to Plan to Watch
+            </Button>
+          </div>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-2.5 text-xs sm:text-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <Input

@@ -145,7 +145,7 @@ export default function AnimePage() {
       all: anime.length,
       Watching: anime.filter((a) => a.watchStatus === 'Watching').length,
       Completed: anime.filter((a) => a.watchStatus === 'Completed').length,
-      Yet to Air for Watch: anime.filter((a) => a.watchStatus === 'Yet to Air for Watch').length,
+      'Yet to Air for Watch': anime.filter((a) => a.watchStatus === 'Yet to Air for Watch').length,
       'Watch Later': anime.filter((a) => a.watchStatus === 'Watch Later').length,
       'On Hold': anime.filter((a) => a.watchStatus === 'On Hold').length,
       Dropped: anime.filter((a) => a.watchStatus === 'Dropped').length,
@@ -258,64 +258,66 @@ export default function AnimePage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* All Controls in Single Row */}
-              <div className="flex flex-wrap items-center gap-2 mb-8">
-                {/* Status Filter Buttons */}
-                <div className="flex items-center gap-2 flex-wrap">
-              {statusFilters.map((filter) => {
-                const count = filter.value === 'all' 
-                  ? statusCounts.all 
-                  : (statusCounts[filter.value as keyof typeof statusCounts] || 0);
-                return (
-                  <button
-                    key={filter.value}
-                    onClick={() => setStatusFilter(filter.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                      statusFilter === filter.value
-                        ? 'bg-primary text-white'
-                        : 'glass text-foreground-muted hover:text-foreground'
-                    }`}
-                  >
-                    {filter.label}
-                    <span className="ml-2 opacity-60">
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-              </div>
+              {/* Sticky controls header */}
+              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  {/* Status Filter Buttons */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {statusFilters.map((filter) => {
+                      const count = filter.value === 'all'
+                        ? statusCounts.all
+                        : (statusCounts[filter.value as keyof typeof statusCounts] || 0);
+                      return (
+                        <button
+                          key={filter.value}
+                          onClick={() => setStatusFilter(filter.value)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                            statusFilter === filter.value
+                              ? 'bg-primary text-white'
+                              : 'glass text-foreground-muted hover:text-foreground'
+                          }`}
+                        >
+                          {filter.label}
+                          <span className="ml-2 opacity-60">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                {/* Type Filter and Bulk Update on Right */}
-                <div className="flex items-center gap-2 flex-1 min-w-[200px] justify-end ml-8">
-                  {/* Combined Filter Dropdown */}
-                  <select
-                    value={combinedFilter}
-                    onChange={(e) => setCombinedFilter(e.target.value as FilterOption)}
-                    className="px-2 py-1.5 rounded-lg text-xs bg-background border border-foreground/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  >
-                    {filterOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsBulkUpdateModalOpen(true)}
-                    className="px-3 py-1.5 text-xs whitespace-nowrap"
-                  >
-                    Bulk Update
-                  </Button>
+                  {/* Type Filter and Bulk Update on Right */}
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px] justify-end ml-4">
+                    <select
+                      value={combinedFilter}
+                      onChange={(e) => setCombinedFilter(e.target.value as FilterOption)}
+                      className="px-2 py-1.5 rounded-lg text-xs bg-background border border-foreground/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      {filterOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsBulkUpdateModalOpen(true)}
+                      className="px-3 py-1.5 text-xs whitespace-nowrap"
+                    >
+                      Bulk Update
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* Anime Grid */}
+              {/* Scrollable anime grid */}
               {filteredAnime.length > 0 ? (
-                <motion.div
-                  layout
-                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 items-stretch"
-                >
-                  {filteredAnime.map((item, index) => {
+                <div className="max-h-[calc(100vh-320px)] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                  <motion.div
+                    layout
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 items-stretch"
+                  >
+                    {filteredAnime.map((item, index) => {
                     const badgeType = item.watchStatus === 'Yet to Air for Watch' || item.watchStatus === 'Watch Later' 
                             ? 'planning' 
                             : item.watchStatus === 'On Hold' 
@@ -402,7 +404,7 @@ export default function AnimePage() {
                           setSelectedAnime(item);
                                   setIsEditModalOpen(true);
                                 }}
-                                className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-black/90 transition-colors"
+                                className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm hover:bg-background-secondary transition-colors"
                                 title={t('anime.editAnime') || 'Edit Anime'}
                               >
                                 <Edit className="w-4 h-4 text-white" />
@@ -416,7 +418,7 @@ export default function AnimePage() {
                                     });
                                   }
                                 }}
-                                className="p-1.5 rounded-md bg-black/70 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
+                                className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
                                 title={t('anime.deleteAnime') || 'Delete Anime'}
                               >
                                 <Trash2 className="w-4 h-4 text-white" />
@@ -465,10 +467,11 @@ export default function AnimePage() {
                             </div>
                           </div>
                         </Card>
-                    </motion.div>
+                      </motion.div>
                     );
                   })}
                 </motion.div>
+              </div>
               ) : (
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4">🔍</div>

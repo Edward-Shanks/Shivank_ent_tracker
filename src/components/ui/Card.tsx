@@ -136,7 +136,7 @@ export function MediaCard({
         )}
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Badge */}
         {badge && (
@@ -145,7 +145,7 @@ export function MediaCard({
 
         {/* Score */}
         {score && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm">
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md bg-background/80 backdrop-blur-sm">
             <span className="text-yellow-400 text-sm">★</span>
             <span className="text-white text-sm font-medium">{score}</span>
           </div>

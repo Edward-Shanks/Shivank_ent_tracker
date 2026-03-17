@@ -10,7 +10,7 @@ import {
   Film,
   Gamepad2,
   Sparkles,
-  KeyRound,
+  Trophy,
   Globe,
   ChevronLeft,
   ChevronRight,
@@ -22,6 +22,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSidebar } from '@/context/SidebarContext';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSelector from '@/components/ui/LanguageSelector';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 // navItems will be defined inside component to use translations
 
@@ -32,13 +33,20 @@ export default function Sidebar() {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { t } = useLanguage();
 
+  const planLabel = React.useMemo(() => {
+    const plan = (user as any)?.plan;
+    if (plan === 'pro') return 'Pro Plan';
+    if (plan === 'premium') return 'Premium Plan';
+    return 'Free Plan';
+  }, [user]);
+
   const navItems = [
     { href: '/', label: t('nav.dashboard'), icon: Home },
     { href: '/anime', label: t('nav.anime'), icon: Tv },
     { href: '/shows', label: t('nav.movies'), icon: Film },
     { href: '/games', label: t('nav.games'), icon: Gamepad2 },
     { href: '/genshin', label: t('nav.genshin'), icon: Sparkles },
-    { href: '/credentials', label: t('nav.credentials'), icon: KeyRound },
+    { href: '/achievement', label: 'Achievements', icon: Trophy },
     { href: '/websites', label: t('nav.websites'), icon: Globe },
     { href: '/reports', label: t('nav.reports'), icon: FileText },
   ];
@@ -171,21 +179,26 @@ export default function Sidebar() {
                 className="overflow-hidden flex-1 min-w-0"
               >
                 <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                  {user?.username || 'Guest'}
+                  Profile &amp; Plan
                 </p>
                 <p className="text-xs text-foreground-muted truncate">
-                  {user?.email || 'Not logged in'}
+                  {user ? `${user.username || 'User'} • ${planLabel}` : 'Not logged in'}
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
         </Link>
         
-        {/* Language & Logout - Single Row */}
+        {/* Language, Theme & Logout - Single Row */}
         <div className="flex items-center justify-center gap-3">
           {/* Language Selector */}
           <LanguageSelector collapsed={true} />
-          
+
+          {/* Theme Toggle */}
+          <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-colors">
+            <ThemeToggle />
+          </div>
+
           {/* Logout */}
           <button 
             onClick={handleLogout}

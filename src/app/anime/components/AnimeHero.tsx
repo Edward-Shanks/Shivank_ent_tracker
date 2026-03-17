@@ -40,11 +40,11 @@ export default function AnimeHero({ totalCount }: AnimeHeroProps) {
           className="max-w-2xl"
         >
           {/* Collection Title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
             Your Anime Collection
           </h1>
           {totalCount !== undefined && (
-            <p className="text-lg text-white/70 mb-4">
+            <p className="text-lg text-foreground-muted mb-4">
               {totalCount} Anime in your Collection List
             </p>
           )}

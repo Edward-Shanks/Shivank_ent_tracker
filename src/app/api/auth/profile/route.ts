@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         username: users.username,
         email: users.email,
         avatar: users.avatar,
+        plan: users.plan,
         createdAt: users.createdAt,
       })
       .from(users)
@@ -96,6 +97,7 @@ export async function PATCH(request: NextRequest) {
         username: users.username,
         email: users.email,
         avatar: users.avatar,
+        plan: users.plan,
         createdAt: users.createdAt,
       })
       .from(users)

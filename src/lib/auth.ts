@@ -108,6 +108,7 @@ export async function getCurrentUser(): Promise<{
   email: string;
   username: string;
   avatar: string | null;
+  plan: string;
 } | null> {
   const { accessToken, refreshToken } = await getAuthCookies();
 
@@ -121,6 +122,7 @@ export async function getCurrentUser(): Promise<{
           email: users.email,
           username: users.username,
           avatar: users.avatar,
+          plan: users.plan,
         })
         .from(users)
         .where(eq(users.id, payload.userId))
@@ -142,6 +144,7 @@ export async function getCurrentUser(): Promise<{
           email: users.email,
           username: users.username,
           avatar: users.avatar,
+          plan: users.plan,
         })
         .from(users)
         .where(eq(users.id, refreshPayload.userId))

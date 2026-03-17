@@ -36,7 +36,7 @@ const defaultStats: AnimeStats = {
   totalEpisodes: 0,
   meanScore: 0,
   watchStatusCounts: {
-    Yet to Air for Watch: 0,
+    'Yet to Air for Watch': 0,
     watching: 0,
     watchLater: 0,
     completed: 0,
@@ -125,7 +125,7 @@ export default function AnimeInsights() {
   const statusData = [
     { name: t('status.watching'), value: stats.watchStatusCounts.watching, color: COLORS.watching },
     { name: t('status.completed'), value: stats.watchStatusCounts.completed, color: COLORS.completed },
-    { name: t('anime.Yet to Air for Watch'), value: stats.watchStatusCounts.Yet to Air for Watch, color: COLORS.planning },
+    { name: t('anime.Yet to Air for Watch'), value: stats.watchStatusCounts['Yet to Air for Watch'], color: COLORS.planning },
     { name: t('anime.watchLater'), value: stats.watchStatusCounts.watchLater, color: COLORS.planning },
     { name: t('status.onHold'), value: stats.watchStatusCounts.onHold, color: COLORS['on-hold'] },
     { name: t('status.dropped'), value: stats.watchStatusCounts.dropped, color: COLORS.dropped },

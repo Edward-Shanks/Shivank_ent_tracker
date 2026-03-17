@@ -4,7 +4,6 @@ import {
   KDrama,
   Game,
   GenshinAccount,
-  Credential,
   Website,
 } from '@/types';
 
@@ -346,54 +345,6 @@ export const mockGenshinAccount: GenshinAccount = {
     },
   ],
 };
-
-export const mockCredentials: Credential[] = [
-  {
-    id: '1',
-    name: 'Netflix',
-    category: 'streaming',
-    email: 'user@example.com',
-    password: '••••••••••••',
-    url: 'https://netflix.com',
-    lastUpdated: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'Crunchyroll',
-    category: 'streaming',
-    email: 'user@example.com',
-    password: '••••••••••••',
-    url: 'https://crunchyroll.com',
-    lastUpdated: '2024-01-10',
-  },
-  {
-    id: '3',
-    name: 'Steam',
-    category: 'gaming',
-    username: 'gamer123',
-    password: '••••••••••••',
-    url: 'https://steampowered.com',
-    lastUpdated: '2024-02-01',
-  },
-  {
-    id: '4',
-    name: 'Discord',
-    category: 'social',
-    email: 'user@example.com',
-    password: '••••••••••••',
-    url: 'https://discord.com',
-    lastUpdated: '2024-01-20',
-  },
-  {
-    id: '5',
-    name: 'Spotify',
-    category: 'streaming',
-    email: 'user@example.com',
-    password: '••••••••••••',
-    url: 'https://spotify.com',
-    lastUpdated: '2024-01-05',
-  },
-];
 
 export const mockWebsites: Website[] = [
   {

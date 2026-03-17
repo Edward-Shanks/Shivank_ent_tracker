@@ -10,7 +10,6 @@ import {
   Film,
   Gamepad2,
   Sparkles,
-  KeyRound,
   Globe,
   Menu,
   X,
@@ -19,6 +18,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -27,7 +27,7 @@ const navItems = [
   { href: '/kdrama', label: 'K-Drama', icon: Tv },
   { href: '/games', label: 'Games', icon: Gamepad2 },
   { href: '/genshin', label: 'Genshin', icon: Sparkles },
-  { href: '/credentials', label: 'Credentials', icon: KeyRound },
+  { href: '/achievement', label: 'Achievements', icon: Sparkles },
   { href: '/websites', label: 'Websites', icon: Globe },
 ];
 
@@ -93,6 +93,9 @@ export default function Navbar() {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
             </button>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             {/* User Avatar */}
             <button className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/5 transition-colors">

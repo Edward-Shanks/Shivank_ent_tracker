@@ -68,6 +68,7 @@ export async function POST() {
         email: user.email,
         username: user.username,
         avatar: user.avatar,
+        plan: (user as any).plan || 'free',
         createdAt: user.createdAt,
       },
     });

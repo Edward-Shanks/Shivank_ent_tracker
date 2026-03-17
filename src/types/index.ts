@@ -4,6 +4,7 @@ export interface User {
   username: string;
   email: string;
   avatar?: string;
+  plan?: 'free' | 'pro' | 'premium';
   createdAt: string;
 }
 
@@ -125,22 +126,6 @@ export interface GenshinAccount {
   acquaint: number;
 }
 
-// ===== CREDENTIALS TYPES =====
-export type CredentialCategory = 'streaming' | 'gaming' | 'social' | 'email' | 'finance' | 'shopping' | 'other';
-
-export interface Credential {
-  id: string;
-  name: string;
-  category: CredentialCategory;
-  username?: string;
-  email?: string;
-  password: string;
-  url?: string;
-  notes?: string;
-  lastUpdated: string;
-  icon?: string;
-}
-
 // ===== WEBSITE TYPES =====
 export type WebsiteCategory = 'anime' | 'movies' | 'gaming' | 'productivity' | 'social' | 'news' | 'tools' | 'other';
 
@@ -161,7 +146,7 @@ export interface AnimeStats {
   totalEpisodes: number;
   meanScore: number;
   watchStatusCounts: {
-    Yet to Air for Watch: number;
+    'Yet to Air for Watch': number;
     watching: number;
     watchLater: number;
     completed: number;

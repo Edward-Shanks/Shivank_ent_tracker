@@ -54,8 +54,7 @@ async function seed() {
 
     console.log('✓ Genshin account created');
 
-    // Seed credentials (optional)
-    // await db.insert(credentials).values([...]);
+    // Seed credentials removed (credentials feature removed)
 
     // Seed websites (optional)
     // await db.insert(websites).values([...]);

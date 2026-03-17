@@ -7,7 +7,6 @@ import {
   KDrama,
   Game,
   GenshinAccount,
-  Credential,
   Website,
   AnimeStats,
   DashboardStats,
@@ -43,15 +42,9 @@ interface DataContextType {
   // Genshin
   genshinAccount: GenshinAccount | null;
   updateGenshinAccount: (updates: Partial<GenshinAccount>) => Promise<void>;
-  addGenshinCharacter: (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => Promise<void>;
+  addGenshinCharacter: (character: Omit<import('@/types').GenshinCharacter, 'id'>) => Promise<void>;
   updateGenshinCharacter: (id: string, updates: Partial<import('@/types').GenshinCharacter>) => Promise<void>;
   deleteGenshinCharacter: (id: string) => Promise<void>;
-  
-  // Credentials
-  credentials: Credential[];
-  addCredential: (credential: Omit<Credential, 'id'>) => Promise<void>;
-  updateCredential: (id: string, updates: Partial<Credential>) => Promise<void>;
-  deleteCredential: (id: string) => Promise<void>;
   
   // Websites
   websites: Website[];
@@ -76,7 +69,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [kdrama, setKDrama] = useState<KDrama[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [genshinAccount, setGenshinAccount] = useState<GenshinAccount | null>(null);
-  const [credentials, setCredentials] = useState<Credential[]>([]);
   const [websites, setWebsites] = useState<Website[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +79,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       
-      const [animeData, moviesData, kdramaData, gamesData, genshinData, credentialsData, websitesData] = await Promise.all([
+      const [animeData, moviesData, kdramaData, gamesData, genshinData, websitesData] = await Promise.all([
         apiClient.get<Anime[]>('/anime').catch((err) => {
           console.error('Error fetching anime:', err);
           return [];
@@ -109,10 +101,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
           console.error('Error fetching genshin:', err);
           return null;
         }),
-        apiClient.get<Credential[]>('/credentials').catch((err) => {
-          console.error('Error fetching credentials:', err);
-          return [];
-        }),
         apiClient.get<Website[]>('/websites').catch((err) => {
           console.error('Error fetching websites:', err);
           return [];
@@ -124,7 +112,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setKDrama(kdramaData);
       setGames(gamesData || []);
       setGenshinAccount(genshinData);
-      setCredentials(credentialsData);
       setWebsites(websitesData);
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -290,11 +277,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addGenshinCharacter = async (character: Omit<import('@/types').GenshinCharacter, 'id' | 'friendship'>) => {
+  const addGenshinCharacter = async (character: Omit<import('@/types').GenshinCharacter, 'id'>) => {
     try {
       const created = await apiClient.post<import('@/types').GenshinCharacter>('/genshin/characters', {
         ...character,
-        friendship: 0,
+        friendship: character.friendship ?? 0,
       });
       if (genshinAccount) {
         setGenshinAccount({
@@ -336,39 +323,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Error deleting genshin character:', err);
-      throw err;
-    }
-  };
-
-  // ===== CREDENTIAL FUNCTIONS =====
-  const addCredential = async (newCredential: Omit<Credential, 'id'>) => {
-    try {
-      const created = await apiClient.post<Credential>('/credentials', newCredential);
-      setCredentials((prev) => [...prev, created]);
-    } catch (err) {
-      console.error('Error adding credential:', err);
-      throw err;
-    }
-  };
-
-  const updateCredential = async (id: string, updates: Partial<Credential>) => {
-    try {
-      const updated = await apiClient.patch<Credential>(`/credentials/${id}`, updates);
-      setCredentials((prev) =>
-        prev.map((item) => (item.id === id ? updated : item))
-      );
-    } catch (err) {
-      console.error('Error updating credential:', err);
-      throw err;
-    }
-  };
-
-  const deleteCredential = async (id: string) => {
-    try {
-      await apiClient.delete(`/credentials/${id}`);
-      setCredentials((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      console.error('Error deleting credential:', err);
       throw err;
     }
   };
@@ -441,10 +395,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addGenshinCharacter,
         updateGenshinCharacter,
         deleteGenshinCharacter,
-        credentials,
-        addCredential,
-        updateCredential,
-        deleteCredential,
         websites,
         addWebsite,
         updateWebsite,

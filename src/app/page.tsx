@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   Tv,
   Film,
   Gamepad2,
   Sparkles,
-  KeyRound,
   Globe,
   TrendingUp,
   Clock,
@@ -33,6 +32,7 @@ import {
   Legend,
 } from 'recharts';
 import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 import { NavCard, Card, MediaCard } from '@/components/ui/Card';
 import { DashboardStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -53,7 +53,8 @@ const item = {
 };
 
 export default function Dashboard() {
-  const { getDashboardStats, anime, movies, kdrama, games, credentials, websites, genshinAccount } = useData();
+  const { getDashboardStats, anime, movies, kdrama, games, websites, genshinAccount } = useData();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [stats, setStats] = useState<DashboardStats>({
     anime: { total: 0, watching: 0 },
@@ -61,6 +62,8 @@ export default function Dashboard() {
     kdrama: { total: 0, watching: 0 },
     games: { total: 0, playing: 0 },
   });
+
+  const isPro = (user as any)?.plan === 'pro' || (user as any)?.plan === 'premium';
 
   useEffect(() => {
     getDashboardStats().then(setStats).catch(console.error);
@@ -311,14 +314,6 @@ export default function Dashboard() {
       ],
     },
     {
-      href: '/credentials',
-      icon: KeyRound,
-      title: t('page.credentials'),
-      description: t('dashboard.credentialsDesc'),
-      color: '#8b5cf6',
-      stats: [{ label: t('dashboard.saved'), value: credentials.length }],
-    },
-    {
       href: '/websites',
       icon: Globe,
       title: t('page.websites'),
@@ -341,11 +336,10 @@ export default function Dashboard() {
             className="text-center"
           >
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
-              {t('dashboard.welcome')}{' '}
-              <span className="text-gradient">NexaVerse</span>
+              My Statistics
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground-muted max-w-2xl mx-auto px-4">
-              {t('dashboard.subtitle')}
+              A unified view of your anime, shows, games, and more — optimized for sharing.
             </p>
           </motion.div>
         </div>
@@ -374,7 +368,7 @@ export default function Dashboard() {
         </motion.div>
       </section>
 
-      {/* Analytics Charts Section */}
+      {/* Analytics / My Statistics Section */}
       <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         <motion.div
           variants={container}
@@ -382,6 +376,36 @@ export default function Dashboard() {
           animate="show"
           className="space-y-4 sm:space-y-5 md:space-y-6"
         >
+          {/* Pro gating banner */}
+          {!isPro && (
+            <Card className="p-4 sm:p-5 md:p-6 border-primary/40 bg-primary/5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1">
+                    Unlock full My Statistics with Pro
+                  </h2>
+                  <p className="text-sm text-foreground-muted">
+                    Upgrade to Pro to access advanced analytics and shareable stats images.
+                  </p>
+                </div>
+                <a
+                  href="/pricing"
+                  className="inline-flex"
+                >
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                    style={{
+                      background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+                      boxShadow: '0 0 16px rgba(168,85,247,0.4)',
+                    }}
+                  >
+                    Upgrade to Pro
+                  </button>
+                </a>
+              </div>
+            </Card>
+          )}
+
           {/* Top Genres Across All Media */}
           <motion.div variants={item}>
             <Card className="p-4 sm:p-5 md:p-6">

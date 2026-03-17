@@ -53,7 +53,7 @@ const statusLabels: Record<string, string> = {
   watched: 'Watched',
   playing: 'Playing',
   rewatching: 'Rewatching',
-  Yet to Air for Watch: 'Yet To Watch',
+  'Yet to Air for Watch': 'Yet To Watch',
   'watch-later': 'Watch Later',
 };
 
@@ -66,7 +66,7 @@ const statusVariants: Record<string, BadgeVariant> = {
   watched: 'completed',
   playing: 'watching',
   rewatching: 'watching',
-  Yet to Air for Watch: 'planning',
+  'Yet to Air for Watch': 'planning',
   'watch-later': 'planning',
 };
 

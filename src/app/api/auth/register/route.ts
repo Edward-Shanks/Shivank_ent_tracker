@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       username,
       password: hashedPassword,
       avatar,
+      plan: 'free',
     });
 
     // Generate tokens
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
           email,
           username,
           avatar,
+          plan: 'free',
           createdAt: new Date().toISOString(),
         },
       },
