@@ -288,20 +288,21 @@ export default function LoginPage() {
                 NexaVerse
               </GradientText>
             </motion.h1>
-            <motion.p
-              className="text-white text-lg md:text-xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              Sign in to continue your entertainment journey
-            </motion.p>
           </motion.div>
 
           {/* Login Form - Right Side */}
-          <div className="w-full md:w-1/2 max-w-md md:max-w-lg">
+          <div className="w-full md:w-1/2 max-w-md md:max-w-lg md:ml-auto md:mr-0">
 
-        {/* Login Card */}
+          <motion.p
+            className="text-foreground-muted text-lg md:text-xl mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Sign in to continue your entertainment journey
+          </motion.p>
+
+          {/* Login Card */}
         <motion.div
           variants={cardVariants}
           className="glass-strong rounded-2xl p-8 shadow-2xl border border-foreground/10"
@@ -314,7 +315,7 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-black"
+                className="block text-sm font-medium text-foreground-muted"
               >
                 Email Address
               </label>
@@ -324,7 +325,7 @@ export default function LoginPage() {
                     className={`w-5 h-5 transition-colors ${
                       isFocused === 'email'
                         ? 'text-primary'
-                        : 'text-black'
+                        : 'text-foreground-muted'
                     }`}
                   />
                 </div>
@@ -336,7 +337,7 @@ export default function LoginPage() {
                   onFocus={() => setIsFocused('email')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-black focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 {isFocused === 'email' && (
@@ -357,7 +358,7 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-black"
+                className="block text-sm font-medium text-foreground-muted"
               >
                 Password
               </label>
@@ -367,7 +368,7 @@ export default function LoginPage() {
                     className={`w-5 h-5 transition-colors ${
                       isFocused === 'password'
                         ? 'text-primary'
-                        : 'text-black'
+                        : 'text-foreground-muted'
                     }`}
                   />
                 </div>
@@ -379,13 +380,13 @@ export default function LoginPage() {
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused(null)}
                   placeholder="Enter your password"
-                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-black focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  className="w-full pl-12 pr-12 py-3 rounded-lg bg-background/50 border border-foreground/20 text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   whileFocus={{ scale: 1.02 }}
                 />
                 <motion.button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-black hover:text-foreground transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-foreground-muted hover:text-foreground transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -416,7 +417,7 @@ export default function LoginPage() {
                   type="checkbox"
                   className="w-4 h-4 rounded border-foreground/20 text-primary focus:ring-primary/50 focus:ring-offset-0 cursor-pointer"
                 />
-                <span className="ml-2 text-black group-hover:text-foreground transition-colors">
+                <span className="ml-2 text-foreground-muted group-hover:text-foreground transition-colors">
                   Remember me
                 </span>
               </label>
@@ -483,7 +484,7 @@ export default function LoginPage() {
               className="relative flex items-center py-4"
             >
               <div className="flex-1 border-t border-foreground/20" />
-              <span className="px-4 text-sm text-black">or</span>
+              <span className="px-4 text-sm text-foreground-muted">or</span>
               <div className="flex-1 border-t border-foreground/20" />
             </motion.div>
 
@@ -492,7 +493,7 @@ export default function LoginPage() {
               variants={itemVariants}
               className="text-center"
             >
-              <p className="text-black text-sm">
+              <p className="text-foreground-muted text-sm">
                 Don't have an account?{' '}
                 <Link
                   href="/register"
@@ -510,7 +511,7 @@ export default function LoginPage() {
           variants={itemVariants}
           className="text-center mt-8"
         >
-          <p className="text-black text-sm">
+          <p className="text-foreground-muted text-sm">
             By signing in, you agree to our{' '}
             <a href="#" className="text-primary hover:underline">
               Terms of Service
