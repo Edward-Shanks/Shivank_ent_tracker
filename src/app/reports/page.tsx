@@ -603,8 +603,7 @@ export default function ReportsPage() {
           { field: 'episodes', label: 'Total Episodes', required: true },
           { field: 'episodesWatched', label: 'Episodes Watched', required: false },
           { field: 'genres', label: 'Genres', required: false },
-          { field: 'season', label: 'Season', required: false },
-          { field: 'coverImage', label: 'Image URL (if any)', required: false },
+          { field: 'season', label: 'Season', required: false }
         ];
       case 'shows':
         return [

@@ -294,9 +294,9 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
           }}
           className="p-4 sm:p-6"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 gap-x-0">
             {/* Left: main fields */}
-            <div className="lg:col-span-2 space-y-5">
+            <div className="lg:col-span-2 space-y-5 lg:border-r lg:border-foreground/10 lg:pr-6">
               <section>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
                   Basic Info:
@@ -352,8 +352,11 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
                       onChange={(value) => setFormData({ ...formData, airingStatus: value as AiringStatus })}
                     />
                     {hasTriedSubmit && fieldErrors.airingStatus && (
-                      <p className="text-[11px] text-red-500">{fieldErrors.airingStatus}</p>
+                      <p className="text-[11px] text-red-500">{fieldErrors.watchStatus}</p>
                     )}
+                    <p className="text-[11px] text-foreground-muted">
+                      Airing status = broadcast status
+                    </p>
                   </div>
 
                   <div className="space-y-1">
@@ -367,7 +370,7 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
                       <p className="text-[11px] text-red-500">{fieldErrors.watchStatus}</p>
                     )}
                     <p className="text-[11px] text-foreground-muted">
-                      Airing status = broadcast status, Watch status = your personal progress
+                      Watch status = your personal progress
                     </p>
                   </div>
                 </div>
@@ -443,86 +446,79 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
                   />
                 </div>
 
-                <div className="mt-4" ref={genresRef}>
-                  <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
-                    {t('anime.genres')}
-                  </label>
+                <div className="mt-4">
+                  <div ref={genresRef}>
+                    <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
+                      {t('anime.genres')}
+                    </label>
 
-                  <div
-                    className={`input-glass w-full text-sm py-2 px-3 rounded-lg border border-foreground/20 flex flex-wrap gap-2 items-center ${
-                      genreDropdownOpen ? 'border-foreground/30' : ''
-                    }`}
-                    onClick={() => setGenreDropdownOpen(true)}
-                  >
-                    {formData.genres.length > 0 ? (
-                      formData.genres.map((g) => (
-                        <span
-                          key={g}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-foreground/10 text-foreground text-xs font-medium"
-                        >
-                          {g}
-                          <button
-                            type="button"
-                            className="hover:text-red-500"
-                            onClick={(ev) => {
-                              ev.stopPropagation();
-                              handleGenreRemove(g);
-                            }}
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-foreground-muted">Select genres</span>
-                    )}
-
-                    <input
-                      value={genreQuery}
-                      onChange={(e) => {
-                        setGenreQuery(e.target.value);
-                        setGenreDropdownOpen(true);
-                      }}
-                      onFocus={() => setGenreDropdownOpen(true)}
-                      onBlur={() => setTimeout(() => setGenreDropdownOpen(false), 120)}
-                      className="flex-1 min-w-[120px] bg-transparent outline-none text-sm py-1"
-                      placeholder={formData.genres.length > 0 ? '' : 'Search…'}
-                    />
-                  </div>
-
-                  {genreDropdownOpen && genreSuggestions.length > 0 && (
-                    <div className="relative z-10">
-                      <div className="absolute z-20 mt-1 w-full rounded-lg border border-foreground/20 bg-background shadow-lg max-h-56 overflow-y-auto">
-                        {genreSuggestions.map((g) => (
-                          <button
+                    <div
+                      className={`input-glass w-full text-sm py-2 px-3 rounded-lg border border-foreground/20 flex flex-wrap gap-2 items-center ${
+                        genreDropdownOpen ? 'border-foreground/30' : ''
+                      }`}
+                      onClick={() => setGenreDropdownOpen(true)}
+                    >
+                      {formData.genres.length > 0 ? (
+                        formData.genres.map((g) => (
+                          <span
                             key={g}
-                            type="button"
-                            onMouseDown={(ev) => ev.preventDefault()}
-                            onClick={() => handleGenreAdd(g)}
-                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-foreground/10"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-foreground/10 text-foreground text-xs font-medium"
                           >
                             {g}
-                          </button>
-                        ))}
-                      </div>
+                            <button
+                              type="button"
+                              className="hover:text-red-500"
+                              onClick={(ev) => {
+                                ev.stopPropagation();
+                                handleGenreRemove(g);
+                              }}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-foreground-muted">Select genres</span>
+                      )}
+
+                      <input
+                        value={genreQuery}
+                        onChange={(e) => {
+                          setGenreQuery(e.target.value);
+                          setGenreDropdownOpen(true);
+                        }}
+                        onFocus={() => setGenreDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setGenreDropdownOpen(false), 120)}
+                        className="flex-1 min-w-[120px] bg-transparent outline-none text-sm py-1"
+                        placeholder={formData.genres.length > 0 ? '' : 'Search…'}
+                      />
                     </div>
-                  )}
+
+                    {genreDropdownOpen && genreSuggestions.length > 0 && (
+                      <div className="relative z-10">
+                        <div className="absolute z-20 mt-1 w-full rounded-lg border border-foreground/20 bg-background shadow-lg max-h-56 overflow-y-auto">
+                          {genreSuggestions.map((g) => (
+                            <button
+                              key={g}
+                              type="button"
+                              onMouseDown={(ev) => ev.preventDefault()}
+                              onClick={() => handleGenreAdd(g)}
+                              className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-foreground/10"
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-4">
-                  <Input
-                    label={t('anime.imageUrl')}
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
               </section>
             </div>
 
             {/* Right: cover preview + links */}
-            <div className="space-y-5">
+            <div className="space-y-5 lg:pl-6">
               <section>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">
                   Cover image space
@@ -549,9 +545,18 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
               </section>
 
               <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                   
-                </h3>
+                <div className="space-y-3">
+                  <Input
+                    label={t('anime.imageUrl')}
+                    type="url"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </section>
+
+              <section>
                 <div className="space-y-3">
                   <Input
                     label={t('anime.websiteLink')}

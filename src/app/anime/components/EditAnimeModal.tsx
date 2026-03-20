@@ -299,8 +299,8 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
           }}
           className="p-4 sm:p-6"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 gap-x-0">
+            <div className="lg:col-span-2 space-y-5 lg:border-r lg:border-foreground/10 lg:pr-6">
               <section>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
                   Block 1: Anime name, Other name
@@ -405,7 +405,7 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
 
               <section>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Block 4: Metadata (Season & part, Genres, Image URL)
+                  Block 4: Metadata (Season & part, Genres)
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
@@ -499,20 +499,10 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
                     </div>
                   )}
                 </div>
-
-                <div className="mt-4">
-                  <Input
-                    label={t('anime.imageUrl')}
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
               </section>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-5 lg:pl-6">
               <section>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">
                   Cover image space
@@ -539,9 +529,18 @@ export default function EditAnimeModal({ isOpen, onClose, anime, onSave }: EditA
               </section>
 
               <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Block 4: Website link
-                </h3>
+                <div className="space-y-3">
+                  <Input
+                    label={t('anime.imageUrl')}
+                    type="url"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </section>
+
+              <section>
                 <div className="space-y-3">
                   <Input
                     label={t('anime.websiteLink')}
