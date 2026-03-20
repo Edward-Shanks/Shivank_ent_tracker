@@ -407,7 +407,7 @@ export default function AnimePage() {
                                 className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm hover:bg-background-secondary transition-colors"
                                 title={t('anime.editAnime') || 'Edit Anime'}
                               >
-                                <Edit className="w-4 h-4 text-white" />
+                                <Edit className="w-4 h-4 text-foreground" />
                               </button>
                               <button
                                 onClick={() => {
@@ -421,7 +421,7 @@ export default function AnimePage() {
                                 className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm hover:bg-red-600/90 transition-colors"
                                 title={t('anime.deleteAnime') || 'Delete Anime'}
                               >
-                                <Trash2 className="w-4 h-4 text-white" />
+                                <Trash2 className="w-4 h-4 text-foreground" />
                               </button>
                             </div>
 
