@@ -1,0 +1,19 @@
+{
+    "mcpServers": {
+      "tailwindcss": {
+        "command": "pnpm",
+        "args": [
+          "dlx",
+          "tailwindcss-mcp-server"
+        ]
+      },
+      "next-devtools": {
+        "command": "pnpm",
+        "args": [
+          "dlx",
+          "next-devtools-mcp@latest"
+        ]
+      }
+    },
+    "$version": 3
+  }

@@ -263,16 +263,14 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div 
-          className="p-3 rounded-lg border border-foreground/20 bg-card/95 backdrop-blur-md shadow-lg"
-        >
-          <p className="text-foreground font-semibold mb-2 text-base">{label || payload[0].name}</p>
+        <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
+          <p className="text-white font-semibold mb-2 text-sm">{label || payload[0].name}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-foreground text-sm mb-1">
+            <p key={index} className="text-foreground-muted text-xs mb-1">
               <span style={{ color: entry.color || entry.fill || 'var(--foreground)', fontWeight: 600 }}>
                 {entry.name}:
               </span>{' '}
-              <span className="font-bold text-foreground">{entry.value}</span>
+              <span className="font-bold text-cyan-400">{entry.value}</span>
             </p>
           ))}
         </div>

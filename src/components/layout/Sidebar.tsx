@@ -1,215 +1,93 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import {
-  Home,
-  Tv,
-  Film,
-  Gamepad2,
-  Sparkles,
-  Trophy,
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  LogOut,
-  FileText,
-} from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { useSidebar } from '@/context/SidebarContext';
+  IconDashboard,
+  IconMovie,
+  IconDeviceGamepad,
+  IconSparkles,
+  IconTrophy,
+  IconWorld,
+  IconFileReport,
+} from '@tabler/icons-react';
 import { useLanguage } from '@/context/LanguageContext';
-import LanguageSelector from '@/components/ui/LanguageSelector';
-import ThemeToggle from '@/components/ui/ThemeToggle';
-
-// navItems will be defined inside component to use translations
+import { FloatingDock } from '@/components/ui/floating-dock';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, logout } = useAuth();
-  const { isCollapsed, toggleSidebar } = useSidebar();
   const { t } = useLanguage();
 
-  const planLabel = React.useMemo(() => {
-    const plan = (user as any)?.plan;
-    if (plan === 'pro') return 'Pro Plan';
-    if (plan === 'premium') return 'Premium Plan';
-    return 'Free Plan';
-  }, [user]);
-
-  const navItems = [
-    { href: '/', label: t('nav.dashboard'), icon: Home },
-    { href: '/anime', label: t('nav.anime'), icon: Tv },
-    { href: '/shows', label: t('nav.movies'), icon: Film },
-    { href: '/games', label: t('nav.games'), icon: Gamepad2 },
-    { href: '/genshin', label: t('nav.genshin'), icon: Sparkles },
-    { href: '/achievement', label: 'Achievements', icon: Trophy },
-    { href: '/websites', label: t('nav.websites'), icon: Globe },
-    { href: '/reports', label: t('nav.reports'), icon: FileText },
-  ];
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+  // Helper to check if a path is active
+  const isActivePath = (href: string) => {
+    if (href === '/shows') {
+      return pathname === '/shows' || pathname === '/movies' || pathname === '/kdrama';
+    }
+    return pathname === href;
   };
 
+  // Navigation items for FloatingDock with active state
+  const navItems = [
+    {
+      title: t('nav.dashboard'),
+      icon: <IconDashboard className="h-full w-full" />,
+      href: '/',
+      isActive: isActivePath('/'),
+    },
+    {
+      title: t('nav.anime'),
+      icon: <IconMovie className="h-full w-full" />,
+      href: '/anime',
+      isActive: isActivePath('/anime'),
+    },
+    {
+      title: t('nav.movies'),
+      icon: <IconMovie className="h-full w-full" />,
+      href: '/shows',
+      isActive: isActivePath('/shows'),
+    },
+    {
+      title: t('nav.games'),
+      icon: <IconDeviceGamepad className="h-full w-full" />,
+      href: '/games',
+      isActive: isActivePath('/games'),
+    },
+    {
+      title: t('nav.genshin'),
+      icon: <IconSparkles className="h-full w-full" />,
+      href: '/genshin',
+      isActive: isActivePath('/genshin'),
+    },
+    {
+      title: 'Achievements',
+      icon: <IconTrophy className="h-full w-full" />,
+      href: '/achievement',
+      isActive: isActivePath('/achievement'),
+    },
+    {
+      title: t('nav.websites'),
+      icon: <IconWorld className="h-full w-full" />,
+      href: '/websites',
+      isActive: isActivePath('/websites'),
+    },
+    {
+      title: t('nav.reports'),
+      icon: <IconFileReport className="h-full w-full" />,
+      href: '/reports',
+      isActive: isActivePath('/reports'),
+    },
+  ];
+
   return (
-    <aside
-      className={`fixed left-0 top-0 h-screen glass-strong z-50 flex flex-col transition-all duration-300 ${
-        isCollapsed ? 'w-20' : 'w-64'
-      }`}
-    >
-      {/* Logo */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
-        <Link href="/" className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
-            <img 
-              src="/images/logo/Nexaverse_logo.png" 
-              alt="NexaVerse" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="text-xl font-bold text-foreground overflow-hidden whitespace-nowrap"
-              >
-                NexaVerse
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </Link>
-        <button
-          onClick={toggleSidebar}
-          className="ml-2 p-2 rounded-lg text-foreground-muted hover:text-foreground hover:bg-foreground/10 active:bg-foreground/15 transition-all duration-200 flex-shrink-0"
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <motion.div
-            animate={{ rotate: isCollapsed ? 0 : 180 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' as const }}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <ChevronLeft className="w-5 h-5" />
-          )}
-          </motion.div>
-        </button>
+    <>
+      {/* FloatingDock Navigation - Bottom Centered for Desktop */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <FloatingDock
+          items={navItems}
+          desktopClassName="backdrop-blur-xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 dark:from-cyan-400/10 dark:via-blue-400/10 dark:to-cyan-400/10 border border-white/20 dark:border-white/10 shadow-[0_0_40px_rgba(0,240,255,0.15)]"
+          mobileClassName="backdrop-blur-xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 dark:from-cyan-400/10 dark:via-blue-400/10 dark:to-cyan-400/10 border border-white/20 dark:border-white/10 shadow-[0_0_40px_rgba(0,240,255,0.15)]"
+        />
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 py-4 overflow-y-auto">
-        <ul className="space-y-1 px-3">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || 
-              (item.href === '/shows' && (pathname === '/movies' || pathname === '/kdrama'));
-            const Icon = item.icon;
-
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 group ${
-                    isActive
-                      ? 'text-white'
-                      : 'text-foreground-muted hover:text-foreground hover:bg-foreground/5'
-                  }`}
-                  style={isActive ? {
-                    background: 'linear-gradient(135deg, #00f0ff 0%, #0ea5e9 100%)',
-                    boxShadow: '0 0 20px rgba(0, 240, 255, 0.4)',
-                  } : undefined}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? '' : 'group-hover:scale-110 transition-transform'}`} />
-                  <AnimatePresence>
-                    {!isCollapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        className="overflow-hidden whitespace-nowrap"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      {/* User Section */}
-      <div className="border-t border-foreground/10 px-4 py-4">
-        <Link
-          href="/profile"
-          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 mb-4'} group cursor-pointer`}
-          title={isCollapsed ? 'Profile' : undefined}
-        >
-          {user?.avatar && user.avatar.trim() ? (
-            <motion.img
-              src={user.avatar}
-              alt={user.username}
-              className="w-10 h-10 rounded-full ring-2 ring-primary/50 flex-shrink-0 shadow-md group-hover:ring-primary transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            />
-          ) : (
-            <motion.div
-              className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-md group-hover:bg-primary/30 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <User className="w-5 h-5 text-primary" />
-            </motion.div>
-          )}
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="overflow-hidden flex-1 min-w-0"
-              >
-                <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                  Profile &amp; Plan
-                </p>
-                <p className="text-xs text-foreground-muted truncate">
-                  {user ? `${user.username || 'User'} • ${planLabel}` : 'Not logged in'}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Link>
-        
-        {/* Language, Theme & Logout - Single Row */}
-        <div className="flex items-center justify-center gap-3">
-          {/* Language Selector */}
-          <LanguageSelector collapsed={true} />
-
-          {/* Theme Toggle */}
-          <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-colors">
-            <ThemeToggle />
-          </div>
-
-          {/* Logout */}
-          <button 
-            onClick={handleLogout}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-foreground-muted hover:text-red-400 transition-all duration-200 border-2 border-red-500/40 hover:border-red-400/60 hover:shadow-[0_0_10px_rgba(239,68,68,0.4),0_0_20px_rgba(239,68,68,0.2)]"
-            title={t('nav.logout')}
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </aside>
+    </>
   );
 }
-
