@@ -166,9 +166,9 @@ export default function AnimeInsights() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-strong p-3 rounded-lg">
-          <p className="text-foreground font-medium">{label || payload[0].name}</p>
-          <p className="text-primary font-bold">{payload[0].value}</p>
+        <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
+          <p className="text-white font-medium text-sm">{label || payload[0].name}</p>
+          <p className="text-cyan-400 font-bold text-base">{payload[0].value}</p>
         </div>
       );
     }
@@ -282,9 +282,9 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-primary" />
+              <Layers className="w-5 h-5 text-cyan-400" />
               {t('anime.statusDistribution')}
             </h3>
             <div className="h-64 flex flex-col justify-between">
@@ -325,31 +325,24 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Film className="w-5 h-5 text-purple-500" />
+              <Film className="w-5 h-5 text-purple-400" />
               Anime Type vs Watch Status
             </h3>
             <div className="h-64 chart-container">
               {animeTypeWatchStatusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={animeTypeWatchStatusData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
                     <XAxis
                       dataKey="status"
                       stroke="#666"
-                      tick={{ fill: '#a3a3a3', fontSize: 11 }}
+                      tick={{ fill: '#9eb3c2', fontSize: 11 }}
                     />
                     <YAxis hide={true} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(0,0,0,0.9)', 
-                        border: '1px solid #333',
-                        borderRadius: '8px',
-                        color: '#fff'
-                      }}
-                    />
-                    <Legend 
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
                       formatter={(value) => (
                         <span className="text-foreground-muted text-sm">{value}</span>
                       )}
@@ -377,28 +370,28 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
+              <TrendingUp className="w-5 h-5 text-cyan-400" />
               {t('anime.topGenres')}
             </h3>
             <div className="h-64">
               {stats.genreDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.genreDistribution} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis type="number" stroke="#666" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
                     <YAxis
                       dataKey="name"
                       type="category"
                       width={80}
                       stroke="#666"
-                      tick={{ fill: '#a3a3a3', fontSize: 12 }}
+                      tick={{ fill: '#9eb3c2', fontSize: 12 }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                       {stats.genreDistribution.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
@@ -423,31 +416,37 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
+              <TrendingUp className="w-5 h-5 text-cyan-400" />
               {t('anime.monthlyActivity')}
             </h3>
             <div className="h-64 chart-container">
               {stats.monthlyActivity.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.monthlyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
                     <XAxis
                       dataKey="month"
                       stroke="#666"
-                      tick={{ fill: '#a3a3a3' }}
+                      tick={{ fill: '#9eb3c2' }}
                     />
                     <YAxis hide={true} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="count"
-                      stroke="#e50914"
+                      stroke="url(#activityGradient)"
                       strokeWidth={3}
-                      dot={{ fill: '#e50914', strokeWidth: 2 }}
-                      activeDot={{ r: 8 }}
+                      dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6 }}
                     />
+                    <defs>
+                      <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f97316" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#f97316" stopOpacity={0.3} />
+                      </linearGradient>
+                    </defs>
                   </LineChart>
                 </ResponsiveContainer>
               ) : (

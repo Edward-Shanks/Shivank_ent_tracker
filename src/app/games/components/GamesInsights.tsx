@@ -168,9 +168,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
     const value = payload[0]?.value;
     const pct = stats.total ? Math.round((value / stats.total) * 100) : 0;
     return (
-      <div className="rounded-lg border border-foreground/20 bg-card/95 backdrop-blur-md shadow-lg p-3 text-sm">
-        <p className="font-semibold text-foreground">{label || payload[0]?.name}</p>
-        <p className="text-foreground-muted">
+      <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
+        <p className="font-semibold text-white text-sm">{label || payload[0]?.name}</p>
+        <p className="text-cyan-400 font-bold text-base">
           {value} games, {pct}% of your library
         </p>
       </div>
@@ -212,9 +212,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
       {/* Status Distribution - separated chart + premium KPIs */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
+              <TrendingUp className="w-5 h-5 text-cyan-400" />
               Status Distribution
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
@@ -230,6 +230,7 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
                       outerRadius={86}
                       paddingAngle={4}
                       dataKey="value"
+                      stroke="none"
                     >
                       {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -242,11 +243,19 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
                 <div className="h-full flex items-center justify-center text-foreground-muted">No status data yet</div>
               )}
             </div>
+            <div className="mt-4 flex flex-wrap gap-3 justify-center">
+              {statusData.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs text-foreground-muted">{item.name}</span>
+                </div>
+              ))}
+            </div>
           </Card>
 
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
             <h3 className="text-lg font-semibold text-foreground mb-1">Status KPIs</h3>
-            <p className="text-xs text-foreground-muted mb-4">A quick read of how you’re tracking</p>
+            <p className="text-xs text-foreground-muted mb-4">A quick read of how you're tracking</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { key: 'Playing', value: stats.playing, color: COLORS.playing },
@@ -322,9 +331,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Platform Distribution */}
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-        <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Monitor className="w-5 h-5 text-primary" />
+            <Monitor className="w-5 h-5 text-cyan-400" />
             Platform Distribution
           </h3>
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
@@ -332,9 +341,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
             {platformDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={platformDistribution} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--foreground-muted)" opacity={0.3} />
-                  <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" width={90} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                  <YAxis dataKey="name" type="category" width={90} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                     {platformDistribution.map((_, i) => (
@@ -357,9 +366,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Top Genres */}
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-        <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Gamepad2 className="w-5 h-5 text-green-500" />
+            <Gamepad2 className="w-5 h-5 text-cyan-400" />
             Top Genres
           </h3>
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
@@ -367,9 +376,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
             {genreDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={genreDistribution} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--foreground-muted)" opacity={0.3} />
-                  <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" width={100} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                  <YAxis dataKey="name" type="category" width={100} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                     {genreDistribution.map((_, i) => (
@@ -392,9 +401,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Game Type Distribution with premium empty state */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-purple-500" />
+            <Tag className="w-5 h-5 text-purple-400" />
             Game Type Distribution
           </h3>
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
@@ -403,9 +412,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={gameTypeDistribution} layout="vertical" margin={{ left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--foreground-muted)" opacity={0.3} />
-                    <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
-                    <YAxis dataKey="name" type="category" width={100} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <YAxis dataKey="name" type="category" width={100} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                       {gameTypeDistribution.map((_, i) => (
