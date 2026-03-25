@@ -45,7 +45,7 @@ const elementColors: Record<GenshinElement, string> = {
   Anemo: '#22d3ee',
   Electro: '#a855f7',
   Dendro: '#22c55e',
-  Cyro: '#93c5fd',
+  Cryo: '#93c5fd',
   Geo: '#f59e0b',
 };
 
@@ -56,7 +56,7 @@ const elementIcons: Record<GenshinElement, React.ReactNode> = {
   Anemo: <Wind className="w-4 h-4" />,
   Electro: <Zap className="w-4 h-4" />,
   Dendro: <Leaf className="w-4 h-4" />,
-  Cyro: <Snowflake className="w-4 h-4" />,
+  Cryo: <Snowflake className="w-4 h-4" />,
   Geo: <Mountain className="w-4 h-4" />,
 };
 
@@ -92,7 +92,7 @@ const getElementImage = (element: string): string | null => {
     Anemo: '/images/logo/Anemo.png',
     Electro: '/images/logo/Electro.png',
     Dendro: '/images/logo/Dendro.png',
-    Cyro: '/images/logo/Cyro.png', // Note: database uses "Cyro" but file is "cyro"
+    Cryo: '/images/logo/Cryo.png', // Note: database uses "Cryo" but file is "Cryo"
     Geo: '/images/logo/Geo.png',
   };
   return elementImageMap[normalized] || null;
@@ -204,7 +204,7 @@ export default function GenshinPage() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-500 ${viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-animated'}`}
+      className={`min-h-screen transition-colors duration-500 ${viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-background'}`}
       key={`genshin-${language}`}
     >
       {/* Insights Hero Strip - Only in Insights View */}
@@ -213,16 +213,10 @@ export default function GenshinPage() {
           <div
             className="absolute inset-0 h-48"
             style={{
-              background: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 40%, #06b6d4 70%, #0e7490 100%)',
-              opacity: 0.95,
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
             }}
           />
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\' fill=\'%23fff\' fill-opacity=\'.06\'/%3E%3C/g%3E%3C/svg%3E")',
-            }}
-          />
+          <div className="absolute inset-0 h-48 bg-black/20" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <motion.div
@@ -260,7 +254,7 @@ export default function GenshinPage() {
           <div 
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%)',
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
             }}
           />
           {/* Background Image */}
@@ -504,7 +498,7 @@ export default function GenshinPage() {
               transition={{ duration: 0.3 }}
             >
               {/* Sticky element filter header */}
-              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+              <div className="sticky top-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setSelectedElement('all')}

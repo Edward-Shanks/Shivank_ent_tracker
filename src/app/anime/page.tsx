@@ -154,8 +154,48 @@ export default function AnimePage() {
   }, [anime]);
 
   return (
-    <div className="min-h-screen bg-animated">
-      {/* Hero Section */}
+    <div
+      className={`min-h-screen transition-colors duration-500 ${
+        viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-background'
+      }`}
+    >
+      {/* Insights Hero Strip - Only in Insights View */}
+      {viewMode === 'insights' && (
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0 h-48"
+            style={{
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
+            }}
+          />
+          <div className="absolute inset-0 h-48 bg-black/20" />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                  {t('anime.insights')}
+                </h1>
+                <p className="text-white/90 mt-1 text-sm md:text-base">
+                  Advanced analytics for your anime collection
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
+              >
+                <span>{anime.length} anime</span>
+                <span className="text-white/70">·</span>
+                <span>{animeCounts.watching} watching</span>
+                <span className="text-white/70">·</span>
+                <span>{animeCounts.completed} completed</span>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section - Only in Collection View */}
       {viewMode === 'collection' && (
         <AnimeHero totalCount={anime.length} />
       )}
@@ -164,16 +204,17 @@ export default function AnimePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {viewMode === 'insights' ? t('anime.insights') : t('anime.collection')}
-            </h1>
-            <p className="text-foreground-muted mt-1">
-              {viewMode === 'insights' 
-                ? t('anime.insights')
-                : `${t('status.completed')}: ${animeCounts.completed} • ${t('status.watching')}: ${animeCounts.watching}`}
-            </p>
-          </div>
+          {viewMode === 'collection' && (
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {t('anime.collection')}
+              </h1>
+              <p className="text-foreground-muted mt-1">
+                {`${t('status.completed')}: ${animeCounts.completed} • ${t('status.watching')}: ${animeCounts.watching}`}
+              </p>
+            </div>
+          )}
+          {viewMode === 'insights' && <div />}
 
           {/* Search and View Toggle */}
           <div className="flex items-center gap-2">
@@ -238,6 +279,11 @@ export default function AnimePage() {
             </Button>
           </div>
         </div>
+        {viewMode === 'insights' && (
+          <p className="text-xs text-foreground-muted mt-2 mb-6">
+            Insights are calculated from your tracked anime data and metadata.
+          </p>
+        )}
 
         <AnimatePresence mode="wait">
           {viewMode === 'insights' ? (
@@ -259,7 +305,7 @@ export default function AnimePage() {
               transition={{ duration: 0.3 }}
             >
               {/* Sticky controls header */}
-              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+              <div className="sticky top-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   {/* Status Filter Buttons */}
                   <div className="flex items-center gap-2 flex-wrap">

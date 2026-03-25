@@ -47,7 +47,7 @@ const getElementImage = (element: string): string | null => {
     Anemo: '/images/logo/Anemo.png',
     Electro: '/images/logo/Electro.png',
     Dendro: '/images/logo/Dendro.png',
-    Cyro: '/images/logo/Cyro.png', // Note: database uses "Cyro" but file is "cyro"
+    Cryo: '/images/logo/Cryo.png', // Note: database uses "Cryo" but file is "Cryo"
     Geo: '/images/logo/Geo.png',
   };
   return elementImageMap[normalized] || null;

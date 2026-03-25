@@ -18,7 +18,6 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -93,9 +92,6 @@ export default function Navbar() {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
             </button>
-
-            {/* Theme toggle */}
-            <ThemeToggle />
 
             {/* User Avatar */}
             <button className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/5 transition-colors">

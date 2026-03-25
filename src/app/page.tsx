@@ -268,13 +268,42 @@ export default function Dashboard() {
     ...anime.filter((a) => a.watchStatus === 'Completed' && a.score).slice(0, 3),
   ];
 
+  // Recharts palette helpers (drive all chart strokes/fills from CSS variables)
+  const chartGridStroke = 'color-mix(in srgb, var(--nv-border) 30%, transparent)';
+  const chartAxisColor = 'var(--foreground-muted)';
+  const chartSeries1 = 'var(--chart-1)'; // primary accent
+  const chartSeries2 = 'var(--chart-2)'; // textSecondary
+  const chartSeries3 = 'var(--chart-3)'; // surface
+  const chartSeries4 = 'var(--chart-4)'; // border
+  const chartSeries5 = 'var(--chart-5)'; // accent-soft (rgba)
+
+  // General palette tokens for non-chart UI in this page
+  const pageAccent = 'var(--nv-accent)';
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="rounded-lg border border-foreground/10 bg-background-tertiary/80 backdrop-blur-xl shadow-2xl p-3">
+        <p className="text-sm font-medium text-foreground mb-1">
+          {label || payload[0]?.name}
+        </p>
+        {payload.map((entry: any, idx: number) => (
+          <p key={idx} className="text-xs text-foreground-muted flex items-center justify-between gap-3">
+            <span className="truncate">{entry?.name}</span>
+            <span className="font-bold text-primary">{entry?.value}</span>
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   const navCards = [
     {
       href: '/anime',
       icon: Tv,
       title: t('page.anime'),
       description: t('dashboard.animeDesc'),
-      color: '#e50914',
+      color: pageAccent,
       stats: [
         { label: t('dashboard.total'), value: stats.anime.total },
         { label: t('status.watching'), value: stats.anime.watching },
@@ -285,7 +314,7 @@ export default function Dashboard() {
       icon: Film,
       title: t('page.movies'),
       description: t('dashboard.moviesDesc'),
-      color: '#f97316',
+      color: pageAccent,
       stats: [
         { label: t('dashboard.movies'), value: stats.movies.total },
         { label: 'K-Drama', value: stats.kdrama.total },
@@ -296,7 +325,7 @@ export default function Dashboard() {
       icon: Gamepad2,
       title: t('page.games'),
       description: t('dashboard.gamesDesc'),
-      color: '#22c55e',
+      color: pageAccent,
       stats: [
         { label: t('dashboard.total'), value: stats.games.total },
         { label: t('status.playing'), value: stats.games.playing },
@@ -307,7 +336,7 @@ export default function Dashboard() {
       icon: Sparkles,
       title: t('page.genshin'),
       description: t('dashboard.genshinDesc'),
-      color: '#06b6d4',
+      color: pageAccent,
       stats: [
         { label: t('dashboard.characters'), value: genshinAccount?.characters?.length || 0 },
         { label: 'AR', value: genshinAccount?.adventureRank || 0 },
@@ -318,31 +347,86 @@ export default function Dashboard() {
       icon: Globe,
       title: t('page.websites'),
       description: t('dashboard.websitesDesc'),
-      color: '#3b82f6',
+      color: pageAccent,
       stats: [{ label: t('dashboard.bookmarks'), value: websites.length }],
     },
   ];
 
+  const username = user?.username || 'User';
+
   return (
-    <div className="min-h-screen bg-animated">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-radial" />
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
-              My Statistics
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground-muted max-w-2xl mx-auto px-4">
-              A unified view of your anime, shows, games, and more — optimized for sharing.
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-gradient-to-b from-background-tertiary/80 to-background transition-colors duration-500">
+      {/* Hero Header Strip */}
+      <div className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 h-48"
+          style={{
+            background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
+          }}
+        />
+        <div className="absolute inset-0 h-48 bg-black/20" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                My Statistics
+              </h1>
+              <p className="text-white/90 mt-1 text-sm md:text-base">
+                A unified view of your anime, shows, games, and more
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
+            >
+              <span className="truncate max-w-[120px]">{username}</span>
+              <span className="text-white/70">·</span>
+              <span>{stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total} entries</span>
+            </motion.div>
+          </div>
         </div>
+      </div>
+
+      {/* Quick Stats Overview */}
+      <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {(() => {
+            const totalEntries = stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total;
+            const currentlyActive = stats.anime.watching + stats.kdrama.watching + stats.games.playing;
+            const kpiItems = [
+              { Icon: BarChart3, label: 'Total Entries', value: totalEntries, color: 'var(--chart-1)', micro: totalEntries >= 200 ? 'Massive library' : totalEntries >= 50 ? 'Growing collection' : 'Getting started' },
+              { Icon: Play, label: 'Currently Active', value: currentlyActive, color: 'var(--chart-3)', micro: currentlyActive >= 10 ? 'Multi-tasker' : currentlyActive >= 1 ? 'Focused consumer' : 'Pick something new' },
+              { Icon: Clock, label: 'Hours Watched', value: hoursWatched.toLocaleString(), color: 'var(--chart-4)', micro: hoursWatched >= 500 ? 'Dedicated viewer' : hoursWatched >= 100 ? 'Regular watcher' : 'Just getting started' },
+              { Icon: Star, label: 'Average Score', value: averageScore > 0 ? averageScore.toFixed(1) : '0.0', color: 'var(--chart-5)', micro: averageScore >= 8 ? 'High standards' : averageScore >= 6 ? 'Balanced taste' : 'Rate more content' },
+            ];
+            return kpiItems.map((kpi, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="glass-card p-5"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `color-mix(in srgb, ${kpi.color} 20%, transparent)` }}
+                  >
+                    <kpi.Icon className="w-5 h-5" style={{ color: kpi.color }} />
+                  </div>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{kpi.value}</div>
+                <div className="text-sm text-foreground-muted">{kpi.label}</div>
+                <div className="text-xs text-foreground-muted/90 mt-1">{kpi.micro}</div>
+              </motion.div>
+            ));
+          })()}
+        </motion.div>
       </section>
 
       {/* Navigation Cards - Moved to top */}
@@ -395,8 +479,8 @@ export default function Dashboard() {
                   <button
                     className="px-4 py-2 rounded-lg text-sm font-medium text-white"
                     style={{
-                      background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-                      boxShadow: '0 0 16px rgba(168,85,247,0.4)',
+                      background: 'linear-gradient(135deg, var(--nv-accent) 0%, color-mix(in srgb, var(--nv-accent) 70%, var(--nv-bg)) 100%)',
+                      boxShadow: '0 0 16px color-mix(in srgb, var(--nv-accent) 40%, transparent)',
                     }}
                   >
                     Upgrade to Pro
@@ -417,17 +501,17 @@ export default function Dashboard() {
                 {genreDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={genreDistribution} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis type="number" stroke="#666" tick={{ fill: '#a3a3a3' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                      <XAxis type="number" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
                       <YAxis 
                         dataKey="name" 
                         type="category" 
                         width={60}
-                        stroke="#666" 
-                        tick={{ fill: '#a3a3a3', fontSize: 10 }} 
+                        stroke={chartAxisColor} 
+                        tick={{ fill: chartAxisColor, fontSize: 10 }} 
                       />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#e50914" radius={[0, 4, 4, 0]} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" fill={chartSeries1} radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -443,26 +527,26 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.completionRates') || 'Completion Rates'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {completionRates.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={completionRates}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="name" stroke="#666" tick={{ fill: '#a3a3a3', fontSize: 12 }} />
-                        <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <Tooltip 
-                          formatter={(value: any, name: string) => {
-                            if (name === 'rate') return [`${value}%`, 'Completion Rate'];
-                            return [value, name === 'completed' ? 'Completed' : 'Total'];
-                          }}
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                        <XAxis
+                          dataKey="name"
+                          stroke={chartAxisColor}
+                          tick={{ fill: chartAxisColor, fontSize: 12 }}
                         />
+                        <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <Tooltip content={<CustomTooltip />} />
                         <Legend />
-                        <Bar dataKey="completed" fill="#22c55e" name="Completed" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="total" fill="#6b7280" name="Total" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="completed" fill={chartSeries3} name="Completed" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="total" fill={chartSeries4} name="Total" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -471,15 +555,22 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+                {completionRates.length > 0 && (
+                  <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground">
+                    <span className="font-medium">Insight:</span>{' '}
+                    {`Your highest completion rate is ${completionRates.reduce((a, b) => (a.rate > b.rate ? a : b)).name} at ${completionRates.reduce((a, b) => (a.rate > b.rate ? a : b)).rate}%.`}
+                  </div>
+                )}
               </Card>
             </motion.div>
 
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.gamePlatforms') || 'Game Platforms Distribution'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {platformDistribution.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -491,15 +582,15 @@ export default function Dashboard() {
                           labelLine={false}
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80}
-                          fill="#8884d8"
+                          fill={chartSeries2}
                           dataKey="value"
                         >
                           {platformDistribution.map((entry, index) => {
-                            const colors = ['#3b82f6', '#0070d1', '#107c10', '#e60012', '#a855f7', '#6b7280'];
+                            const colors = [chartSeries1, chartSeries2, chartSeries3, chartSeries4, chartSeries5, chartSeries2];
                             return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
                           })}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip content={<CustomTooltip />} />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
@@ -516,19 +607,20 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.scoreDistribution') || 'Score Distribution'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {scoreDistribution.some(s => s.count > 0) ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={scoreDistribution}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="score" stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#ffd700" radius={[4, 4, 0, 0]} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                        <XAxis dataKey="score" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="count" fill={chartSeries4} radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -542,23 +634,24 @@ export default function Dashboard() {
 
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.contentConsumption') || 'Content Consumption'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {contentConsumption.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={contentConsumption}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="name" stroke="#666" tick={{ fill: '#a3a3a3', fontSize: 12 }} />
-                        <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <Tooltip 
-                          formatter={(value: any) => {
-                            return [typeof value === 'number' ? value.toLocaleString() : value, 'Count'];
-                          }}
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                        <XAxis
+                          dataKey="name"
+                          stroke={chartAxisColor}
+                          tick={{ fill: chartAxisColor, fontSize: 12 }}
                         />
-                        <Bar dataKey="episodes" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                        <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="episodes" fill={chartSeries1} radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -575,24 +668,25 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.monthlyActivity') || 'Monthly Activity (Last 6 Months)'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {monthlyActivity.some(m => m.count > 0) ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={monthlyActivity}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="month" stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <Tooltip />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                        <XAxis dataKey="month" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <Tooltip content={<CustomTooltip />} />
                         <Line 
                           type="monotone" 
                           dataKey="count" 
-                          stroke="#8b5cf6" 
+                          stroke={chartSeries1} 
                           strokeWidth={2}
-                          dot={{ fill: '#8b5cf6', r: 4 }}
+                          dot={{ fill: chartSeries1, r: 4 }}
                           activeDot={{ r: 6 }}
                         />
                       </LineChart>
@@ -608,10 +702,11 @@ export default function Dashboard() {
 
             <motion.div variants={item}>
               <Card className="p-4 sm:p-5 md:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base md:text-lg">{t('dashboard.collectionComparison') || 'Collection Comparison'}</span>
                 </h3>
+                <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
                 <div className="h-56 sm:h-60 md:h-64 chart-container">
                   {(() => {
                     const comparisonData = [
@@ -624,13 +719,13 @@ export default function Dashboard() {
                     return comparisonData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={comparisonData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                          <XAxis dataKey="name" stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                          <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                          <Tooltip />
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                          <XAxis dataKey="name" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                          <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                          <Tooltip content={<CustomTooltip />} />
                           <Legend />
-                          <Bar dataKey="total" fill="#8b5cf6" name={t('dashboard.total') || 'Total'} radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="active" fill="#22c55e" name={t('dashboard.active') || 'Active'} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="total" fill={chartSeries1} name={t('dashboard.total') || 'Total'} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="active" fill={chartSeries3} name={t('dashboard.active') || 'Active'} radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     ) : (
@@ -647,28 +742,29 @@ export default function Dashboard() {
           {/* Status Distribution Across All Collections */}
           <motion.div variants={item}>
             <Card className="p-4 sm:p-5 md:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                <Play className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 <span className="text-sm sm:text-base md:text-lg">{t('dashboard.statusDistribution') || 'Status Distribution Across All Collections'}</span>
               </h3>
+              <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
               <div className="h-56 sm:h-60 md:h-64 chart-container">
                 {(() => {
                   const statusData = [
-                    { name: t('status.watching') || 'Watching', value: stats.anime.watching + stats.kdrama.watching, color: '#3b82f6' },
-                    { name: t('status.completed') || 'Completed', value: stats.movies.watched + (kdrama.filter(k => k.status === 'completed').length) + (games.filter(g => g.status === 'completed').length), color: '#22c55e' },
-                    { name: t('status.playing') || 'Playing', value: stats.games.playing, color: '#22c55e' },
-                    { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.watchStatus === 'Yet to Air for Watch' || a.watchStatus === 'Watch Later').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: '#a855f7' },
-                    { name: t('status.onHold') || 'On Hold', value: (anime.filter(a => a.watchStatus === 'On Hold').length) + (kdrama.filter(k => k.status === 'on-hold').length) + (games.filter(g => g.status === 'on-hold').length), color: '#eab308' },
-                    { name: t('status.dropped') || 'Dropped', value: (anime.filter(a => a.watchStatus === 'Dropped').length) + (kdrama.filter(k => k.status === 'dropped').length) + (games.filter(g => g.status === 'dropped').length), color: '#ef4444' },
+                      { name: t('status.watching') || 'Watching', value: stats.anime.watching + stats.kdrama.watching, color: chartSeries1 },
+                      { name: t('status.completed') || 'Completed', value: stats.movies.watched + (kdrama.filter(k => k.status === 'completed').length) + (games.filter(g => g.status === 'completed').length), color: chartSeries3 },
+                      { name: t('status.playing') || 'Playing', value: stats.games.playing, color: chartSeries3 },
+                      { name: t('status.planning') || 'Planning', value: (anime.filter(a => a.watchStatus === 'Yet to Air for Watch' || a.watchStatus === 'Watch Later').length) + (kdrama.filter(k => k.status === 'planning').length) + (games.filter(g => g.status === 'planning').length), color: chartSeries4 },
+                      { name: t('status.onHold') || 'On Hold', value: (anime.filter(a => a.watchStatus === 'On Hold').length) + (kdrama.filter(k => k.status === 'on-hold').length) + (games.filter(g => g.status === 'on-hold').length), color: chartSeries5 },
+                      { name: t('status.dropped') || 'Dropped', value: (anime.filter(a => a.watchStatus === 'Dropped').length) + (kdrama.filter(k => k.status === 'dropped').length) + (games.filter(g => g.status === 'dropped').length), color: chartSeries2 },
                   ].filter(item => item.value > 0);
                   
                   return statusData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={statusData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis dataKey="name" stroke="#666" tick={{ fill: '#a3a3a3', fontSize: 12 }} />
-                        <YAxis stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                        <Tooltip />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                        <XAxis dataKey="name" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12 }} />
+                        <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                        <Tooltip content={<CustomTooltip />} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                           {statusData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -689,30 +785,31 @@ export default function Dashboard() {
           {/* Activity Overview */}
           <motion.div variants={item}>
             <Card className="p-4 sm:p-5 md:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 <span className="text-sm sm:text-base md:text-lg">{t('dashboard.activityOverview') || 'Activity Overview'}</span>
               </h3>
+              <p className="text-xs text-foreground-muted mb-4">Based on your tracked content</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                <div className="glass-card p-4 text-center">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total}
                   </div>
                   <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.totalEntries') || 'Total Entries'}</div>
                 </div>
-                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                <div className="glass-card p-4 text-center">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {stats.anime.watching + stats.kdrama.watching + stats.games.playing}
                   </div>
                   <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.currentlyActive') || 'Currently Active'}</div>
                 </div>
-                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                <div className="glass-card p-4 text-center">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {hoursWatched.toLocaleString()}
                   </div>
                   <div className="text-xs sm:text-sm text-foreground-muted">{t('dashboard.hoursWatched') || 'Hours Watched'}</div>
                 </div>
-                <div className="text-center p-3 sm:p-4 glass rounded-lg">
+                <div className="glass-card p-4 text-center">
                   <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                     {averageScore > 0 ? averageScore.toFixed(1) : '0.0'}
                   </div>
@@ -765,7 +862,7 @@ export default function Dashboard() {
             transition={{ delay: 0.5 }}
           >
             <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
-              <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+              <Star className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               <span className="text-base sm:text-lg md:text-xl">{t('dashboard.recentlyCompleted')}</span>
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">

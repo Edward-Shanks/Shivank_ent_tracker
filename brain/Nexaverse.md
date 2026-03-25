@@ -190,7 +190,7 @@ Used in `src/app/genshin/page.tsx`:
 - Anemo: `#22d3ee`
 - Electro: `#a855f7`
 - Dendro: `#22c55e`
-- Cyro: `#93c5fd`
+- Cryo: `#93c5fd`
 - Geo: `#f59e0b`
 
 ### Website Category Colors

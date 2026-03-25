@@ -14,7 +14,7 @@ export default function AnimeHero({ totalCount }: AnimeHeroProps) {
       <div 
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, #581c87 0%, #a855f7 50%, #ec4899 100%)',
+          background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
         }}
       />
       {/* Background Image */}

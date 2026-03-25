@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useThemePalette } from '@/context/ThemePaletteContext';
+import { PALETTES } from '@/lib/theme-palettes';
 
 type Plan = 'free' | 'pro' | 'premium';
 
@@ -28,6 +30,7 @@ interface NotificationSettings {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, refreshUser } = useAuth();
+  const { paletteId, setPaletteId, palette } = useThemePalette();
   const [username, setUsername] = useState(user?.username || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -169,7 +172,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-animated p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -196,13 +199,14 @@ export default function ProfilePage() {
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT COLUMN: Account + Plan */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* TOP ROW: Account + Notifications */}
+          <div className="lg:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Account card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              className="lg:col-span-7"
             >
               <Card className="p-6 sm:p-8">
                 <div className="flex items-center justify-between mb-4">
@@ -365,11 +369,196 @@ export default function ProfilePage() {
               </Card>
             </motion.div>
 
+            {/* Notifications (adjacent to Account on desktop) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-5"
+            >
+              <Card className="p-6 sm:p-7 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">Notifications</h2>
+                    <p className="text-sm text-foreground-muted">Decide how NexaVerse reaches out.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-sm flex-1">
+                  {/* Watchlist alerts */}
+                  <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-medium text-foreground">Watchlist alerts</h3>
+                        <p className="text-xs text-foreground-muted">
+                          Get nudges to continue anime, shows, and games.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <span className="text-xs text-foreground-muted">Enable</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.watchlistEnabled}
+                          onChange={() => handleToggleSetting('watchlistEnabled')}
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {[
+                        { key: 'animeWatchlist' as const, label: 'Anime watchlist reminders' },
+                        { key: 'moviesWatchlist' as const, label: 'Movies & K-Drama watchlist' },
+                        { key: 'gamesBacklog' as const, label: 'Games backlog nudges' },
+                      ].map((item) => (
+                        <label
+                          key={item.key}
+                          className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                            notificationSettings.watchlistEnabled ? '' : 'opacity-60'
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          <input
+                            type="checkbox"
+                            className="rounded border-foreground/30"
+                            checked={notificationSettings[item.key]}
+                            disabled={!notificationSettings.watchlistEnabled}
+                            onChange={() => handleToggleSetting(item.key)}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-medium text-foreground">Recommendations</h3>
+                        <p className="text-xs text-foreground-muted">
+                          Simple “because you watched/played” suggestions.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <span className="text-xs text-foreground-muted">Enable</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.recommendationsEnabled}
+                          onChange={() => handleToggleSetting('recommendationsEnabled')}
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <label
+                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                          notificationSettings.recommendationsEnabled ? '' : 'opacity-60'
+                        }`}
+                      >
+                        <span>Admin picks &amp; recommendations</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.adminRecommendations}
+                          disabled={!notificationSettings.recommendationsEnabled}
+                          onChange={() => handleToggleSetting('adminRecommendations')}
+                        />
+                      </label>
+                      <label
+                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                          notificationSettings.recommendationsEnabled ? '' : 'opacity-60'
+                        }`}
+                      >
+                        <span>Weekly recap</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.weeklyRecap}
+                          disabled={!notificationSettings.recommendationsEnabled}
+                          onChange={() => handleToggleSetting('weeklyRecap')}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Seasonal & reminders */}
+                  <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-medium text-foreground">Seasonal &amp; reminders</h3>
+                        <p className="text-xs text-foreground-muted">
+                          Light reminders for releases &amp; check-ins.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <span className="text-xs text-foreground-muted">Enable</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.seasonalEnabled}
+                          onChange={() => handleToggleSetting('seasonalEnabled')}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-3 space-y-2">
+                      <label
+                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                          notificationSettings.seasonalEnabled ? '' : 'opacity-60'
+                        }`}
+                      >
+                        <span>Seasonal releases</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.seasonalReleases}
+                          disabled={!notificationSettings.seasonalEnabled}
+                          onChange={() => handleToggleSetting('seasonalReleases')}
+                        />
+                      </label>
+                      <label
+                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                          notificationSettings.seasonalEnabled ? '' : 'opacity-60'
+                        }`}
+                      >
+                        <span>Genshin account &amp; events</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.genshinReminders}
+                          disabled={!notificationSettings.seasonalEnabled}
+                          onChange={() => handleToggleSetting('genshinReminders')}
+                        />
+                      </label>
+                      <label
+                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
+                          notificationSettings.seasonalEnabled ? '' : 'opacity-60'
+                        }`}
+                      >
+                        <span>Website/tool reminders</span>
+                        <input
+                          type="checkbox"
+                          className="rounded border-foreground/30"
+                          checked={notificationSettings.websitesReminders}
+                          disabled={!notificationSettings.seasonalEnabled}
+                          onChange={() => handleToggleSetting('websitesReminders')}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-xs text-foreground-muted">
+                  These preferences are saved for this browser only right now.
+                </p>
+              </Card>
+            </motion.div>
+
             {/* Plan & Billing */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
+              className="lg:col-span-12"
             >
               <Card className="p-6 sm:p-7 space-y-4">
                 <div className="flex items-center justify-between">
@@ -414,7 +603,7 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Pro */}
-                  <div className="relative p-4 rounded-xl border border-primary/60 bg-primary/5 flex flex-col">
+                  <div className={`relative p-4 rounded-xl border flex flex-col ${currentPlan === 'pro' ? 'border-primary/60 bg-primary/5' : 'border-foreground/10 bg-background-secondary'}`}>
                     <div className="absolute top-3 right-3 flex gap-1">
                       {currentPlan === 'pro' && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary text-primary-foreground">
@@ -435,7 +624,7 @@ export default function ProfilePage() {
                       <li>Data import &amp; export</li>
                     </ul>
                     <Button
-                      variant="primary"
+                      variant={currentPlan === 'pro' ? 'primary' : 'secondary'}
                       className="mt-3 w-full"
                     >
                       {currentPlan === 'pro'
@@ -447,7 +636,7 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Premium */}
-                  <div className="relative p-4 rounded-xl border border-foreground/10 bg-background-secondary flex flex-col">
+                  <div className={`relative p-4 rounded-xl border flex flex-col ${currentPlan === 'premium' ? 'border-primary/60 bg-primary/5' : 'border-foreground/10 bg-background-secondary'}`}>
                     {currentPlan === 'premium' && (
                       <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary text-primary-foreground">
                         Current plan
@@ -463,7 +652,7 @@ export default function ProfilePage() {
                       <li>Priority feature access</li>
                     </ul>
                     <Button
-                      variant="secondary"
+                      variant={currentPlan === 'premium' ? 'primary' : 'secondary'}
                       className="mt-3 w-full"
                     >
                       {currentPlan === 'premium'
@@ -479,204 +668,98 @@ export default function ProfilePage() {
             </motion.div>
           </div>
 
-          {/* RIGHT COLUMN: Notifications */}
+          {/* LEFT COLUMN: Color palette */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5"
+            transition={{ delay: 0.25 }}
+            className="lg:col-span-12"
           >
-            <Card className="p-6 sm:p-7 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-4">
+            <Card className="p-6 sm:p-7 space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Notifications</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Color palette</h2>
                   <p className="text-sm text-foreground-muted">
-                    Decide how NexaVerse reaches out.
+                    Pick a vibe for your whole NexaVerse dashboard.
                   </p>
                 </div>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/30">
+                  {palette.name}
+                </span>
               </div>
 
-              <div className="space-y-4 text-sm flex-1">
-                {/* Watchlist alerts */}
-                <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h3 className="font-medium text-foreground">Watchlist alerts</h3>
-                      <p className="text-xs text-foreground-muted">
-                        Get nudges to continue anime, shows, and games.
-                      </p>
-                    </div>
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs text-foreground-muted">Enable</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.watchlistEnabled}
-                        onChange={() => handleToggleSetting('watchlistEnabled')}
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    {[
-                      { key: 'animeWatchlist' as const, label: 'Anime watchlist reminders' },
-                      { key: 'moviesWatchlist' as const, label: 'Movies & K-Drama watchlist' },
-                      { key: 'gamesBacklog' as const, label: 'Games backlog nudges' },
-                    ].map((item) => (
-                      <label
-                        key={item.key}
-                        className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                          notificationSettings.watchlistEnabled ? '' : 'opacity-60'
-                        }`}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {PALETTES.map((p) => {
+                  const active = p.id === paletteId;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPaletteId(p.id)}
+                      className={`text-left rounded-xl border p-3 transition-colors ${
+                        active ? 'border-primary/60 ring-2 ring-primary/20' : 'border-foreground/10 hover:border-primary/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="text-sm font-semibold text-foreground">{p.name}</div>
+                        {active && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Visual preview */}
+                      <div
+                        className="rounded-lg border"
+                        style={{
+                          background: p.colors.background,
+                          borderColor: p.colors.border,
+                        }}
                       >
-                        <span>{item.label}</span>
-                        <input
-                          type="checkbox"
-                          className="rounded border-foreground/30"
-                          checked={notificationSettings[item.key]}
-                          disabled={!notificationSettings.watchlistEnabled}
-                          onChange={() => handleToggleSetting(item.key)}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                        <div className="p-3">
+                          <div className="text-xs font-bold" style={{ color: p.colors.textPrimary }}>
+                            Your dashboard
+                          </div>
+                          <div className="text-[10px] mt-1" style={{ color: p.colors.textSecondary }}>
+                            Cards, text & charts
+                          </div>
 
-                {/* Recommendations */}
-                <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h3 className="font-medium text-foreground">Recommendations</h3>
-                      <p className="text-xs text-foreground-muted">
-                        Simple “because you watched/played” suggestions.
-                      </p>
-                    </div>
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs text-foreground-muted">Enable</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.recommendationsEnabled}
-                        onChange={() => handleToggleSetting('recommendationsEnabled')}
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <label
-                      className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                        notificationSettings.recommendationsEnabled ? '' : 'opacity-60'
-                      }`}
-                    >
-                      <span>Admin picks &amp; suggestions</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.adminRecommendations}
-                        disabled={!notificationSettings.recommendationsEnabled}
-                        onChange={() => handleToggleSetting('adminRecommendations')}
-                      />
-                    </label>
-                    <label
-                      className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                        notificationSettings.recommendationsEnabled ? '' : 'opacity-60'
-                      }`}
-                    >
-                      <span>Weekly recap email</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.weeklyRecap}
-                        disabled={!notificationSettings.recommendationsEnabled}
-                        onChange={() => handleToggleSetting('weeklyRecap')}
-                      />
-                    </label>
-                    <label className="flex items-center justify-between gap-2 px-2 py-1 rounded-md opacity-60 cursor-not-allowed">
-                      <span className="flex items-center gap-2">
-                        Friend activity highlights
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-foreground-muted">
-                          Coming soon
-                        </span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={false}
-                        disabled
-                      />
-                    </label>
-                  </div>
-                </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <span
+                              className="inline-block h-2 w-10 rounded-full"
+                              style={{ background: p.colors.primary }}
+                            />
+                            <span
+                              className="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                              style={{
+                                background: p.colors.primary,
+                                color: p.colors.background,
+                              }}
+                            >
+                              Accent
+                            </span>
+                          </div>
 
-                {/* Seasonal tracker */}
-                <div className="rounded-lg border border-foreground/10 bg-background-secondary/80 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h3 className="font-medium text-foreground">Seasonal tracker</h3>
-                      <p className="text-xs text-foreground-muted">
-                        Stay ahead of upcoming seasons, releases, and events.
-                      </p>
-                    </div>
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs text-foreground-muted">Enable</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.seasonalEnabled}
-                        onChange={() => handleToggleSetting('seasonalEnabled')}
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <label
-                      className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                        notificationSettings.seasonalEnabled ? '' : 'opacity-60'
-                      }`}
-                    >
-                      <span>Seasonal releases</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.seasonalReleases}
-                        disabled={!notificationSettings.seasonalEnabled}
-                        onChange={() => handleToggleSetting('seasonalReleases')}
-                      />
-                    </label>
-                    <label
-                      className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                        notificationSettings.seasonalEnabled ? '' : 'opacity-60'
-                      }`}
-                    >
-                      <span>Genshin account &amp; events</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.genshinReminders}
-                        disabled={!notificationSettings.seasonalEnabled}
-                        onChange={() => handleToggleSetting('genshinReminders')}
-                      />
-                    </label>
-                    <label
-                      className={`flex items-center justify-between gap-2 px-2 py-1 rounded-md ${
-                        notificationSettings.seasonalEnabled ? '' : 'opacity-60'
-                      }`}
-                    >
-                      <span>Website/tool reminders</span>
-                      <input
-                        type="checkbox"
-                        className="rounded border-foreground/30"
-                        checked={notificationSettings.websitesReminders}
-                        disabled={!notificationSettings.seasonalEnabled}
-                        onChange={() => handleToggleSetting('websitesReminders')}
-                      />
-                    </label>
-                  </div>
-                </div>
+                          <div
+                            className="mt-3 rounded-md border p-2 text-[10px]"
+                            style={{
+                              background: p.colors.surface,
+                              borderColor: p.colors.border,
+                              color: p.colors.textPrimary,
+                            }}
+                          >
+                            Sample KPI
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-
-              <p className="mt-4 text-xs text-foreground-muted">
-                These preferences are saved for this browser only right now.
-              </p>
             </Card>
           </motion.div>
+
         </div>
 
         {/* Notification toast */}

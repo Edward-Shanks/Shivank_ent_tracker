@@ -6,7 +6,7 @@
  **/
 
 import { cn } from "@/lib/utils";
-import { IconLayoutNavbarCollapse, IconSettings, IconUser, IconLanguage, IconMoon, IconSun, IconLogout } from "@tabler/icons-react";
+import { IconLayoutNavbarCollapse, IconSettings, IconUser, IconLanguage, IconLogout } from "@tabler/icons-react";
 import {
   AnimatePresence,
   MotionValue,
@@ -115,7 +115,6 @@ const FloatingDockDesktop = ({
   const router = useRouter();
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   // Settings menu items
   const planLabel = React.useMemo(() => {
@@ -124,15 +123,6 @@ const FloatingDockDesktop = ({
     if (plan === 'premium') return 'Premium Plan';
     return 'Free Plan';
   }, [user]);
-
-  const toggleTheme = () => {
-    const next: 'light' | 'dark' = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.classList.toggle('dark', next === 'dark');
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('nv_theme', next);
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -164,8 +154,6 @@ const FloatingDockDesktop = ({
         languages={languages}
         setLanguage={setLanguage}
         t={t}
-        theme={theme}
-        toggleTheme={toggleTheme}
         handleLogout={handleLogout}
       />
     </motion.div>
@@ -289,8 +277,6 @@ function SettingsIconContainer({
   languages,
   setLanguage,
   t,
-  theme,
-  toggleTheme,
   handleLogout,
 }: {
   mouseX: MotionValue;
@@ -302,8 +288,6 @@ function SettingsIconContainer({
   languages: any[];
   setLanguage: (code: any) => void;
   t: (key: string) => string;
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
   handleLogout: () => void;
 }) {
   let ref = useRef<HTMLDivElement>(null);
@@ -452,21 +436,6 @@ function SettingsIconContainer({
                     </span>
                   </button>
                 </div>
-
-                {/* Theme Toggle */}
-                <button
-                  onClick={toggleTheme}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                  {theme === 'dark' ? (
-                    <IconSun className="w-5 h-5" />
-                  ) : (
-                    <IconMoon className="w-5 h-5" />
-                  )}
-                  <span className="text-sm font-medium flex-1 text-left">
-                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                  </span>
-                </button>
 
                 {/* Logout */}
                 <button

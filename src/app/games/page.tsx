@@ -207,7 +207,7 @@ export default function GamesPage() {
   return (
     <div
       className={`min-h-screen transition-colors duration-500 ${
-        viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-animated'
+        viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-background'
       }`}
     >
       {/* Insights Hero Bar - Only in insights view */}
@@ -216,10 +216,10 @@ export default function GamesPage() {
           <div
             className="absolute inset-0 h-48"
             style={{
-              background: 'linear-gradient(135deg, #065f46 0%, #10b981 45%, #22c55e 100%)',
-              opacity: 0.95,
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
             }}
           />
+          <div className="absolute inset-0 h-48 bg-black/20" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
@@ -253,7 +253,7 @@ export default function GamesPage() {
           <div 
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%)',
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
             }}
           />
           {/* Background Images with Crossfade Animation */}
@@ -434,7 +434,7 @@ export default function GamesPage() {
               </div>
 
               {/* Sticky filters + search header */}
-              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+              <div className="sticky top-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                   {/* Status Filter Buttons */}
                   <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">

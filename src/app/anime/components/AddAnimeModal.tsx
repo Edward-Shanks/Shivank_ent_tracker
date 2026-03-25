@@ -103,6 +103,9 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
     title: '',
     animeOtherName: '',
     animeType: 'Anime' as AnimeType,
+    mediaType: '',
+    producers: '',
+    source: '',
     airingStatus: 'Airing' as AiringStatus,
     watchStatus: 'Yet to Air for Watch' as WatchStatus,
     websiteLink: '',
@@ -112,6 +115,8 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
     episodeOn: '' as DayOfWeek | '',
     episodes: '' as string, // Keep blank when unknown
     episodesWatched: '' as string, // Optional
+    airedDate: '',
+    airedEndDate: '',
     imageUrl: '',
   });
 
@@ -227,6 +232,9 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         title: formData.title.trim(),
         animeOtherName: formData.animeOtherName || undefined,
         animeType: formData.animeType,
+        mediaType: formData.mediaType.trim() || undefined,
+        producers: formData.producers.trim() || undefined,
+        source: formData.source.trim() || undefined,
         airingStatus: formData.airingStatus,
         watchStatus: formData.watchStatus,
         websiteLink: formData.websiteLink || undefined,
@@ -237,6 +245,8 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         episodesWatched: formData.episodesWatched.trim()
           ? Number(formData.episodesWatched) || 0
           : 0,
+        startDate: formData.airedDate.trim() || undefined,
+        endDate: formData.airedEndDate.trim() || undefined,
         coverImage: formData.imageUrl || '', // Empty string shows first letter in card
       });
 
@@ -244,6 +254,9 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         title: '',
         animeOtherName: '',
         animeType: 'Anime',
+        mediaType: '',
+        producers: '',
+        source: '',
         airingStatus: 'Airing',
         watchStatus: 'Yet to Air for Watch',
         websiteLink: '',
@@ -253,6 +266,8 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
         episodeOn: '',
         episodes: '',
         episodesWatched: '',
+        airedDate: '',
+        airedEndDate: '',
         imageUrl: '',
       });
 
@@ -274,278 +289,243 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('anime.addNewAnime')} size="xl">
-      <div className="rounded-2xl overflow-hidden border border-foreground/10 shadow-xl bg-foreground/[0.02]">
-        {submitError && (
-          <div className="mx-4 mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
-            {submitError}
-          </div>
-        )}
+      {submitError && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+          {submitError}
+        </div>
+      )}
 
-        <form
-          onSubmit={handleSubmit}
-          onKeyDown={(e) => {
-            if (e.key !== 'Enter') return;
-            const target = e.target as HTMLElement;
-            const tag = target?.tagName?.toLowerCase();
-            const isTextField = tag === 'input' || tag === 'textarea';
-            if (!isTextField) return;
-            e.preventDefault();
-            e.currentTarget.requestSubmit();
-          }}
-          className="p-4 sm:p-6"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 gap-x-0">
-            {/* Left: main fields */}
-            <div className="lg:col-span-2 space-y-5 lg:border-r lg:border-foreground/10 lg:pr-6">
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Basic Info:
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter') return;
+          const target = e.target as HTMLElement;
+          const tag = target?.tagName?.toLowerCase();
+          const isTextField = tag === 'input' || tag === 'textarea';
+          if (!isTextField) return;
+          e.preventDefault();
+          e.currentTarget.requestSubmit();
+        }}
+        className="space-y-4"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Left */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Anime Info */}
+            <section className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold mb-0" style={{ color: 'var(--chart-4)' }}>
+                  Anime Info
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Anime title"
-                    value={formData.title}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setFormData((d) => ({ ...d, title: next }));
-                      if (hasTriedSubmit) {
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          title: next.trim() ? undefined : 'Anime title is required.',
-                        }));
-                      }
-                    }}
-                    error={hasTriedSubmit ? fieldErrors.title : undefined}
-                    placeholder="Enter title"
-                  />
-                  <Input
-                    label="Alternative title (optional)"
-                    value={formData.animeOtherName}
-                    onChange={(e) => setFormData({ ...formData, animeOtherName: e.target.value })}
-                    placeholder="Optional alternate title"
-                  />
-                </div>
-              </section>
+                <span className="text-[11px] text-foreground-muted">Required: title, type, statuses</span>
+              </div>
 
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Anime Info:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Dropdown
-                      label={t('anime.animeType')}
-                      options={animeTypes}
-                      value={formData.animeType}
-                      onChange={(value) => setFormData({ ...formData, animeType: value as AnimeType })}
-                    />
-                    {hasTriedSubmit && fieldErrors.animeType && (
-                      <p className="text-[11px] text-red-500">{fieldErrors.animeType}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <Dropdown
-                      label="Airing status"
-                      options={airingStatuses}
-                      value={formData.airingStatus}
-                      onChange={(value) => setFormData({ ...formData, airingStatus: value as AiringStatus })}
-                    />
-                    {hasTriedSubmit && fieldErrors.airingStatus && (
-                      <p className="text-[11px] text-red-500">{fieldErrors.watchStatus}</p>
-                    )}
-                    <p className="text-[11px] text-foreground-muted">
-                      Airing status = broadcast status
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Dropdown
-                      label={t('anime.watchStatus')}
-                      options={watchStatuses}
-                      value={formData.watchStatus}
-                      onChange={(value) => setFormData({ ...formData, watchStatus: value as WatchStatus })}
-                    />
-                    {hasTriedSubmit && fieldErrors.watchStatus && (
-                      <p className="text-[11px] text-red-500">{fieldErrors.watchStatus}</p>
-                    )}
-                    <p className="text-[11px] text-foreground-muted">
-                      Watch status = your personal progress
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Episode Info:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Dropdown
-                    label="Airs on"
-                    options={[
-                      { value: '', label: 'Unknown' },
-                      ...DAYS_OF_WEEK.map((d) => ({ value: d.value, label: d.label })),
-                    ]}
-                    value={formData.episodeOn}
-                    onChange={(value) => setFormData({ ...formData, episodeOn: value as DayOfWeek | '' })}
-                  />
-
-                  <Input
-                    label="Episode on"
-                    type="number"
-                    min="0"
-                    value={formData.episodesWatched}
-                    onChange={(e) => setFormData({ ...formData, episodesWatched: e.target.value })}
-                    placeholder="Leave empty if unknown"
-                  />
-
-                  <div className="space-y-1">
-                    <Input
-                      label="Total episodes"
-                      type="number"
-                      min="0"
-                      value={formData.episodes}
-                      onChange={(e) => setFormData({ ...formData, episodes: e.target.value })}
-                      placeholder="Leave empty if unknown"
-                    />
-                    <p className="text-[11px] text-foreground-muted">Leave empty if unknown.</p>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-3">
-                  Metadata:
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Season (text)"
-                    value={formData.seasonBase}
-                    onChange={(e) => setFormData({ ...formData, seasonBase: e.target.value })}
-                    onBlur={() => {
-                      const parsed = parseSeasonBaseAndPartFromBase(formData.seasonBase);
-                      setFormData((d) => ({
-                        ...d,
-                        seasonBase: parsed.base ?? '',
-                        seasonPart: d.seasonPart.trim() ? d.seasonPart : parsed.part ?? '',
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  label="Anime title"
+                  value={formData.title}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setFormData((d) => ({ ...d, title: next }));
+                    if (hasTriedSubmit) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        title: next.trim() ? undefined : 'Anime title is required.',
                       }));
-                    }}
-                    placeholder={t('anime.seasonExample')}
+                    }
+                  }}
+                  error={hasTriedSubmit ? fieldErrors.title : undefined}
+                  placeholder="Enter title"
+                />
+                <Input
+                  label="Alternative title (optional)"
+                  value={formData.animeOtherName}
+                  onChange={(e) => setFormData({ ...formData, animeOtherName: e.target.value })}
+                  placeholder="Optional alternate title"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-3">
+                <Input
+                  label="Season"
+                  value={formData.seasonBase}
+                  onChange={(e) => setFormData({ ...formData, seasonBase: e.target.value })}
+                  onBlur={() => {
+                    const parsed = parseSeasonBaseAndPartFromBase(formData.seasonBase);
+                    setFormData((d) => ({
+                      ...d,
+                      seasonBase: parsed.base ?? '',
+                      seasonPart: d.seasonPart.trim() ? d.seasonPart : parsed.part ?? '',
+                    }));
+                  }}
+                  placeholder={t('anime.seasonExample')}
+                />
+                <Input
+                  label="Part (optional)"
+                  value={formData.seasonPart}
+                  onChange={(e) => setFormData({ ...formData, seasonPart: e.target.value })}
+                  onBlur={() => {
+                    const normalized = normalizeSeasonPart(formData.seasonPart);
+                    setFormData((d) => ({ ...d, seasonPart: normalized ?? '' }));
+                  }}
+                  placeholder="II"
+                />
+                <div className="space-y-1">
+                  <Dropdown
+                    label={t('anime.animeType')}
+                    options={animeTypes}
+                    value={formData.animeType}
+                    onChange={(value) => setFormData({ ...formData, animeType: value as AnimeType })}
                   />
-                  <Input
-                    label="Part (optional)"
-                    value={formData.seasonPart}
-                    onChange={(e) => setFormData({ ...formData, seasonPart: e.target.value })}
-                    onBlur={() => {
-                      const normalized = normalizeSeasonPart(formData.seasonPart);
-                      setFormData((d) => ({ ...d, seasonPart: normalized ?? '' }));
-                    }}
-                    placeholder="II (optional)"
+                  {hasTriedSubmit && fieldErrors.animeType && (
+                    <p className="text-[11px] text-red-500">{fieldErrors.animeType}</p>
+                  )}
+                </div>
+                <Input
+                  label="Type"
+                  value={formData.mediaType}
+                  onChange={(e) => setFormData({ ...formData, mediaType: e.target.value })}
+                  placeholder="TV / Movie / OVA…"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                <div className="space-y-1">
+                  <Dropdown
+                    label="Airing status"
+                    options={airingStatuses}
+                    value={formData.airingStatus}
+                    onChange={(value) => setFormData({ ...formData, airingStatus: value as AiringStatus })}
                   />
+                  {hasTriedSubmit && fieldErrors.airingStatus && (
+                    <p className="text-[11px] text-red-500">{fieldErrors.airingStatus}</p>
+                  )}
                 </div>
 
-                <div className="mt-4">
-                  <div ref={genresRef}>
-                    <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
-                      {t('anime.genres')}
-                    </label>
+                <div className="space-y-1">
+                  <Dropdown
+                    label={t('anime.watchStatus')}
+                    options={watchStatuses}
+                    value={formData.watchStatus}
+                    onChange={(value) => setFormData({ ...formData, watchStatus: value as WatchStatus })}
+                  />
+                  {hasTriedSubmit && fieldErrors.watchStatus && (
+                    <p className="text-[11px] text-red-500">{fieldErrors.watchStatus}</p>
+                  )}
+                </div>
 
-                    <div
-                      className={`input-glass w-full text-sm py-2 px-3 rounded-lg border border-foreground/20 flex flex-wrap gap-2 items-center ${
-                        genreDropdownOpen ? 'border-foreground/30' : ''
-                      }`}
-                      onClick={() => setGenreDropdownOpen(true)}
-                    >
-                      {formData.genres.length > 0 ? (
-                        formData.genres.map((g) => (
-                          <span
+                <Input
+                  label="Source"
+                  value={formData.source}
+                  onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                  placeholder="Manga / LN / Original…"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                <Input
+                  label="Producers"
+                  value={formData.producers}
+                  onChange={(e) => setFormData({ ...formData, producers: e.target.value })}
+                  placeholder="Studio / committee (comma-separated)"
+                />
+
+                <div ref={genresRef}>
+                  <label className="block text-xs sm:text-sm font-medium text-foreground/80 mb-1.5">
+                    Genres &amp; Theme
+                  </label>
+
+                  <div
+                    className={`input-glass w-full text-sm py-2 px-3 rounded-lg border border-foreground/20 flex flex-wrap gap-2 items-center ${
+                      genreDropdownOpen ? 'border-foreground/30' : ''
+                    }`}
+                    onClick={() => setGenreDropdownOpen(true)}
+                  >
+                    {formData.genres.length > 0 ? (
+                      formData.genres.map((g) => (
+                        <span
+                          key={g}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-foreground/10 text-foreground text-xs font-medium"
+                        >
+                          {g}
+                          <button
+                            type="button"
+                            className="hover:text-red-500"
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              handleGenreRemove(g);
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-foreground-muted">Select genres</span>
+                    )}
+
+                    <input
+                      value={genreQuery}
+                      onChange={(e) => {
+                        setGenreQuery(e.target.value);
+                        setGenreDropdownOpen(true);
+                      }}
+                      onFocus={() => setGenreDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setGenreDropdownOpen(false), 120)}
+                      className="flex-1 min-w-[120px] bg-transparent outline-none text-sm py-1"
+                      placeholder={formData.genres.length > 0 ? '' : 'Search…'}
+                    />
+                  </div>
+
+                  {genreDropdownOpen && genreSuggestions.length > 0 && (
+                    <div className="relative z-10">
+                      <div className="absolute z-20 mt-1 w-full rounded-lg border border-foreground/20 bg-background shadow-lg max-h-56 overflow-y-auto">
+                        {genreSuggestions.map((g) => (
+                          <button
                             key={g}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-foreground/10 text-foreground text-xs font-medium"
+                            type="button"
+                            onMouseDown={(ev) => ev.preventDefault()}
+                            onClick={() => handleGenreAdd(g)}
+                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-foreground/10"
                           >
                             {g}
-                            <button
-                              type="button"
-                              className="hover:text-red-500"
-                              onClick={(ev) => {
-                                ev.stopPropagation();
-                                handleGenreRemove(g);
-                              }}
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-xs text-foreground-muted">Select genres</span>
-                      )}
-
-                      <input
-                        value={genreQuery}
-                        onChange={(e) => {
-                          setGenreQuery(e.target.value);
-                          setGenreDropdownOpen(true);
-                        }}
-                        onFocus={() => setGenreDropdownOpen(true)}
-                        onBlur={() => setTimeout(() => setGenreDropdownOpen(false), 120)}
-                        className="flex-1 min-w-[120px] bg-transparent outline-none text-sm py-1"
-                        placeholder={formData.genres.length > 0 ? '' : 'Search…'}
-                      />
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                  )}
+                </div>
+              </div>
+            </section>
 
-                    {genreDropdownOpen && genreSuggestions.length > 0 && (
-                      <div className="relative z-10">
-                        <div className="absolute z-20 mt-1 w-full rounded-lg border border-foreground/20 bg-background shadow-lg max-h-56 overflow-y-auto">
-                          {genreSuggestions.map((g) => (
-                            <button
-                              key={g}
-                              type="button"
-                              onMouseDown={(ev) => ev.preventDefault()}
-                              onClick={() => handleGenreAdd(g)}
-                              className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-foreground/10"
-                            >
-                              {g}
-                            </button>
-                          ))}
-                        </div>
+            <section className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-4">
+              <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--chart-1)' }}>
+                Cover &amp; Links
+              </h3>
+
+              <div className="grid grid-cols-12 gap-3 items-start">
+                <div className="col-span-4 sm:col-span-3">
+                  <div className="aspect-[3/4] w-full rounded-xl overflow-hidden border border-foreground/10 bg-foreground/5">
+                    {coverPreviewUrl ? (
+                      <img
+                        src={coverPreviewUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center text-2xl font-bold text-foreground"
+                        style={{ backgroundColor: `hsl(${hue}, 35%, 25%)` }}
+                      >
+                        {coverInitials}
                       </div>
                     )}
                   </div>
                 </div>
-
-              </section>
-            </div>
-
-            {/* Right: cover preview + links */}
-            <div className="space-y-5 lg:pl-6">
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">
-                  Cover image space
-                </h3>
-                <div className="aspect-[3/4] max-w-[180px] rounded-xl overflow-hidden border border-foreground/10 bg-foreground/5">
-                  {coverPreviewUrl ? (
-                    <img
-                      src={coverPreviewUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="w-full h-full flex items-center justify-center text-2xl font-bold text-white"
-                      style={{ backgroundColor: `hsl(${hue}, 45%, 25%)` }}
-                    >
-                      {coverInitials}
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <section>
-                <div className="space-y-3">
+                <div className="col-span-8 sm:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
                     label={t('anime.imageUrl')}
                     type="url"
@@ -553,11 +533,6 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder="https://example.com/image.jpg"
                   />
-                </div>
-              </section>
-
-              <section>
-                <div className="space-y-3">
                   <Input
                     label={t('anime.websiteLink')}
                     type="url"
@@ -566,33 +541,89 @@ export default function AddAnimeModal({ isOpen, onClose }: AddAnimeModalProps) {
                     placeholder="https://example.com"
                   />
                 </div>
-              </section>
-            </div>
+              </div>
+            </section>
           </div>
 
-          {/* Form Actions */}
-          <div className="flex flex-wrap gap-2 justify-end pt-6 mt-6 border-t border-foreground/10">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              disabled={submitting}
-              className="text-foreground-muted hover:text-foreground"
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!requiredValid || submitting}
-              style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', boxShadow: '0 0 20px rgba(59, 130, 246, 0.25)' }}
-              className="text-sm px-4"
-            >
-              {t('anime.addAnime')}
-            </Button>
+          {/* Right */}
+          <div className="lg:col-span-4 space-y-4">
+            <section className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-4">
+              <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--chart-2)' }}>
+                Episode Info
+              </h3>
+
+              <div className="space-y-3">
+                <Input
+                  label="Total episodes"
+                  type="number"
+                  min="0"
+                  value={formData.episodes}
+                  onChange={(e) => setFormData({ ...formData, episodes: e.target.value })}
+                  placeholder="Leave empty if unknown"
+                />
+
+                <Dropdown
+                  label="Broadcasted on"
+                  options={[
+                    { value: '', label: 'Unknown' },
+                    ...DAYS_OF_WEEK.map((d) => ({ value: d.value, label: d.label })),
+                  ]}
+                  value={formData.episodeOn}
+                  onChange={(value) => setFormData({ ...formData, episodeOn: value as DayOfWeek | '' })}
+                />
+
+                <Input
+                  label="Aired date"
+                  type="date"
+                  value={formData.airedDate}
+                  onChange={(e) => setFormData({ ...formData, airedDate: e.target.value })}
+                />
+
+                <Input
+                  label="Aired end date"
+                  type="date"
+                  value={formData.airedEndDate}
+                  onChange={(e) => setFormData({ ...formData, airedEndDate: e.target.value })}
+                />
+
+                <Input
+                  label="Episodes watched (optional)"
+                  type="number"
+                  min="0"
+                  value={formData.episodesWatched}
+                  onChange={(e) => setFormData({ ...formData, episodesWatched: e.target.value })}
+                  placeholder="Leave empty if unknown"
+                />
+
+                <p className="text-[11px] text-foreground-muted">
+                  Use this if you’re adding an anime you already started.
+                </p>
+              </div>
+            </section>
           </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2 justify-end pt-3 border-t border-foreground/10">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={submitting}
+            className="text-foreground-muted hover:text-foreground"
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!requiredValid || submitting}
+            className="text-sm px-4 bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 !bg-none"
+          >
+            {t('anime.addAnime')}
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 }

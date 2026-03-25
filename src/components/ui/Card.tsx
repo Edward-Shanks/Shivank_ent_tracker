@@ -226,7 +226,7 @@ export function StatCard({ icon: Icon, label, value, change, color = '#e50914' }
       <div className="flex items-start justify-between mb-3">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `${color}20` }}
+          style={{ backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)` }}
         >
           <Icon className="w-5 h-5" style={{ color }} />
         </div>

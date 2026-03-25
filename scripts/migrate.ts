@@ -1,13 +1,17 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { config } from 'dotenv';
 import postgres from 'postgres';
+
+config({ override: true });
 
 const sql = postgres(process.env.DATABASE_URL!);
 
 async function runMigration() {
   try {
+    const migrationFile = process.argv[2] || '0001_update_games_and_movies.sql';
     const migrationSQL = readFileSync(
-      join(process.cwd(), 'drizzle', '0001_update_games_and_movies.sql'),
+      join(process.cwd(), 'drizzle', migrationFile),
       'utf-8'
     );
 

@@ -8,24 +8,44 @@
 :root {
   /* ===== LIGHT THEME (primary when .dark is NOT on <html>) ===== */
 
+  /* ===== NV Global Palette Defaults (Burgundy Blush) ===== */
+  --nv-bg: #FCF8F7;
+  --nv-surface: #FDE2E6;
+  --nv-surface-alt: #F2F0ED;
+  --nv-border: #D49097;
+  --nv-text-primary: #333333;
+  --nv-text-secondary: #5F1928;
+  --nv-accent: #5F1928;
+  --nv-accent-soft: rgba(95, 25, 40, 0.15);
+
+  /* Palette-driven overlays (replace hardcoded white/black alpha layers) */
+  --nv-overlay-5: color-mix(in oklab, var(--nv-text-primary) 5%, transparent);
+  --nv-overlay-10: color-mix(in oklab, var(--nv-text-primary) 10%, transparent);
+  --nv-overlay-15: color-mix(in oklab, var(--nv-text-primary) 15%, transparent);
+  --nv-border-soft: color-mix(in oklab, var(--nv-text-primary) 14%, transparent);
+
+  /* Palette-driven glass tokens */
+  --nv-glass-bg: color-mix(in oklab, var(--nv-bg) 76%, transparent);
+  --nv-glass-border: var(--nv-border-soft);
+
   /* Base backgrounds */
-  --background: #f2f4f3;
-  --background-secondary: #ffffff;
-  --background-tertiary: #eef6f8;
+  --background: var(--nv-bg);
+  --background-secondary: var(--nv-surface);
+  --background-tertiary: var(--nv-surface-alt);
 
   /* Text */
-  --foreground: #012436;
-  --foreground-muted: #5f7685;
+  --foreground: var(--nv-text-primary);
+  --foreground-muted: var(--nv-text-secondary);
 
   /* Primary brand (CTA / buttons) */
-  --primary: #f96900;
-  --primary-hover: #d55b00;
-  --primary-muted: #ff8c3a;
-  --primary-foreground: #f2f4f3;
+  --primary: var(--nv-accent);
+  --primary-hover: var(--nv-accent);
+  --primary-muted: var(--nv-accent);
+  --primary-foreground: var(--nv-bg);
 
   /* Secondary accent */
-  --secondary: #3b0d11;
-  --secondary-foreground: #f2f4f3;
+  --secondary: var(--nv-text-secondary);
+  --secondary-foreground: var(--nv-bg);
 
   /* Status */
   --success: #f96900;
@@ -34,8 +54,8 @@
   --info: #9eb3c2;
 
   /* Glass Effect - Light Theme */
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-bg: var(--nv-glass-bg);
+  --glass-border: var(--nv-glass-border);
   --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
 
   /* Gradients - Light Theme */
@@ -61,39 +81,39 @@
 
   /* Modal */
   --modal-backdrop: rgba(0, 0, 0, 0.5);
-  --modal-bg: rgba(255, 255, 255, 0.95);
-  --modal-border: rgba(0, 0, 0, 0.1);
+  --modal-bg: color-mix(in oklab, var(--nv-bg) 92%, transparent);
+  --modal-border: var(--nv-border-soft);
   --modal-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   --radius: 0.625rem;
-  --card: #ffffff;
-  --card-foreground: #012436;
-  --popover: #ffffff;
-  --popover-foreground: #012436;
+  --card: var(--nv-surface);
+  --card-foreground: var(--nv-text-primary);
+  --popover: var(--nv-bg);
+  --popover-foreground: var(--nv-text-primary);
   --muted: #eef6f8;
   --muted-foreground: #9eb3c2;
   --accent: #f5e8e9;
   --accent-foreground: #3b0d11;
   --destructive: #7f1d1d;
-  --border: #d7e2e8;
-  --input: #ffffff;
-  --ring: #9eb3c2;
+  --border: var(--nv-border);
+  --input: var(--nv-bg);
+  --ring: var(--nv-border);
 
   /* Charts – light */
-  --chart-1: #f96900;
-  --chart-2: #012436;
-  --chart-3: #3b0d11;
-  --chart-4: #9eb3c2;
-  --chart-5: #e6f1f5;
+  --chart-1: var(--nv-accent);
+  --chart-2: var(--nv-text-primary);
+  --chart-3: var(--nv-text-secondary);
+  --chart-4: var(--nv-border);
+  --chart-5: var(--nv-bg);
 
   /* Sidebar / navbar – light */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #012436;
-  --sidebar-primary: #f96900;
-  --sidebar-primary-foreground: #f2f4f3;
-  --sidebar-accent: #3b0d11;
-  --sidebar-accent-foreground: #f2f4f3;
-  --sidebar-border: #d7e2e8;
-  --sidebar-ring: #9eb3c2;
+  --sidebar: var(--nv-bg);
+  --sidebar-foreground: var(--nv-text-primary);
+  --sidebar-primary: var(--nv-accent);
+  --sidebar-primary-foreground: var(--nv-bg);
+  --sidebar-accent: var(--nv-text-secondary);
+  --sidebar-accent-foreground: var(--nv-bg);
+  --sidebar-border: var(--nv-border);
+  --sidebar-ring: var(--nv-border);
 }
 
 .dark {
@@ -105,8 +125,8 @@
   --foreground-muted: #9eb3c2;
 
   /* Glass Effect - Dark Theme */
-  --glass-bg: rgba(11, 48, 68, 0.9);
-  --glass-border: rgba(158, 179, 194, 0.25);
+  --glass-bg: var(--nv-glass-bg);
+  --glass-border: var(--nv-glass-border);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 
   /* Gradients - Dark Theme (teal-based, no pure black) */
@@ -115,8 +135,8 @@
 
   /* Modal - Dark Theme */
   --modal-backdrop: rgba(0, 0, 0, 0.8);
-  --modal-bg: rgba(5, 37, 56, 0.97);
-  --modal-border: rgba(255, 255, 255, 0.2);
+  --modal-bg: color-mix(in oklab, var(--nv-bg) 92%, transparent);
+  --modal-border: var(--nv-border-soft);
   --modal-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
   --card: #063044;                 /* main card / stat tile background */
   --card-foreground: #f2f4f3;
@@ -347,21 +367,11 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  /* Light mode background glow – subtle and bright */
   background: 
-    radial-gradient(circle at 20% 80%, rgba(249, 105, 0, 0.09) 0%, transparent 55%),
-    radial-gradient(circle at 80% 20%, rgba(182, 83, 104, 0.08) 0%, transparent 55%),
-    radial-gradient(circle at 40% 40%, rgba(250, 248, 246, 1) 0%, transparent 60%);
+    radial-gradient(circle at 20% 80%, rgba(249, 105, 0, 0.06) 0%, transparent 55%),
+    radial-gradient(circle at 80% 20%, rgba(182, 83, 104, 0.05) 0%, transparent 55%);
   pointer-events: none;
   z-index: 0;
-}
-
-.dark .bg-animated::before {
-  /* Dark mode background glow */
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(249, 105, 0, 0.12) 0%, transparent 55%),
-    radial-gradient(circle at 80% 20%, rgba(59, 13, 17, 0.5) 0%, transparent 55%),
-    radial-gradient(circle at 40% 40%, rgba(11, 48, 68, 0.75) 0%, transparent 55%);
 }
 
 /* ===== SCROLLBAR ===== */

@@ -19,14 +19,21 @@ import { useData } from '@/context/DataContext';
 import { Card } from '@/components/ui/Card';
 
 const COLORS = {
-  playing: '#3b82f6',
-  completed: '#22c55e',
-  planning: '#a855f7',
-  'on-hold': '#eab308',
-  dropped: '#ef4444',
+  playing: 'var(--chart-1)',
+  completed: 'var(--chart-3)',
+  planning: 'var(--chart-4)',
+  'on-hold': 'var(--chart-5)',
+  dropped: 'var(--chart-2)',
 };
 
-const PIE_COLORS = ['#3b82f6', '#0070d1', '#107c10', '#e60012', '#a855f7', '#6b7280'];
+const PIE_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-2)',
+];
 
 function useCountUp(end: number, duration = 800) {
   const [value, setValue] = useState(0);
@@ -67,6 +74,18 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
   const countTotal = useCountUp(stats.total);
   const countPlaying = useCountUp(stats.playing);
   const countCompleted = useCountUp(stats.completed);
+
+  const gamesKpiMicro = useMemo(
+    () => ({
+      total:
+        stats.total >= 100 ? 'Large library' : stats.total >= 30 ? 'Growing collection' : 'Getting started',
+      playing:
+        stats.playing >= 5 ? 'Active gamer' : stats.playing >= 1 ? 'Focused player' : 'Start a game!',
+      completed:
+        stats.completed >= 20 ? 'Completionist' : stats.completed >= 5 ? 'Solid finisher' : 'Keep going!',
+    }),
+    [stats.total, stats.playing, stats.completed]
+  );
 
   const statusData = useMemo(
     () =>
@@ -168,9 +187,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
     const value = payload[0]?.value;
     const pct = stats.total ? Math.round((value / stats.total) * 100) : 0;
     return (
-      <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
-        <p className="font-semibold text-white text-sm">{label || payload[0]?.name}</p>
-        <p className="text-cyan-400 font-bold text-base">
+      <div className="glass-strong p-3 rounded-lg border border-foreground/10 bg-background-tertiary/80">
+        <p className="font-semibold text-foreground text-sm">{label || payload[0]?.name}</p>
+        <p className="text-primary font-bold text-base">
           {value} games, {pct}% of your library
         </p>
       </div>
@@ -186,25 +205,28 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
         className="grid grid-cols-2 lg:grid-cols-3 gap-4"
       >
         {[
-          { icon: Library, label: 'Backlog size', value: countTotal, sub: 'Total games', color: '#22c55e' },
-          { icon: Gamepad2, label: 'Active games', value: countPlaying, sub: 'Now playing', color: '#3b82f6' },
-          { icon: Trophy, label: 'Finished', value: countCompleted, sub: 'Completed', color: '#ffd700' },
+          { icon: Library, label: 'Backlog size', value: countTotal, color: COLORS.completed, micro: gamesKpiMicro.total },
+          { icon: Gamepad2, label: 'Active games', value: countPlaying, color: COLORS.playing, micro: gamesKpiMicro.playing },
+          { icon: Trophy, label: 'Finished', value: countCompleted, color: COLORS['on-hold'], micro: gamesKpiMicro.completed },
         ].map((item, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
-            className="rounded-2xl border border-foreground/10 bg-card/80 backdrop-blur-md p-5"
+            className="glass-card p-5"
           >
-            <div className="flex items-start justify-between mb-2">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
+            <div className="relative flex items-start justify-between mb-2">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
+              >
                 <item.icon className="w-5 h-5" style={{ color: item.color }} />
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground">{item.value}</div>
-            <div className="text-sm font-medium text-foreground">{item.label}</div>
-            <div className="text-xs text-foreground-muted mt-0.5">{item.sub}</div>
+            <div className="relative text-2xl font-bold text-foreground">{item.value}</div>
+            <div className="relative text-sm text-foreground-muted">{item.label}</div>
+            <div className="relative text-xs text-foreground-muted/90 mt-1">{item.micro}</div>
           </motion.div>
         ))}
       </motion.div>
@@ -212,13 +234,13 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
       {/* Status Distribution - separated chart + premium KPIs */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-cyan-400" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               Status Distribution
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
-            <div className="h-64">
+            <div className="h-64 chart-container">
               {statusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -253,9 +275,9 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
             </div>
           </Card>
 
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1">Status KPIs</h3>
-            <p className="text-xs text-foreground-muted mb-4">A quick read of how you're tracking</p>
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { key: 'Playing', value: stats.playing, color: COLORS.playing },
@@ -270,7 +292,7 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
                   return (
                     <div
                       key={s.key}
-                      className="rounded-2xl border border-foreground/10 bg-card/70 backdrop-blur-md p-4"
+                      className="glass-card p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
@@ -304,19 +326,19 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
       {/* Backlog estimate + Completion discipline + Badges */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {timeToClearBacklog && (
-          <div className="rounded-xl border border-foreground/10 bg-card/80 p-4">
+          <div className="glass-card p-4">
             <div className="text-xs font-semibold text-foreground-muted mb-1">Time to clear backlog</div>
             <div className="text-lg font-bold text-foreground">{timeToClearBacklog}</div>
             <div className="text-xs text-foreground-muted mt-1">Rough estimate at your current pace</div>
           </div>
         )}
-        <div className="rounded-xl border border-foreground/10 bg-card/80 p-4">
+        <div className="glass-card p-4">
           <div className="text-xs font-semibold text-foreground-muted mb-1">Completion discipline</div>
           <span className={`text-lg font-bold ${completionDiscipline.color}`}>{completionDiscipline.label}</span>
           <div className="text-xs text-foreground-muted mt-1">From your Completed vs Dropped ratio</div>
         </div>
         {gamerBadges.length > 0 && (
-          <div className="rounded-xl border border-foreground/10 bg-card/80 p-4 md:col-span-1">
+          <div className="glass-card p-4 md:col-span-1">
             <div className="text-xs font-semibold text-foreground-muted mb-2">Gamer profile badges</div>
             <div className="flex flex-wrap gap-2">
               {gamerBadges.map((b) => (
@@ -331,19 +353,22 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Platform Distribution */}
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Monitor className="w-5 h-5 text-cyan-400" />
+            <Monitor className="w-5 h-5 text-primary" />
             Platform Distribution
           </h3>
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
-          <div className="h-64">
+          <div className="h-64 chart-container">
             {platformDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={platformDistribution} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" width={90} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                  />
+                  <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                  <YAxis dataKey="name" type="category" width={90} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                     {platformDistribution.map((_, i) => (
@@ -366,19 +391,22 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Top Genres */}
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Gamepad2 className="w-5 h-5 text-cyan-400" />
+            <Gamepad2 className="w-5 h-5 text-primary" />
             Top Genres
           </h3>
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
-          <div className="h-64">
+          <div className="h-64 chart-container">
             {genreDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={genreDistribution} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" width={100} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                  />
+                  <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                  <YAxis dataKey="name" type="category" width={100} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                     {genreDistribution.map((_, i) => (
@@ -401,7 +429,7 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
 
       {/* Game Type Distribution with premium empty state */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Tag className="w-5 h-5 text-purple-400" />
             Game Type Distribution
@@ -409,12 +437,15 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
           <p className="text-xs text-foreground-muted mb-4">Based on your tracked games</p>
           {gameTypeDistribution.length > 0 ? (
             <>
-              <div className="h-64">
+              <div className="h-64 chart-container">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={gameTypeDistribution} layout="vertical" margin={{ left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
-                    <YAxis dataKey="name" type="category" width={100} stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                    />
+                    <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
+                    <YAxis dataKey="name" type="category" width={100} stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                       {gameTypeDistribution.map((_, i) => (

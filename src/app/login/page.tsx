@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { AnimatedThemeToggler } from '@/components/ui/ThemeToggler';
 import { useAuth } from '@/context/AuthContext';
 import LightPillar from '@/components/LightPillar';
 import GradientText from '@/components/GradientText';
@@ -107,7 +106,7 @@ export default function LoginPage() {
   }));
 
   return (
-    <div className="h-screen w-screen bg-animated relative overflow-hidden flex items-center p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+    <div className="h-screen w-screen bg-background relative overflow-hidden flex items-center p-4 fixed inset-0" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
       {/* Floating Lines Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {floatingLines.map((line) => (
@@ -234,16 +233,6 @@ export default function LoginPage() {
           }}
         />
       </div>
-
-      {/* Theme Toggle - Top Right */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="absolute top-6 right-6 z-50"
-      >
-        <AnimatedThemeToggler />
-      </motion.div>
 
       {/* Main Content */}
       <motion.div

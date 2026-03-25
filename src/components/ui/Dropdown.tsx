@@ -87,7 +87,7 @@ export function Dropdown({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-xs sm:text-sm font-medium text-foreground-muted mb-1.5">
+        <label className="block text-xs sm:text-sm font-medium text-foreground/80 mb-1.5">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -95,7 +95,7 @@ export function Dropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-4 py-2 rounded-lg border border-foreground/20 bg-foreground/5 text-left text-foreground hover:bg-foreground/10 transition-colors flex items-center justify-between ${
+        className={`w-full input-glass text-left hover:bg-foreground/10 transition-colors flex items-center justify-between ${
           isOpen ? 'bg-foreground/10 border-foreground/30' : ''
         }`}
       >

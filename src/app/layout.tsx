@@ -5,6 +5,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { DataProvider } from '@/context/DataContext';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { ThemePaletteProvider } from '@/context/ThemePaletteContext';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import RouteGuard from '@/components/auth/RouteGuard';
 
@@ -28,37 +29,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const storedTheme = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const shouldBeDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
-                if (shouldBeDark) {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-              })();
-            `,
-          }}
-        />
+        {/* Palette system: CSS variables are initialized by ThemePaletteProvider on the client. */}
       </head>
       <body
         className={`${jakartaSans.variable} antialiased bg-background text-foreground min-h-screen`}
       >
-        <AuthProvider>
-          <DataProvider>
-            <RouteGuard>
-              <SidebarProvider>
-                <LanguageProvider>
-                  <ConditionalLayout>{children}</ConditionalLayout>
-                </LanguageProvider>
-              </SidebarProvider>
-            </RouteGuard>
-          </DataProvider>
-        </AuthProvider>
+        <ThemePaletteProvider>
+          <AuthProvider>
+            <DataProvider>
+              <RouteGuard>
+                <SidebarProvider>
+                  <LanguageProvider>
+                    <ConditionalLayout>{children}</ConditionalLayout>
+                  </LanguageProvider>
+                </SidebarProvider>
+              </RouteGuard>
+            </DataProvider>
+          </AuthProvider>
+        </ThemePaletteProvider>
       </body>
     </html>
   );

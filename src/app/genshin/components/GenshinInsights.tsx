@@ -22,16 +22,24 @@ import { GenshinElement } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 
 const elementColors: Record<GenshinElement, string> = {
-  Pyro: '#ef4444',
-  Hydro: '#3b82f6',
-  Anemo: '#22d3ee',
-  Electro: '#a855f7',
-  Dendro: '#22c55e',
-  Cyro: '#93c5fd',
-  Geo: '#f59e0b',
+  Pyro: 'var(--chart-1)',
+  Hydro: 'var(--chart-2)',
+  Anemo: 'var(--chart-3)',
+  Electro: 'var(--chart-4)',
+  Dendro: 'var(--chart-5)',
+  Cryo: 'var(--chart-2)',
+  Geo: 'var(--chart-4)',
 };
 
-const PIE_COLORS = ['#ef4444', '#3b82f6', '#22d3ee', '#a855f7', '#22c55e', '#93c5fd', '#f59e0b'];
+const PIE_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-2)',
+  'var(--chart-4)',
+];
 
 function useCountUp(end: number, duration = 800, enabled = true) {
   const [value, setValue] = useState(0);
@@ -108,7 +116,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         name, 
         total: counts.total, 
         owned: counts.owned,
-        color: elementColors[name] || '#93c5fd' 
+        color: elementColors[name] || 'var(--chart-5)'
       }))
       .sort((a, b) => b.total - a.total);
   }, [characters]);
@@ -130,8 +138,8 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
 
   // Rarity distribution
   const rarityDistribution = useMemo(() => [
-    { name: '5★', value: stats.fiveStar, color: '#ffd700' },
-    { name: '4★', value: stats.fourStar, color: '#a855f7' },
+    { name: '5★', value: stats.fiveStar, color: 'var(--chart-1)' },
+    { name: '4★', value: stats.fourStar, color: 'var(--chart-3)' },
   ].filter((item) => item.value > 0), [stats]);
 
   // Rarity vs character count (bar chart format) - Total vs Owned
@@ -234,11 +242,27 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
       canvas.height = 400;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      ctx.fillStyle = '#0f766e';
+      const rootStyle = getComputedStyle(document.documentElement);
+      const bg = rootStyle.getPropertyValue('--nv-bg').trim() || '#0f766e';
+      const fg = rootStyle.getPropertyValue('--nv-text-primary').trim() || 'rgba(255,255,255,0.9)';
+      const muted = rootStyle.getPropertyValue('--nv-text-secondary').trim() || 'rgba(255,255,255,0.75)';
+      const accent = rootStyle.getPropertyValue('--nv-accent').trim() || fg;
+
+      // Background
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, 600, 400);
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+
+      // Header
+      ctx.fillStyle = fg;
       ctx.font = 'bold 28px system-ui, sans-serif';
       ctx.fillText('Genshin Insights', 24, 50);
+
+      // Accent divider
+      ctx.fillStyle = accent;
+      ctx.fillRect(24, 62, 180, 4);
+
+      // Body
+      ctx.fillStyle = muted;
       ctx.font = '16px system-ui, sans-serif';
       ctx.fillText(`${stats.total} characters · ${stats.fiveStar} 5★ · ${stats.fourStar} 4★`, 24, 85);
       ctx.fillText(`Avg level ${stats.avgLevel} · ${stats.obtained} obtained`, 24, 110);
@@ -263,14 +287,14 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
-          <p className="text-white font-semibold mb-2 text-sm">{label || payload[0].name}</p>
+        <div className="glass-strong p-3 rounded-lg border border-foreground/10 bg-background-tertiary/80">
+          <p className="text-foreground font-semibold mb-2 text-sm">{label || payload[0].name}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-foreground-muted text-xs mb-1">
               <span style={{ color: entry.color || entry.fill || 'var(--foreground)', fontWeight: 600 }}>
                 {entry.name}:
               </span>{' '}
-              <span className="font-bold text-cyan-400">{entry.value}</span>
+              <span className="font-bold text-primary">{entry.value}</span>
             </p>
           ))}
         </div>
@@ -289,29 +313,32 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         className="grid grid-cols-2 lg:grid-cols-5 gap-4 relative z-10"
       >
         {[
-          { icon: User, label: t('genshin.totalCharacterCount'), value: countTotal, color: '#06b6d4', micro: kpiInsights.total },
-          { icon: Star, label: t('genshin.fiveStar'), value: countFive, color: '#ffd700', micro: kpiInsights.fiveStar, glow: isImpressiveFive },
-          { icon: Star, label: t('genshin.fourStar'), value: countFour, color: '#a855f7', micro: kpiInsights.fourStar },
-          { icon: TrendingUp, label: t('genshin.avgLevel'), value: countAvg, color: '#22c55e', micro: kpiInsights.avgLevel },
-          { icon: User, label: t('genshin.obtained'), value: countObtained, color: '#3b82f6', micro: kpiInsights.obtained },
+          { icon: User, label: t('genshin.totalCharacterCount'), value: countTotal, color: 'var(--chart-1)', micro: kpiInsights.total },
+          { icon: Star, label: t('genshin.fiveStar'), value: countFive, color: 'var(--chart-2)', micro: kpiInsights.fiveStar, glow: isImpressiveFive },
+          { icon: Star, label: t('genshin.fourStar'), value: countFour, color: 'var(--chart-3)', micro: kpiInsights.fourStar },
+          { icon: TrendingUp, label: t('genshin.avgLevel'), value: countAvg, color: 'var(--chart-4)', micro: kpiInsights.avgLevel },
+          { icon: User, label: t('genshin.obtained'), value: countObtained, color: 'var(--chart-5)', micro: kpiInsights.obtained },
         ].map((item, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
-            className={`rounded-2xl border border-foreground/10 bg-card/80 backdrop-blur-md p-5 relative overflow-hidden ${item.glow ? 'ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20' : ''}`}
+            className={`glass-card p-5 relative overflow-hidden ${item.glow ? 'ring-2 ring-primary/30 shadow-lg shadow-primary/10' : ''}`}
           >
             {item.glow && (
               <motion.div
                 className="absolute inset-0 rounded-2xl opacity-30"
-                style={{ background: `radial-gradient(circle at 50% 50%, ${item.color}40, transparent 70%)` }}
+                style={{ background: `radial-gradient(circle at 50% 50%, color-mix(in srgb, ${item.color} 25%, transparent), transparent 70%)` }}
                 animate={{ opacity: [0.2, 0.35, 0.2] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
             )}
             <div className="relative flex items-start justify-between mb-2">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
+              >
                 <item.icon className="w-5 h-5" style={{ color: item.color }} />
               </div>
             </div>
@@ -330,7 +357,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               {t('genshin.elementDistribution')}
@@ -394,7 +421,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
               <Swords className="w-5 h-5 text-primary" />
               {t('genshin.weaponDistribution')}
@@ -469,14 +496,14 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         transition={{ delay: 0.25 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
-        <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4">
-          <div className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1">Strengths</div>
+        <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
+          <div className="text-xs font-semibold text-primary mb-1">Strengths</div>
           <div className="text-sm text-foreground">
             {narrative.strongestElement ? `Strongest element: ${narrative.strongestElement}` : 'Add characters to see strengths.'}
           </div>
         </div>
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
-          <div className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">Gaps</div>
+        <div className="rounded-xl border border-foreground/20 bg-background-secondary/60 p-4">
+          <div className="text-xs font-semibold text-foreground-muted mb-1">Gaps</div>
           <div className="text-sm text-foreground">
             {narrative.weakestWeapon ? `Fewest ${narrative.weakestWeapon} users` : narrative.weakestElement ? `Fewer ${narrative.weakestElement} units` : '—'}
           </div>
@@ -497,9 +524,9 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
+              <Star className="w-5 h-5 text-primary" />
               {t('genshin.rarityVsCount')}
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Based on {stats.obtained} owned characters</p>
@@ -525,7 +552,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                       {rarityBarData.map((entry, index) => (
                         <Cell
                           key={`total-${index}`}
-                          fill={entry.rarity === '5★' ? '#ffd700' : '#a855f7'}
+                          fill={entry.rarity === '5★' ? 'var(--chart-1)' : 'var(--chart-2)'}
                         />
                       ))}
                     </Bar>
@@ -538,7 +565,11 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                       {rarityBarData.map((entry, index) => (
                         <Cell
                           key={`owned-${index}`}
-                          fill={entry.rarity === '5★' ? '#ffd70080' : '#a855f780'}
+                          fill={
+                            entry.rarity === '5★'
+                              ? 'color-mix(in srgb, var(--chart-1) 80%, transparent)'
+                              : 'color-mix(in srgb, var(--chart-2) 80%, transparent)'
+                          }
                         />
                       ))}
                     </Bar>
@@ -559,9 +590,9 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-amber-500" />
+              <Zap className="w-5 h-5 text-primary" />
               Constellation Distribution
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Characters at each constellation level</p>
@@ -577,7 +608,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                     />
                     <YAxis className="stroke-foreground-muted" tick={{ fill: 'var(--foreground-muted)' }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" name="Characters" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" name="Characters" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -604,9 +635,9 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-purple-500" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               {t('genshin.characterByTier')}
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Based on {stats.obtained} owned characters</p>
@@ -663,9 +694,9 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <Card className="p-6 rounded-2xl border border-foreground/10 bg-card">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               {t('genshin.levelDistribution')}
             </h3>
             <p className="text-xs text-foreground-muted mb-4">Based on {stats.obtained} owned characters</p>
@@ -720,10 +751,10 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-6"
+          className="rounded-2xl border border-primary/30 bg-primary/10 p-6"
         >
           <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-amber-500" />
+            <Lightbulb className="w-5 h-5 text-primary" />
             Coach — Recommended next steps
           </h3>
           <ul className="space-y-2 text-sm text-foreground">

@@ -45,7 +45,7 @@ const categoryConfig: Record<WebsiteCategory, { icon: React.ReactNode; color: st
 const ENTERTAINMENT_CATEGORIES: WebsiteCategory[] = ['anime', 'movies', 'gaming'];
 const PRODUCTIVITY_CATEGORIES: WebsiteCategory[] = ['productivity', 'tools', 'news'];
 
-type TabFilter = 'all' | 'favorites' | 'entertainment' | 'productivity';
+type TabFilter = 'all' |'games' | 'favorites' | 'entertainment' | 'productivity';
 type BoardFilter = 'all' | 'work' | 'study' | 'binge';
 
 const boardConfig: { id: BoardFilter; label: string; categories: WebsiteCategory[] }[] = [
@@ -115,102 +115,86 @@ export default function WebsitesPage() {
   const isEmpty = filteredWebsites.length === 0;
 
   return (
-    <div className="min-h-screen bg-animated">
-      {/* Header with gradient + title + user chip */}
+    <div className="min-h-screen bg-gradient-to-b from-background-tertiary/80 to-background transition-colors duration-500">
+      {/* Hero Header Strip */}
       <div className="relative overflow-hidden">
         <div
-          className="absolute inset-0 h-64 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent"
-          aria-hidden
+          className="absolute inset-0 h-48"
+          style={{
+            background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
+          }}
         />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex-1"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background-secondary/80 border border-foreground/10 text-foreground-muted text-sm mb-3">
-                <Globe className="w-4 h-4 text-primary" />
-                <span>Quick Access</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+        <div className="absolute inset-0 h-48 bg-black/20" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
                 Website Bookmarks
               </h1>
-              <p className="text-foreground-muted mt-1 max-w-xl">
-                Your curated hub for sites you love—one click to open, search, and organize.
+              <p className="text-white/90 mt-1 text-sm md:text-base">
+                Your curated hub for sites you love — one click to open, search, and organize
               </p>
             </motion.div>
-            {/* User summary chip + upgrade */}
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
             >
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-background-secondary/90 border border-foreground/10 shadow-sm">
-                <span className="text-sm font-medium text-foreground truncate max-w-[120px]">
-                  {username}
-                </span>
-                <span className="text-foreground-muted">·</span>
-                <span className="text-sm text-foreground-muted">{planLabel} Plan</span>
-              </div>
-              {plan === 'free' && (
-                <a
-                  href="/pricing"
-                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-primary/15 text-primary border border-primary/30 hover:bg-primary/25 transition-colors"
-                >
-                  Upgrade
-                </a>
-              )}
+              <span className="truncate max-w-[120px]">{username}</span>
+              <span className="text-white/70">·</span>
+              <span>{websites.length} bookmarks</span>
+              <span className="text-white/70">·</span>
+              <span>{favoriteCount} favorites</span>
             </motion.div>
           </div>
-
-          {/* Stats in card-like section */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="mt-6 p-4 rounded-2xl bg-background-secondary/60 border border-foreground/10 shadow-sm"
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/60 border border-foreground/5">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/15 text-primary">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-foreground">{websites.length}</p>
-                  <p className="text-xs text-foreground-muted">Total</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/60 border border-foreground/5">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-500/15 text-amber-500">
-                  <Star className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-foreground">{favoriteCount}</p>
-                  <p className="text-xs text-foreground-muted">Favorites</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/60 border border-foreground/5">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500/15 text-purple-500">
-                  <Tv className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-foreground">{entertainmentCount}</p>
-                  <p className="text-xs text-foreground-muted">Entertainment</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/60 border border-foreground/5">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500/15 text-blue-500">
-                  <Briefcase className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-foreground">{productivityCount}</p>
-                  <p className="text-xs text-foreground-muted">Productivity</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 mb-2">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3"
+        >
+          <div className="glass-card p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-cyan-500/15 text-cyan-400">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{websites.length}</p>
+              <p className="text-xs text-foreground-muted">Total</p>
+            </div>
+          </div>
+          <div className="glass-card p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-500/15 text-amber-400">
+              <Star className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{favoriteCount}</p>
+              <p className="text-xs text-foreground-muted">Favorites</p>
+            </div>
+          </div>
+          <div className="glass-card p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500/15 text-purple-400">
+              <Tv className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{entertainmentCount}</p>
+              <p className="text-xs text-foreground-muted">Entertainment</p>
+            </div>
+          </div>
+          <div className="glass-card p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500/15 text-blue-400">
+              <Briefcase className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{productivityCount}</p>
+              <p className="text-xs text-foreground-muted">Productivity</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Main content */}

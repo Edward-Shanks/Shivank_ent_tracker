@@ -63,6 +63,9 @@ export async function PATCH(
     if (body.titleJapanese !== undefined) updateData.titleJapanese = body.titleJapanese || null;
     if (body.animeOtherName !== undefined) updateData.animeOtherName = body.animeOtherName || null;
     if (body.animeType !== undefined) updateData.animeType = body.animeType;
+    if (body.mediaType !== undefined) updateData.mediaType = body.mediaType || null;
+    if (body.producers !== undefined) updateData.producers = body.producers || null;
+    if (body.source !== undefined) updateData.source = body.source || null;
     if (body.airingStatus !== undefined) updateData.airingStatus = body.airingStatus;
     if (body.watchStatus !== undefined) updateData.watchStatus = body.watchStatus;
     if (body.websiteLink !== undefined) updateData.websiteLink = body.websiteLink || null;

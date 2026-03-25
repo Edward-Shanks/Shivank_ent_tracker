@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   PieChart,
@@ -18,19 +18,45 @@ import {
 } from 'recharts';
 import { Film, Tv, Clock, Star, TrendingUp, Calendar } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card, StatCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
+
+function useCountUp(end: number, duration = 800) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    const startTime = performance.now();
+    let rafId: number;
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setValue(Math.round(end * progress));
+      if (progress < 1) rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [end, duration]);
+  return value;
+}
 
 const COLORS = {
-  watched: '#22c55e',
-  completed: '#22c55e',
-  watching: '#3b82f6',
-  planning: '#a855f7',
-  'on-hold': '#eab308',
-  dropped: '#ef4444',
-  rewatching: '#ec4899',
+  watched: 'var(--chart-3)',
+  completed: 'var(--chart-3)',
+  watching: 'var(--chart-1)',
+  planning: 'var(--chart-4)',
+  'on-hold': 'var(--chart-5)',
+  dropped: 'var(--chart-2)',
+  rewatching: 'var(--chart-4)',
 };
 
-const PIE_COLORS = ['#e50914', '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#06b6d4', '#eab308'];
+const PIE_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+];
 
 export default function ShowsInsights() {
   const { movies, kdrama } = useData();
@@ -105,12 +131,18 @@ export default function ShowsInsights() {
       .slice(-10);
   }, [movies, kdrama]);
 
+  const countMovies = useCountUp(movieStats.total);
+  const countKdrama = useCountUp(kdramaStats.total);
+  const countEpisodes = useCountUp(kdramaStats.totalEpisodes);
+  const avgScoreTenths = Math.round(kdramaStats.avgScore * 10);
+  const countAvgScoreTenths = useCountUp(avgScoreTenths, 600);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
-          <p className="text-white font-medium text-sm">{label || payload[0].name}</p>
-          <p className="text-cyan-400 font-bold text-base">{payload[0].value}</p>
+        <div className="glass-strong p-3 rounded-lg border border-foreground/10 bg-background-tertiary/80">
+          <p className="text-foreground font-medium text-sm">{label || payload[0].name}</p>
+          <p className="text-primary font-bold text-base">{payload[0].value}</p>
         </div>
       );
     }
@@ -125,24 +157,56 @@ export default function ShowsInsights() {
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
-        <StatCard
-          icon={Film}
-          label="Total Movies"
-          value={movieStats.total}
-          color="#f97316"
-        />
-        <StatCard
-          icon={Tv}
-          label="Total K-Drama"
-          value={kdramaStats.total}
-          color="#ec4899"
-        />
-        <StatCard
-          icon={Star}
-          label="Avg Score"
-          value={kdramaStats.avgScore > 0 ? kdramaStats.avgScore.toFixed(1) : '0'}
-          color="#ffd700"
-        />
+        {[
+          {
+            icon: Film,
+            label: 'Total Movies',
+            value: countMovies,
+            color: COLORS.watching,
+            micro: movieStats.total >= 50 ? 'Impressive collection' : movieStats.total >= 20 ? 'Growing library' : 'Getting started',
+          },
+          {
+            icon: Tv,
+            label: 'Total K-Drama',
+            value: countKdrama,
+            color: COLORS.rewatching,
+            micro: kdramaStats.total >= 20 ? 'K-Drama enthusiast' : kdramaStats.total >= 5 ? 'Discovering K-Drama' : 'Start exploring',
+          },
+          {
+            icon: Clock,
+            label: 'Episodes Watched',
+            value: countEpisodes,
+            color: COLORS.completed,
+            micro: kdramaStats.totalEpisodes >= 100 ? 'Binge master' : kdramaStats.totalEpisodes >= 30 ? 'Dedicated viewer' : 'Keep watching',
+          },
+          {
+            icon: Star,
+            label: 'Avg K-Drama Score',
+            value: kdramaStats.avgScore > 0 ? (countAvgScoreTenths / 10).toFixed(1) : '0',
+            color: COLORS['on-hold'],
+            micro: kdramaStats.avgScore >= 8 ? 'High standards' : kdramaStats.avgScore >= 6 ? 'Balanced taste' : 'Rate more shows',
+          },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.05 }}
+            className="glass-card p-5"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
+              >
+                <item.icon className="w-5 h-5" style={{ color: item.color }} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-foreground">{item.value}</div>
+            <div className="text-sm text-foreground-muted">{item.label}</div>
+            <div className="text-xs text-foreground-muted/90 mt-1">{item.micro}</div>
+          </motion.div>
+        ))}
       </motion.div>
 
       {/* Charts Row */}
@@ -153,11 +217,12 @@ export default function ShowsInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-cyan-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
               Status Distribution
             </h3>
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked shows</p>
             <div className="h-64 flex items-center justify-center chart-container">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -187,6 +252,10 @@ export default function ShowsInsights() {
                 </div>
               ))}
             </div>
+            <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground">
+              <span className="font-medium">Insight:</span>{' '}
+              {`You've watched ${movieStats.watched + kdramaStats.completed} shows and movies total.`}
+            </div>
           </Card>
         </motion.div>
 
@@ -196,23 +265,27 @@ export default function ShowsInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Film className="w-5 h-5 text-cyan-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Film className="w-5 h-5 text-primary" />
               Top Genres
             </h3>
-            <div className="h-64">
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked shows</p>
+            <div className="h-64 chart-container">
               {genreDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={genreDistribution} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                    />
+                    <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <YAxis
                       dataKey="name"
                       type="category"
                       width={80}
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2', fontSize: 12 }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                       axisLine={false}
                       tickLine={false}
                     />
@@ -233,6 +306,12 @@ export default function ShowsInsights() {
                 </div>
               )}
             </div>
+            {genreDistribution.length > 0 && (
+              <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground">
+                <span className="font-medium">Insight:</span>{' '}
+                {`Your most watched genre is ${genreDistribution[0]?.name} with ${genreDistribution[0]?.value} titles.`}
+              </div>
+            )}
           </Card>
         </motion.div>
       </div>
@@ -245,28 +324,32 @@ export default function ShowsInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Star className="w-5 h-5 text-primary" />
               Score Distribution
             </h3>
-            <div className="h-64">
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked shows</p>
+            <div className="h-64 chart-container">
               {scoreDistribution.some(d => d.count > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={scoreDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                    />
                     <XAxis
                       dataKey="score"
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2', fontSize: 12 }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                     />
-                    <YAxis stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <YAxis stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="count" fill="url(#scoreGradient)" radius={[4, 4, 0, 0]} />
                     <defs>
                       <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
-                        <stop offset="100%" stopColor="#f96900" stopOpacity={0.3} />
+                        <stop offset="0%" stopColor="var(--nv-accent)" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="var(--nv-accent)" stopOpacity={0.3} />
                       </linearGradient>
                     </defs>
                   </BarChart>
@@ -286,35 +369,39 @@ export default function ShowsInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-cyan-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
               Release Year Distribution
             </h3>
-            <div className="h-64">
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked shows</p>
+            <div className="h-64 chart-container">
               {yearDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={yearDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                    />
                     <XAxis
                       dataKey="year"
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2', fontSize: 12 }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                     />
-                    <YAxis stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <YAxis stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="count"
                       stroke="url(#yearGradient)"
                       strokeWidth={3}
-                      dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
+                      dot={{ fill: 'var(--nv-accent)', strokeWidth: 2, r: 4 }}
                       activeDot={{ r: 6 }}
                     />
                     <defs>
                       <linearGradient id="yearGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.3} />
+                        <stop offset="0%" stopColor="var(--nv-accent)" stopOpacity={1} />
+                        <stop offset="100%" stopColor="var(--nv-accent)" stopOpacity={0.3} />
                       </linearGradient>
                     </defs>
                   </LineChart>
@@ -336,46 +423,28 @@ export default function ShowsInsights() {
         transition={{ delay: 0.6 }}
       >
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-6">
+          <h3 className="text-lg font-semibold text-foreground mb-1">
             Detailed Statistics
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500 mb-1">
-                {movieStats.watched}
-              </div>
-              <p className="text-sm text-foreground-muted">Movies Watched</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-pink-500 mb-1">
-                {kdramaStats.completed}
-              </div>
-              <p className="text-sm text-foreground-muted">K-Drama Completed</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-500 mb-1">
-                {kdramaStats.watching}
-              </div>
-              <p className="text-sm text-foreground-muted">K-Drama Watching</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-500 mb-1">
-                {movieStats.planning + kdramaStats.planning}
-              </div>
-              <p className="text-sm text-foreground-muted">Planning to Watch</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-500 mb-1">
-                {kdramaStats.onHold}
-              </div>
-              <p className="text-sm text-foreground-muted">On Hold</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-500 mb-1">
-                {kdramaStats.dropped}
-              </div>
-              <p className="text-sm text-foreground-muted">Dropped</p>
-            </div>
+          <p className="text-xs text-foreground-muted mb-4">Breakdown by status</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { label: 'Movies Watched', value: movieStats.watched, color: COLORS.watched },
+              { label: 'K-Drama Completed', value: kdramaStats.completed, color: COLORS.completed },
+              { label: 'K-Drama Watching', value: kdramaStats.watching, color: COLORS.watching },
+              { label: 'Planning to Watch', value: movieStats.planning + kdramaStats.planning, color: COLORS.planning },
+              { label: 'On Hold', value: kdramaStats.onHold, color: COLORS['on-hold'] },
+              { label: 'Dropped', value: kdramaStats.dropped, color: COLORS.dropped },
+            ]
+              .filter((s) => s.value > 0)
+              .map((s) => (
+                <div key={s.label} className="glass-card p-4">
+                  <div className="text-2xl font-bold mb-1" style={{ color: s.color }}>
+                    {s.value}
+                  </div>
+                  <div className="text-xs text-foreground-muted">{s.label}</div>
+                </div>
+              ))}
           </div>
         </Card>
       </motion.div>

@@ -21,7 +21,7 @@ const elements: { value: GenshinElement; label: string }[] = [
   { value: 'Anemo', label: 'Anemo' },
   { value: 'Electro', label: 'Electro' },
   { value: 'Dendro', label: 'Dendro' },
-  { value: 'Cyro', label: 'Cyro' },
+  { value: 'Cryo', label: 'Cryo' },
   { value: 'Geo', label: 'Geo' },
 ];
 
@@ -44,7 +44,7 @@ const elementColors: Record<GenshinElement, string> = {
   Anemo: '#22d3ee',
   Electro: '#a855f7',
   Dendro: '#22c55e',
-  Cyro: '#93c5fd',
+  Cryo: '#93c5fd',
   Geo: '#f59e0b',
 };
 
@@ -60,7 +60,7 @@ const getElementImage = (element: GenshinElement): string | null => {
     Anemo: '/images/logo/Anemo.png',
     Electro: '/images/logo/Electro.png',
     Dendro: '/images/logo/Dendro.png',
-    Cyro: '/images/logo/Cyro.png',
+    Cryo: '/images/logo/Cryo.png',
     Geo: '/images/logo/Geo.png',
   };
   return elementImageMap[element] || null;

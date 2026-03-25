@@ -136,7 +136,7 @@ It focuses on **what users see**, **what they can do**, and **which state drives
   - Safe color lookup with fallback `Pyro`
 - `getElementImage(element: string): string | null`
   - Maps normalized element to `/images/logo/*.png`
-  - Note: uses `"Cyro"` key (matches DB spelling) and maps to `/images/logo/Cyro.png`
+  - Note: uses `"Cryo"` key (matches DB spelling) and maps to `/images/logo/Cryo.png`
 
 ---
 

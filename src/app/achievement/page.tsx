@@ -175,6 +175,29 @@ export default function AchievementPage() {
   const nextLevelXp = level * 250;
   const levelProgress = Math.min(100, Math.round((xp / nextLevelXp) * 100));
 
+  // Recharts palette helpers (drive all chart strokes/fills from CSS variables)
+  const chartGridStroke = 'color-mix(in srgb, var(--nv-border) 30%, transparent)';
+  const chartAxisColor = 'var(--foreground-muted)';
+  const chartSeries1 = 'var(--chart-1)'; // primary accent
+  const chartSeries2 = 'var(--chart-2)'; // textSecondary
+  const chartSeries3 = 'var(--chart-3)'; // surface
+  const chartSeries4 = 'var(--chart-4)'; // border
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="rounded-lg border border-foreground/10 bg-background-tertiary/80 backdrop-blur-xl shadow-2xl p-3">
+        <p className="text-sm font-medium text-foreground mb-1">{label || payload[0]?.name}</p>
+        {payload.map((entry: any, idx: number) => (
+          <p key={idx} className="text-xs text-foreground-muted flex items-center justify-between gap-3 mt-1">
+            <span className="truncate">{entry?.name}</span>
+            <span className="font-bold text-primary">{entry?.value}</span>
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   const badges = useMemo(() => {
     const list: { id: string; label: string; unlocked: boolean; description: string }[] = [];
     const add = (id: string, label: string, unlocked: boolean, description: string) =>
@@ -229,19 +252,19 @@ export default function AchievementPage() {
     const width = canvas.width;
     const height = canvas.height;
 
-    ctx.fillStyle = '#020617';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--nv-bg').trim() || '#020617';
     ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = '#e5e7eb';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--nv-text-primary').trim() || '#e5e7eb';
     ctx.font = '20px system-ui';
     ctx.fillText('My NexaVerse Wrap', 24, 40);
 
     ctx.font = '14px system-ui';
-    ctx.fillStyle = '#9ca3af';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--nv-text-secondary').trim() || '#9ca3af';
     const name = user?.username || 'Guest';
     ctx.fillText(name, 24, 66);
 
-    ctx.fillStyle = '#e5e7eb';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--nv-text-primary').trim() || '#e5e7eb';
     ctx.font = '14px system-ui';
     ctx.fillText(`Total entries: ${totalEntries}`, 24, 110);
     ctx.fillText(`Anime completed: ${animeCompleted}`, 24, 136);
@@ -257,7 +280,7 @@ export default function AchievementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-animated">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
@@ -266,7 +289,7 @@ export default function AchievementPage() {
           className="mb-8 text-center"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-3">
-            <Trophy className="w-5 h-5 text-yellow-400" />
+            <Trophy className="w-5 h-5 text-primary" />
             <span className="text-foreground-muted">My Achievements</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
@@ -283,25 +306,25 @@ export default function AchievementPage() {
             icon={Star}
             label="Level"
             value={level}
-            color="#a855f7"
+            color="var(--nv-accent)"
           />
           <StatCard
             icon={Flame}
             label="XP"
             value={xp}
-            color="#f97316"
+            color="var(--nv-accent)"
           />
           <StatCard
             icon={Clock}
             label="Best streak (days)"
             value={streakInfo.longestStreak}
-            color="#22c55e"
+            color="var(--nv-accent)"
           />
           <StatCard
             icon={Target}
             label="Total entries"
             value={totalEntries}
-            color="#0ea5e9"
+            color="var(--nv-accent)"
           />
         </div>
 
@@ -316,17 +339,17 @@ export default function AchievementPage() {
               {timeByGenre.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={timeByGenre} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis type="number" stroke="#666" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                    <XAxis type="number" stroke={chartAxisColor} />
                     <YAxis
                       dataKey="name"
                       type="category"
                       width={80}
-                      stroke="#666"
-                      tick={{ fill: '#a3a3a3', fontSize: 11 }}
+                      stroke={chartAxisColor}
+                      tick={{ fill: chartAxisColor, fontSize: 11 }}
                     />
-                    <Tooltip />
-                    <Bar dataKey="hours" fill="#e50914" radius={[0, 4, 4, 0]} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="hours" fill={chartSeries1} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -339,18 +362,18 @@ export default function AchievementPage() {
 
           <Card className="p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-400" />
+              <Target className="w-5 h-5 text-primary" />
               Platform preference
             </h2>
             <div className="h-64">
               {platformPreference.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={platformPreference}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="name" stroke="#666" tick={{ fill: '#a3a3a3', fontSize: 11 }} />
-                    <YAxis stroke="#666" />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                    <XAxis dataKey="name" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 11 }} />
+                    <YAxis stroke={chartAxisColor} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill={chartSeries2} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -373,14 +396,14 @@ export default function AchievementPage() {
               {completionOverTime.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={completionOverTime}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="month" stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                    <YAxis stroke="#666" />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                    <XAxis dataKey="month" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                    <YAxis stroke={chartAxisColor} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="completed"
-                      stroke="#22c55e"
+                      stroke={chartSeries3}
                       strokeWidth={2}
                     />
                   </LineChart>
@@ -395,21 +418,21 @@ export default function AchievementPage() {
 
           <Card className="p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-400" />
+              <Star className="w-5 h-5 text-primary" />
               Score curve
             </h2>
             <div className="h-64">
               {scoreCurve.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={scoreCurve}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                    <XAxis dataKey="year" stroke="#666" tick={{ fill: '#a3a3a3' }} />
-                    <YAxis stroke="#666" />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                    <XAxis dataKey="year" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
+                    <YAxis stroke={chartAxisColor} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="avgScore"
-                      stroke="#fbbf24"
+                      stroke={chartSeries1}
                       strokeWidth={2}
                     />
                   </LineChart>
@@ -455,7 +478,7 @@ export default function AchievementPage() {
 
           <Card className="p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-400" />
+              <Trophy className="w-5 h-5 text-primary" />
               Badges
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -464,7 +487,7 @@ export default function AchievementPage() {
                   key={badge.id}
                   className={`rounded-lg border px-3 py-2 ${
                     badge.unlocked
-                      ? 'border-yellow-400/60 bg-yellow-400/10'
+                      ? 'border-primary/50 bg-primary/10'
                       : 'border-foreground/10 bg-foreground/5 opacity-70'
                   }`}
                 >
@@ -472,7 +495,7 @@ export default function AchievementPage() {
                     <span className="font-medium text-foreground text-xs sm:text-sm">
                       {badge.label}
                     </span>
-                    {badge.unlocked && <Star className="w-3 h-3 text-yellow-400" />}
+                    {badge.unlocked && <Star className="w-3 h-3 text-primary" />}
                   </div>
                   <p className="text-[11px] text-foreground-muted">{badge.description}</p>
                 </div>

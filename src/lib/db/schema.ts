@@ -19,6 +19,9 @@ export const anime = pgTable('anime', {
   titleJapanese: text('title_japanese'),
   animeOtherName: text('anime_other_name'),
   animeType: text('anime_type'), // 'Anime' | 'Donghua'
+  mediaType: text('media_type'), // TV / Movie / OVA / Special / etc.
+  producers: text('producers'), // Comma-separated (free text)
+  source: text('source'), // Manga / Light Novel / Original / Game / etc.
   airingStatus: text('airing_status'), // 'YTA' | 'Airing' | 'Completed'
   watchStatus: text('watch_status').notNull(), // 'Yet to Air for Watch' | 'Watching' | 'Watch Later' | 'Completed' | 'On Hold' | 'Dropped'
   websiteLink: text('website_link'),
@@ -113,7 +116,7 @@ export const genshinCharacters = pgTable('genshin_characters', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull().references(() => genshinAccounts.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
-  element: text('element').notNull(), // 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cyro' | 'Geo'
+  element: text('element').notNull(), // 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cryo' | 'Geo'
   weapon: text('weapon').notNull(), // 'Sword' | 'Claymore' | 'Polearm' | 'Bow' | 'Catalyst'
   rarity: integer('rarity').notNull(), // 4 | 5
   constellation: integer('constellation').notNull().default(0),

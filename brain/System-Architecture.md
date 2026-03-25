@@ -58,10 +58,10 @@ It focuses on **dependencies**, **data flow**, **state management**, **side effe
 
 ### Element naming contract (important)
 - The code normalizes element strings and maps to a union `GenshinElement`.
-- The spelling **`Cyro`** is consistently used:
-  - `elementColors` includes `Cyro`
-  - `getElementImage()` maps `Cyro -> /images/logo/Cyro.png`
-- Implication: upstream data (DB / seed / API) is expected to use `"Cyro"` rather than `"Cryo"`.
+- The spelling **`Cryo`** is consistently used:
+  - `elementColors` includes `Cryo`
+  - `getElementImage()` maps `Cryo -> /images/logo/Cryo.png`
+- Implication: upstream data (DB / seed / API) is expected to use `"Cryo"` rather than `"Cryo"`.
 
 ### Local state + persistence
 

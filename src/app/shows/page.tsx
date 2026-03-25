@@ -3,22 +3,17 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Film,
-  Tv,
   Plus,
-  Search,
-  Clock,
-  Star,
-  Heart,
   LayoutGrid,
   BarChart3,
   Edit,
   Trash2,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { MovieStatus, KDramaStatus } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import type { MovieStatus, KDramaStatus } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { MediaCard, StatCard } from '@/components/ui/Card';
+import { MediaCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, Select } from '@/components/ui/Input';
 import ShowsInsights from './components/ShowsInsights';
@@ -47,9 +42,11 @@ interface UnifiedShow {
 // Status filters and sort options will be created inside component to use translations
 
 export default function ShowsPage() {
+  const { user } = useAuth();
   const { movies, kdrama, updateMovie, deleteMovie, updateKDrama, deleteKDrama } = useData();
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<ViewMode>('insights');
+  const username = user?.username || 'Viewer';
   
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'title', label: t('sort.title') },
@@ -250,147 +247,194 @@ export default function ShowsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-animated">
-      {/* Premium Hero */}
-      <div className="relative overflow-hidden">
-        <div
-          className="absolute inset-0 h-56"
-          style={{
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 45%, #ec4899 100%)',
-            opacity: 0.92,
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-medium">
-                <span>Shows Collection</span>
-                <span className="text-white/60">·</span>
-                <span>All your Movies & K‑dramas in one smart library</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm mt-3">
-                Shows Collection
-              </h1>
-              <p className="text-white/85 text-sm md:text-base mt-1">
-                One place to track, filter, and finish — without paid APIs.
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <div className="rounded-lg p-1 flex bg-white/15 backdrop-blur-md border border-white/20">
-                  <button
-                    type="button"
-                    onClick={() => setContentType('all')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      contentType === 'all'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setContentType('movies')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      contentType === 'movies'
-                        ? 'bg-orange-500 text-white shadow-sm'
-                        : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
-                    }`}
-                  >
-                    Movies
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setContentType('kdrama')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      contentType === 'kdrama'
-                        ? 'bg-pink-500 text-white shadow-sm'
-                        : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
-                    }`}
-                  >
-                    K‑drama
-                  </button>
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-medium">
-                  <span>Free Plan</span>
-                  <span className="text-white/60">·</span>
-                  <span>{stats.total} titles</span>
-                  {stats.rewatchingMovies >= 5 && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-pink-400/20 text-pink-100 border border-pink-200/20">
-                      Rewatch lover
-                    </span>
-                  )}
-                  {stats.avgDramaProgress >= 0.6 && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-200/20">
-                      K‑drama marathoner
-                    </span>
-                  )}
-                  <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-200/20">
-                    Upgrade for advanced filters
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="glass rounded-lg p-1 flex">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('insights')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'insights'
-                      ? 'text-white'
-                      : 'text-foreground-muted hover:text-foreground'
-                  }`}
-                  style={viewMode === 'insights' ? {
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
-                  } : {}}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  {t('view.insights')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('collection')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'collection'
-                      ? 'text-white'
-                      : 'text-foreground-muted hover:text-foreground'
-                  }`}
-                  style={viewMode === 'collection' ? {
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
-                  } : {}}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  {t('view.collection')}
-                </button>
-              </div>
-              <Button
-                variant="primary"
-                leftIcon={<Plus className="w-4 h-4" />}
-                onClick={() => setIsAddModalOpen(true)}
-                style={{
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
-                }}
+    <div
+      className={`min-h-screen transition-colors duration-500 ${
+        viewMode === 'insights' ? 'bg-gradient-to-b from-background-tertiary/80 to-background' : 'bg-background'
+      }`}
+    >
+      {/* Insights Hero Strip - Only in Insights View */}
+      {viewMode === 'insights' && (
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0 h-48"
+            style={{
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
+            }}
+          />
+          <div className="absolute inset-0 h-48 bg-black/20" />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                  Entertainment Insights
+                </h1>
+                <p className="text-white/90 mt-1 text-sm md:text-base">
+                  Your Movies & K‑Drama dashboard — stats and analytics
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
               >
-                Add title
-              </Button>
+                <span className="truncate max-w-[120px]">{username}</span>
+                <span className="text-white/70">·</span>
+                <span>{stats.total} titles</span>
+                <span className="text-white/70">·</span>
+                <span>{movies.length} movies</span>
+                <span className="text-white/70">·</span>
+                <span>{kdrama.length} K‑drama</span>
+              </motion.div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Collection Hero - Only in Collection View */}
+      {viewMode === 'collection' && (
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0 h-56"
+            style={{
+              background: 'linear-gradient(135deg, var(--nv-surface) 0%, var(--nv-accent) 50%, var(--nv-surface) 100%)',
+            }}
+          />
+          <div className="absolute inset-0 h-56 bg-black/20" />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-medium">
+                  <span>Shows Collection</span>
+                  <span className="text-white/60">·</span>
+                  <span>All your Movies & K‑dramas in one smart library</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm mt-3">
+                  Shows Collection
+                </h1>
+                <p className="text-white/85 text-sm md:text-base mt-1">
+                  One place to track, filter, and finish — without paid APIs.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <div className="rounded-lg p-1 flex bg-white/15 backdrop-blur-md border border-white/20">
+                    <button
+                      type="button"
+                      onClick={() => setContentType('all')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        contentType === 'all'
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContentType('movies')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        contentType === 'movies'
+                          ? 'bg-orange-500 text-white shadow-sm'
+                          : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
+                      }`}
+                    >
+                      Movies
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContentType('kdrama')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        contentType === 'kdrama'
+                          ? 'bg-pink-500 text-white shadow-sm'
+                          : 'text-white bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/20'
+                      }`}
+                    >
+                      K‑drama
+                    </button>
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-medium">
+                    <span>{stats.total} titles</span>
+                    {stats.rewatchingMovies >= 5 && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-pink-400/20 text-pink-100 border border-pink-200/20">
+                        Rewatch lover
+                      </span>
+                    )}
+                    {stats.avgDramaProgress >= 0.6 && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-200/20">
+                        K‑drama marathoner
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Unified premium stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard icon={Tv} label="Total Shows" value={stats.total} color="#3b82f6" />
-          <StatCard icon={Film} label="Movies Watched" value={stats.moviesWatched} color="#f97316" />
-          <StatCard icon={Tv} label="K‑drama Completed" value={stats.kdramaCompleted} color="#ec4899" />
-          <StatCard icon={Star} label="Avg Score" value={stats.avgScore ? stats.avgScore.toFixed(1) : '0'} color="#ffd700" />
+        {/* Header with View Toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          {viewMode === 'collection' && (
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Shows Collection</h1>
+              <p className="text-foreground-muted mt-1">Browse and manage your Movies & K‑Drama</p>
+            </div>
+          )}
+          {viewMode === 'insights' && <div />}
+
+          <div className="flex items-center gap-2">
+            <div className="glass rounded-lg p-1 flex">
+              <button
+                type="button"
+                onClick={() => setViewMode('insights')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'insights'
+                    ? 'text-white'
+                    : 'text-foreground-muted hover:text-foreground'
+                }`}
+                style={viewMode === 'insights' ? {
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
+                } : {}}
+              >
+                <BarChart3 className="w-4 h-4" />
+                {t('view.insights')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('collection')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'collection'
+                    ? 'text-white'
+                    : 'text-foreground-muted hover:text-foreground'
+                }`}
+                style={viewMode === 'collection' ? {
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
+                } : {}}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                {t('view.collection')}
+              </button>
+            </div>
+            <Button
+              variant="primary"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setIsAddModalOpen(true)}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                boxShadow: '0 0 20px rgba(59, 130, 246, 0.35)',
+              }}
+            >
+              Add title
+            </Button>
+          </div>
         </div>
+        {viewMode === 'insights' && (
+          <p className="text-xs text-foreground-muted mt-2 mb-6">
+            Insights are calculated from your tracked movies and K‑drama data.
+          </p>
+        )}
 
         <AnimatePresence mode="wait">
           {viewMode === 'insights' ? (
@@ -412,7 +456,7 @@ export default function ShowsPage() {
               transition={{ duration: 0.3 }}
             >
               {/* Sticky filters + search header */}
-              <div className="sticky top-4 z-10 bg-animated/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
+              <div className="sticky top-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 sm:px-4 pt-3 pb-4 mb-4">
                 {/* Status Pills */}
                 <div className="flex flex-wrap gap-2 mb-3">
                 {statusFilters.map((filter) => {

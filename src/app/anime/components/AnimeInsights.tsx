@@ -22,14 +22,23 @@ import { AnimeStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 
 const COLORS = {
-  watching: '#3b82f6',
-  completed: '#22c55e',
-  planning: '#a855f7',
-  'on-hold': '#eab308',
-  dropped: '#ef4444',
+  watching: 'var(--chart-1)',
+  completed: 'var(--chart-3)',
+  planning: 'var(--chart-4)',
+  'on-hold': 'var(--chart-5)',
+  dropped: 'var(--chart-2)',
 };
 
-const PIE_COLORS = ['#e50914', '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#06b6d4', '#eab308'];
+const PIE_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+];
 
 const defaultStats: AnimeStats = {
   totalAnime: 0,
@@ -166,9 +175,9 @@ export default function AnimeInsights() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-strong p-3 rounded-lg border border-white/10 bg-neutral-900/90 backdrop-blur-xl shadow-2xl">
-          <p className="text-white font-medium text-sm">{label || payload[0].name}</p>
-          <p className="text-cyan-400 font-bold text-base">{payload[0].value}</p>
+        <div className="glass-strong p-3 rounded-lg border border-foreground/10 bg-background-tertiary/80">
+          <p className="text-foreground font-medium text-sm">{label || payload[0].name}</p>
+          <p className="text-primary font-bold text-base">{payload[0].value}</p>
         </div>
       );
     }
@@ -188,14 +197,17 @@ export default function AnimeInsights() {
           <div className="flex items-start justify-between mb-3">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#e5091420' }}
+              style={{ backgroundColor: 'color-mix(in srgb, var(--nv-accent) 20%, transparent)' }}
             >
-              <Tv className="w-5 h-5" style={{ color: '#e50914' }} />
+              <Tv className="w-5 h-5" style={{ color: 'var(--nv-accent)' }} />
             </div>
           </div>
           <div className="text-2xl font-bold text-foreground mb-1">{stats.totalAnime}</div>
           <div className="text-sm text-foreground-muted mb-2">{t('anime.totalAnimeLabel')}</div>
-          <div className="pt-2 border-t border-white/10 mt-2">
+          <div className="text-xs text-foreground-muted/90 mt-1">
+            {stats.totalAnime >= 100 ? 'Massive library' : stats.totalAnime >= 50 ? 'Impressive collection' : stats.totalAnime >= 20 ? 'Growing list' : 'Getting started'}
+          </div>
+          <div className="pt-2 border-t border-foreground/10 mt-2">
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground-muted">
               <span>{t('anime.yetToAir')}: <span className="font-medium text-foreground">{stats.airingStatusCounts.yta}</span></span>
               <span>{t('anime.airing')}: <span className="font-medium text-foreground">{stats.airingStatusCounts.airing}</span></span>
@@ -209,9 +221,9 @@ export default function AnimeInsights() {
           <div className="flex items-center gap-2 mb-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#3b82f620' }}
+              style={{ backgroundColor: 'color-mix(in srgb, var(--nv-accent) 20%, transparent)' }}
             >
-              <Clock className="w-4 h-4" style={{ color: '#3b82f6' }} />
+              <Clock className="w-4 h-4" style={{ color: 'var(--nv-accent)' }} />
             </div>
             <div>
               <div className="text-sm font-semibold text-foreground">Recent Activity</div>
@@ -232,21 +244,21 @@ export default function AnimeInsights() {
                 .slice(0, 20)
                 .map((item, index) => {
                   const statusColors: Record<string, string> = {
-                    'Watching': '#3b82f6',
-                    'Completed': '#22c55e',
-                    'Watch Later': '#a855f7',
-                    'Yet to Air for Watch': '#a855f7',
-                    'On Hold': '#eab308',
-                    'Dropped': '#ef4444',
+                    'Watching': 'var(--chart-1)',
+                    'Completed': 'var(--chart-3)',
+                    'Watch Later': 'var(--chart-4)',
+                    'Yet to Air for Watch': 'var(--chart-4)',
+                    'On Hold': 'var(--chart-5)',
+                    'Dropped': 'var(--chart-2)',
                   };
-                  const color = statusColors[item.watchStatus] || '#666';
+                  const color = statusColors[item.watchStatus] || 'var(--foreground-muted)';
                   return (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="flex items-center gap-2 p-1.5 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+                      className="flex items-center gap-2 p-1.5 rounded-md bg-foreground/10 hover:bg-foreground/15 transition-colors"
                     >
                       <div 
                         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -274,6 +286,43 @@ export default function AnimeInsights() {
         </Card>
       </motion.div>
 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {[
+          { icon: TrendingUp, label: 'Total Episodes', value: stats.totalEpisodes, color: 'var(--chart-1)', micro: stats.totalEpisodes >= 1000 ? 'Binge master' : stats.totalEpisodes >= 500 ? 'Dedicated viewer' : 'Keep watching' },
+          { icon: Clock, label: 'Mean Score', value: stats.meanScore > 0 ? stats.meanScore.toFixed(1) : '0', color: 'var(--chart-3)', micro: stats.meanScore >= 8 ? 'High standards' : stats.meanScore >= 6 ? 'Balanced taste' : 'Rate more anime' },
+          { icon: Tv, label: 'Currently Watching', value: stats.watchStatusCounts.watching, color: 'var(--chart-1)', micro: stats.watchStatusCounts.watching >= 10 ? 'Multi-watcher' : stats.watchStatusCounts.watching >= 3 ? 'Active viewer' : 'Pick something new' },
+          { icon: Layers, label: 'Completed', value: stats.watchStatusCounts.completed, color: 'var(--chart-3)', micro: stats.watchStatusCounts.completed >= 50 ? 'Veteran viewer' : stats.watchStatusCounts.completed >= 20 ? 'Solid progress' : 'Finish more shows' },
+        ].map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.05 }}
+              className="glass-card p-5"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: item.color }} />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-foreground">{item.value}</div>
+              <div className="text-sm text-foreground-muted">{item.label}</div>
+              <div className="text-xs text-foreground-muted/90 mt-1">{item.micro}</div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status Distribution - Horizontal Progress Bar Chart */}
@@ -282,12 +331,13 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-cyan-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-primary" />
               {t('anime.statusDistribution')}
             </h3>
-            <div className="h-64 flex flex-col justify-between">
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked anime</p>
+            <div className="h-64 chart-container flex flex-col justify-between">
               {statusData.length > 0 ? (
                 statusData.map((status, index) => {
                   const maxValue = Math.max(...statusData.map(s => s.value));
@@ -298,7 +348,7 @@ export default function AnimeInsights() {
                         <span className="text-foreground-muted">{status.name}</span>
                         <span className="font-semibold text-foreground">{status.value}</span>
                       </div>
-                      <div className="h-5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-5 bg-foreground/10 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${percentage}%` }}
@@ -316,6 +366,10 @@ export default function AnimeInsights() {
                 </div>
               )}
             </div>
+            <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground">
+              <span className="font-medium">Insight:</span>{' '}
+              {statusData.length > 0 ? `You're mostly watching or have completed anime, with ${stats.watchStatusCounts.watching} in progress.` : 'Add anime to see insights.'}
+            </div>
           </Card>
         </motion.div>
 
@@ -325,20 +379,25 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Film className="w-5 h-5 text-purple-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Film className="w-5 h-5 text-primary" />
               Anime Type vs Watch Status
             </h3>
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked anime</p>
             <div className="h-64 chart-container">
               {animeTypeWatchStatusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={animeTypeWatchStatusData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                      horizontal={false}
+                    />
                     <XAxis
                       dataKey="status"
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2', fontSize: 11 }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 11 }}
                     />
                     <YAxis hide={true} />
                     <Tooltip content={<CustomTooltip />} />
@@ -347,9 +406,9 @@ export default function AnimeInsights() {
                         <span className="text-foreground-muted text-sm">{value}</span>
                       )}
                     />
-                    <Bar dataKey="Anime" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Donghua" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="H-Ecchi" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Anime" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Donghua" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="H-Ecchi" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -370,23 +429,27 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-cyan-400" />
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
               {t('anime.topGenres')}
             </h3>
-            <div className="h-64">
+            <p className="text-xs text-foreground-muted mb-4">Based on your tracked anime</p>
+            <div className="h-64 chart-container">
               {stats.genreDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.genreDistribution} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis type="number" stroke="#666" tick={{ fill: '#9eb3c2', fontSize: 12 }} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                    />
+                    <XAxis type="number" stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <YAxis
                       dataKey="name"
                       type="category"
                       width={80}
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2', fontSize: 12 }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }}
                       axisLine={false}
                       tickLine={false}
                     />
@@ -416,20 +479,24 @@ export default function AnimeInsights() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="p-6 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl">
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-cyan-400" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               {t('anime.monthlyActivity')}
             </h3>
             <div className="h-64 chart-container">
               {stats.monthlyActivity.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.monthlyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="color-mix(in srgb, var(--nv-border) 30%, transparent)"
+                      horizontal={false}
+                    />
                     <XAxis
                       dataKey="month"
-                      stroke="#666"
-                      tick={{ fill: '#9eb3c2' }}
+                      stroke="var(--foreground-muted)"
+                      tick={{ fill: 'var(--foreground-muted)' }}
                     />
                     <YAxis hide={true} />
                     <Tooltip content={<CustomTooltip />} />
@@ -438,13 +505,13 @@ export default function AnimeInsights() {
                       dataKey="count"
                       stroke="url(#activityGradient)"
                       strokeWidth={3}
-                      dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
+                      dot={{ fill: 'var(--nv-accent)', strokeWidth: 2, r: 4 }}
                       activeDot={{ r: 6 }}
                     />
                     <defs>
                       <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f97316" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#f97316" stopOpacity={0.3} />
+                        <stop offset="0%" stopColor="var(--nv-accent)" stopOpacity={1} />
+                        <stop offset="100%" stopColor="var(--nv-accent)" stopOpacity={0.3} />
                       </linearGradient>
                     </defs>
                   </LineChart>
@@ -469,21 +536,16 @@ export default function AnimeInsights() {
           <h3 className="text-lg font-semibold text-foreground mb-6">
             {t('anime.detailedStatistics')}
           </h3>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
             {statusData.map((status) => (
-              <div key={status.name} className="text-center">
+              <div key={status.name} className="glass-card p-4 text-center">
                 <div
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-2 flex items-center justify-center"
-                  style={{ backgroundColor: `${status.color}20` }}
+                  className="text-2xl font-bold mb-1"
+                  style={{ color: status.color }}
                 >
-                  <span
-                    className="text-xl sm:text-2xl font-bold"
-                    style={{ color: status.color }}
-                  >
-                    {status.value}
-                  </span>
+                  {status.value}
                 </div>
-                <p className="text-foreground-muted text-xs sm:text-sm">{status.name}</p>
+                <p className="text-foreground-muted text-xs">{status.name}</p>
               </div>
             ))}
           </div>
