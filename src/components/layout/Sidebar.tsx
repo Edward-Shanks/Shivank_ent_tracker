@@ -10,6 +10,7 @@ import {
   IconTrophy,
   IconWorld,
   IconFileReport,
+  IconAtom,
 } from '@tabler/icons-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { FloatingDock } from '@/components/ui/floating-dock';
@@ -36,7 +37,7 @@ export default function Sidebar() {
     },
     {
       title: t('nav.anime'),
-      icon: <IconMovie className="h-full w-full" />,
+      icon: <IconAtom className="h-full w-full" />,
       href: '/anime',
       isActive: isActivePath('/anime'),
     },

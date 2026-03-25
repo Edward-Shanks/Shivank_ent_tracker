@@ -35,13 +35,23 @@ export async function PATCH(
     
     const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name;
+    if (body.title !== undefined) updateData.title = body.title || null;
     if (body.element !== undefined) updateData.element = body.element;
     if (body.weapon !== undefined) updateData.weapon = body.weapon;
     if (body.rarity !== undefined) updateData.rarity = body.rarity;
+    if (body.roles !== undefined) updateData.roles = body.roles || null;
+    if (body.modelType !== undefined) updateData.modelType = body.modelType || null;
+    if (body.constellationName !== undefined) updateData.constellationName = body.constellationName || null;
+    if (body.birthday !== undefined) updateData.birthday = body.birthday || null;
+    if (body.region !== undefined) updateData.region = body.region || null;
+    if (body.specialDish !== undefined) updateData.specialDish = body.specialDish || null;
+    if (body.affiliations !== undefined) updateData.affiliations = body.affiliations || null;
+    if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate || null;
     if (body.constellation !== undefined) updateData.constellation = body.constellation;
     if (body.level !== undefined) updateData.level = body.level;
     if (body.friendship !== undefined) updateData.friendship = body.friendship;
     if (body.image !== undefined) updateData.image = body.image || '';
+    if (body.wishImage !== undefined) updateData.wishImage = body.wishImage || null;
     if (body.obtained !== undefined) updateData.obtained = body.obtained;
     if (body.tier !== undefined) updateData.tier = body.tier || null;
     if (body.type !== undefined) updateData.type = body.type || null;

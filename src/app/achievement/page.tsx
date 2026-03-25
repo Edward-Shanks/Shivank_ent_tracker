@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -24,6 +25,7 @@ import { Card, StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
+import { chartColorAt } from '@/lib/chartPalette';
 
 export default function AchievementPage() {
   const { anime, movies, kdrama, games } = useData();
@@ -178,10 +180,10 @@ export default function AchievementPage() {
   // Recharts palette helpers (drive all chart strokes/fills from CSS variables)
   const chartGridStroke = 'color-mix(in srgb, var(--nv-border) 30%, transparent)';
   const chartAxisColor = 'var(--foreground-muted)';
-  const chartSeries1 = 'var(--chart-1)'; // primary accent
-  const chartSeries2 = 'var(--chart-2)'; // textSecondary
-  const chartSeries3 = 'var(--chart-3)'; // surface
-  const chartSeries4 = 'var(--chart-4)'; // border
+  const chartSeries1 = chartColorAt(0);
+  const chartSeries2 = chartColorAt(1);
+  const chartSeries3 = chartColorAt(4);
+  const chartSeries4 = chartColorAt(6);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
@@ -349,7 +351,11 @@ export default function AchievementPage() {
                       tick={{ fill: chartAxisColor, fontSize: 11 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="hours" fill={chartSeries1} radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="hours" fill="transparent" radius={[0, 4, 4, 0]}>
+                      {timeByGenre.map((_, i) => (
+                        <Cell key={i} fill={chartColorAt(i)} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -373,7 +379,11 @@ export default function AchievementPage() {
                     <XAxis dataKey="name" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 11 }} />
                     <YAxis stroke={chartAxisColor} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" fill={chartSeries2} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="transparent" radius={[4, 4, 0, 0]}>
+                      {platformPreference.map((_, i) => (
+                        <Cell key={i} fill={chartColorAt(i)} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

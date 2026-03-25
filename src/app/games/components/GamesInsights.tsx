@@ -17,23 +17,17 @@ import {
 import { Gamepad2, TrendingUp, Trophy, Monitor, Library, Tag } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Card } from '@/components/ui/Card';
+import { chartColorAt, chartColorAtAlpha } from '@/lib/chartPalette';
 
 const COLORS = {
-  playing: 'var(--chart-1)',
-  completed: 'var(--chart-3)',
-  planning: 'var(--chart-4)',
-  'on-hold': 'var(--chart-5)',
-  dropped: 'var(--chart-2)',
+  playing: chartColorAt(1),
+  completed: chartColorAt(4),
+  planning: chartColorAt(6),
+  'on-hold': chartColorAt(3),
+  dropped: chartColorAt(0),
 };
 
-const PIE_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-2)',
-];
+const PIE_COLORS = Array.from({ length: 12 }, (_, i) => chartColorAt(i));
 
 function useCountUp(end: number, duration = 800) {
   const [value, setValue] = useState(0);
@@ -243,7 +237,7 @@ export default function GamesInsights({ onSwitchToCollection }: GamesInsightsPro
             <div className="h-64 chart-container">
               {statusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                    <PieChart>
                     <Pie
                       data={statusData}
                       cx="50%"

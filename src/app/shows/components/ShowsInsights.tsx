@@ -19,6 +19,8 @@ import {
 import { Film, Tv, Clock, Star, TrendingUp, Calendar } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Card } from '@/components/ui/Card';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { chartColorAt } from '@/lib/chartPalette';
 
 function useCountUp(end: number, duration = 800) {
   const [value, setValue] = useState(0);
@@ -38,25 +40,16 @@ function useCountUp(end: number, duration = 800) {
 }
 
 const COLORS = {
-  watched: 'var(--chart-3)',
-  completed: 'var(--chart-3)',
-  watching: 'var(--chart-1)',
-  planning: 'var(--chart-4)',
-  'on-hold': 'var(--chart-5)',
-  dropped: 'var(--chart-2)',
-  rewatching: 'var(--chart-4)',
+  watched: chartColorAt(4),
+  completed: chartColorAt(4),
+  watching: chartColorAt(1),
+  planning: chartColorAt(6),
+  'on-hold': chartColorAt(3),
+  dropped: chartColorAt(0),
+  rewatching: chartColorAt(6),
 };
 
-const PIE_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-];
+const PIE_COLORS = Array.from({ length: 12 }, (_, i) => chartColorAt(i));
 
 export default function ShowsInsights() {
   const { movies, kdrama } = useData();
@@ -195,12 +188,7 @@ export default function ShowsInsights() {
             className="glass-card p-5"
           >
             <div className="flex items-start justify-between mb-2">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
-              >
-                <item.icon className="w-5 h-5" style={{ color: item.color }} />
-              </div>
+              <IconBadge icon={<item.icon className="w-full h-full" />} color={item.color} size="md" />
             </div>
             <div className="text-2xl font-bold text-foreground">{item.value}</div>
             <div className="text-sm text-foreground-muted">{item.label}</div>
@@ -345,13 +333,11 @@ export default function ShowsInsights() {
                     />
                     <YAxis stroke="var(--foreground-muted)" tick={{ fill: 'var(--foreground-muted)', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" fill="url(#scoreGradient)" radius={[4, 4, 0, 0]} />
-                    <defs>
-                      <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--nv-accent)" stopOpacity={0.8} />
-                        <stop offset="100%" stopColor="var(--nv-accent)" stopOpacity={0.3} />
-                      </linearGradient>
-                    </defs>
+                    <Bar dataKey="count" fill="transparent" radius={[4, 4, 0, 0]}>
+                      {scoreDistribution.map((_, i) => (
+                        <Cell key={i} fill={chartColorAt(i)} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

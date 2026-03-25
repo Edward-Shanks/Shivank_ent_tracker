@@ -116,13 +116,23 @@ export const genshinCharacters = pgTable('genshin_characters', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull().references(() => genshinAccounts.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
+  title: text('title'),
   element: text('element').notNull(), // 'Pyro' | 'Hydro' | 'Anemo' | 'Electro' | 'Dendro' | 'Cryo' | 'Geo'
   weapon: text('weapon').notNull(), // 'Sword' | 'Claymore' | 'Polearm' | 'Bow' | 'Catalyst'
   rarity: integer('rarity').notNull(), // 4 | 5
+  roles: text('roles'),
+  modelType: text('model_type'),
+  constellationName: text('constellation_name'),
+  birthday: text('birthday'),
+  region: text('region'),
+  specialDish: text('special_dish'),
+  affiliations: text('affiliations'),
+  releaseDate: text('release_date'),
   constellation: integer('constellation').notNull().default(0),
   level: integer('level').notNull().default(1),
   friendship: integer('friendship').notNull().default(0),
   image: text('image').notNull(),
+  wishImage: text('wish_image'),
   obtained: boolean('obtained').notNull().default(true),
   tier: text('tier'),
   type: text('type'),

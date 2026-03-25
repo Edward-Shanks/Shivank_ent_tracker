@@ -20,26 +20,19 @@ import { useData } from '@/context/DataContext';
 import { Card } from '@/components/ui/Card';
 import { GenshinElement } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { chartColorAt, chartColorAtAlpha } from '@/lib/chartPalette';
 
 const elementColors: Record<GenshinElement, string> = {
-  Pyro: 'var(--chart-1)',
-  Hydro: 'var(--chart-2)',
-  Anemo: 'var(--chart-3)',
-  Electro: 'var(--chart-4)',
-  Dendro: 'var(--chart-5)',
-  Cryo: 'var(--chart-2)',
-  Geo: 'var(--chart-4)',
+  Pyro: chartColorAt(0),
+  Hydro: chartColorAt(1),
+  Anemo: chartColorAt(2),
+  Electro: chartColorAt(3),
+  Dendro: chartColorAt(4),
+  Cryo: chartColorAt(5),
+  Geo: chartColorAt(6),
 };
 
-const PIE_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-2)',
-  'var(--chart-4)',
-];
+const PIE_COLORS = Array.from({ length: 12 }, (_, i) => chartColorAt(i));
 
 function useCountUp(end: number, duration = 800, enabled = true) {
   const [value, setValue] = useState(0);
@@ -116,7 +109,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         name, 
         total: counts.total, 
         owned: counts.owned,
-        color: elementColors[name] || 'var(--chart-5)'
+        color: elementColors[name] || chartColorAt(4)
       }))
       .sort((a, b) => b.total - a.total);
   }, [characters]);
@@ -138,8 +131,8 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
 
   // Rarity distribution
   const rarityDistribution = useMemo(() => [
-    { name: '5★', value: stats.fiveStar, color: 'var(--chart-1)' },
-    { name: '4★', value: stats.fourStar, color: 'var(--chart-3)' },
+    { name: '5★', value: stats.fiveStar, color: chartColorAt(0) },
+    { name: '4★', value: stats.fourStar, color: chartColorAt(2) },
   ].filter((item) => item.value > 0), [stats]);
 
   // Rarity vs character count (bar chart format) - Total vs Owned
@@ -313,11 +306,11 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
         className="grid grid-cols-2 lg:grid-cols-5 gap-4 relative z-10"
       >
         {[
-          { icon: User, label: t('genshin.totalCharacterCount'), value: countTotal, color: 'var(--chart-1)', micro: kpiInsights.total },
-          { icon: Star, label: t('genshin.fiveStar'), value: countFive, color: 'var(--chart-2)', micro: kpiInsights.fiveStar, glow: isImpressiveFive },
-          { icon: Star, label: t('genshin.fourStar'), value: countFour, color: 'var(--chart-3)', micro: kpiInsights.fourStar },
-          { icon: TrendingUp, label: t('genshin.avgLevel'), value: countAvg, color: 'var(--chart-4)', micro: kpiInsights.avgLevel },
-          { icon: User, label: t('genshin.obtained'), value: countObtained, color: 'var(--chart-5)', micro: kpiInsights.obtained },
+          { icon: User, label: t('genshin.totalCharacterCount'), value: countTotal, color: chartColorAt(0), micro: kpiInsights.total },
+          { icon: Star, label: t('genshin.fiveStar'), value: countFive, color: chartColorAt(1), micro: kpiInsights.fiveStar, glow: isImpressiveFive },
+          { icon: Star, label: t('genshin.fourStar'), value: countFour, color: chartColorAt(2), micro: kpiInsights.fourStar },
+          { icon: TrendingUp, label: t('genshin.avgLevel'), value: countAvg, color: chartColorAt(3), micro: kpiInsights.avgLevel },
+          { icon: User, label: t('genshin.obtained'), value: countObtained, color: chartColorAt(4), micro: kpiInsights.obtained },
         ].map((item, i) => (
           <motion.div
             key={i}
@@ -395,7 +388,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                       radius={[0, 8, 8, 0]}
                     >
                       {elementDistribution.map((entry, index) => (
-                        <Cell key={`owned-${index}`} fill={`${entry.color}80`} />
+                        <Cell key={`owned-${index}`} fill={chartColorAtAlpha(index, 0.5)} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -468,7 +461,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                     >
                       {weaponDistribution.map((entry, index) => {
                         const baseColor = PIE_COLORS[index % PIE_COLORS.length];
-                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                        return <Cell key={`owned-${index}`} fill={chartColorAtAlpha(index, 0.5)} />;
                       })}
                     </Bar>
                   </BarChart>
@@ -552,7 +545,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                       {rarityBarData.map((entry, index) => (
                         <Cell
                           key={`total-${index}`}
-                          fill={entry.rarity === '5★' ? 'var(--chart-1)' : 'var(--chart-2)'}
+                          fill={entry.rarity === '5★' ? chartColorAt(0) : chartColorAt(1)}
                         />
                       ))}
                     </Bar>
@@ -567,8 +560,8 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                           key={`owned-${index}`}
                           fill={
                             entry.rarity === '5★'
-                              ? 'color-mix(in srgb, var(--chart-1) 80%, transparent)'
-                              : 'color-mix(in srgb, var(--chart-2) 80%, transparent)'
+                              ? chartColorAtAlpha(0, 0.5)
+                              : chartColorAtAlpha(1, 0.5)
                           }
                         />
                       ))}
@@ -608,7 +601,11 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                     />
                     <YAxis className="stroke-foreground-muted" tick={{ fill: 'var(--foreground-muted)' }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" name="Characters" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" name="Characters" fill="transparent" radius={[4, 4, 0, 0]}>
+                      {constellationDistribution.map((_, i) => (
+                        <Cell key={i} fill={chartColorAt(i)} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -674,7 +671,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                     >
                       {tierDistribution.map((_, index) => {
                         const baseColor = PIE_COLORS[index % PIE_COLORS.length];
-                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                        return <Cell key={`owned-${index}`} fill={chartColorAtAlpha(index, 0.5)} />;
                       })}
                     </Bar>
                   </BarChart>
@@ -731,7 +728,7 @@ export default function GenshinInsights({ coachMode = false }: GenshinInsightsPr
                     >
                       {levelDistribution.map((_, index) => {
                         const baseColor = PIE_COLORS[index % PIE_COLORS.length];
-                        return <Cell key={`owned-${index}`} fill={`${baseColor}80`} />;
+                        return <Cell key={`owned-${index}`} fill={chartColorAtAlpha(index, 0.5)} />;
                       })}
                     </Bar>
                   </BarChart>

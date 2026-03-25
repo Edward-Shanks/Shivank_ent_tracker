@@ -20,25 +20,18 @@ import { useData } from '@/context/DataContext';
 import { Card } from '@/components/ui/Card';
 import { AnimeStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { chartColorAt } from '@/lib/chartPalette';
 
 const COLORS = {
-  watching: 'var(--chart-1)',
-  completed: 'var(--chart-3)',
-  planning: 'var(--chart-4)',
-  'on-hold': 'var(--chart-5)',
-  dropped: 'var(--chart-2)',
+  watching: chartColorAt(1),
+  completed: chartColorAt(4),
+  planning: chartColorAt(6),
+  'on-hold': chartColorAt(3),
+  dropped: chartColorAt(0),
 };
 
-const PIE_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-];
+const PIE_COLORS = Array.from({ length: 12 }, (_, i) => chartColorAt(i));
 
 const defaultStats: AnimeStats = {
   totalAnime: 0,
@@ -195,12 +188,7 @@ export default function AnimeInsights() {
         {/* Total Anime Card with Airing Status Breakdown */}
         <Card className="p-5">
           <div className="flex items-start justify-between mb-3">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: 'color-mix(in srgb, var(--nv-accent) 20%, transparent)' }}
-            >
-              <Tv className="w-5 h-5" style={{ color: 'var(--nv-accent)' }} />
-            </div>
+            <IconBadge icon={<Tv className="w-full h-full" />} color="var(--nv-accent)" size="md" />
           </div>
           <div className="text-2xl font-bold text-foreground mb-1">{stats.totalAnime}</div>
           <div className="text-sm text-foreground-muted mb-2">{t('anime.totalAnimeLabel')}</div>
@@ -219,12 +207,12 @@ export default function AnimeInsights() {
         {/* Recent Activity Box */}
         <Card className="p-4 lg:col-span-2">
           <div className="flex items-center gap-2 mb-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: 'color-mix(in srgb, var(--nv-accent) 20%, transparent)' }}
-            >
-              <Clock className="w-4 h-4" style={{ color: 'var(--nv-accent)' }} />
-            </div>
+            <IconBadge
+              icon={<Clock className="w-full h-full" />}
+              color="var(--nv-accent)"
+              size="sm"
+              className="rounded-lg"
+            />
             <div>
               <div className="text-sm font-semibold text-foreground">Recent Activity</div>
               <div className="text-[10px] text-foreground-muted">Your latest anime updates</div>
@@ -243,14 +231,14 @@ export default function AnimeInsights() {
                 })
                 .slice(0, 20)
                 .map((item, index) => {
-                  const statusColors: Record<string, string> = {
-                    'Watching': 'var(--chart-1)',
-                    'Completed': 'var(--chart-3)',
-                    'Watch Later': 'var(--chart-4)',
-                    'Yet to Air for Watch': 'var(--chart-4)',
-                    'On Hold': 'var(--chart-5)',
-                    'Dropped': 'var(--chart-2)',
-                  };
+                    const statusColors: Record<string, string> = {
+                      Watching: COLORS.watching,
+                      Completed: COLORS.completed,
+                      'Watch Later': COLORS.planning,
+                      'Yet to Air for Watch': COLORS.planning,
+                      'On Hold': COLORS['on-hold'],
+                      Dropped: COLORS.dropped,
+                    };
                   const color = statusColors[item.watchStatus] || 'var(--foreground-muted)';
                   return (
                     <motion.div
@@ -293,10 +281,10 @@ export default function AnimeInsights() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {[
-          { icon: TrendingUp, label: 'Total Episodes', value: stats.totalEpisodes, color: 'var(--chart-1)', micro: stats.totalEpisodes >= 1000 ? 'Binge master' : stats.totalEpisodes >= 500 ? 'Dedicated viewer' : 'Keep watching' },
-          { icon: Clock, label: 'Mean Score', value: stats.meanScore > 0 ? stats.meanScore.toFixed(1) : '0', color: 'var(--chart-3)', micro: stats.meanScore >= 8 ? 'High standards' : stats.meanScore >= 6 ? 'Balanced taste' : 'Rate more anime' },
-          { icon: Tv, label: 'Currently Watching', value: stats.watchStatusCounts.watching, color: 'var(--chart-1)', micro: stats.watchStatusCounts.watching >= 10 ? 'Multi-watcher' : stats.watchStatusCounts.watching >= 3 ? 'Active viewer' : 'Pick something new' },
-          { icon: Layers, label: 'Completed', value: stats.watchStatusCounts.completed, color: 'var(--chart-3)', micro: stats.watchStatusCounts.completed >= 50 ? 'Veteran viewer' : stats.watchStatusCounts.completed >= 20 ? 'Solid progress' : 'Finish more shows' },
+          { icon: TrendingUp, label: 'Total Episodes', value: stats.totalEpisodes, color: chartColorAt(1), micro: stats.totalEpisodes >= 1000 ? 'Binge master' : stats.totalEpisodes >= 500 ? 'Dedicated viewer' : 'Keep watching' },
+          { icon: Clock, label: 'Mean Score', value: stats.meanScore > 0 ? stats.meanScore.toFixed(1) : '0', color: chartColorAt(3), micro: stats.meanScore >= 8 ? 'High standards' : stats.meanScore >= 6 ? 'Balanced taste' : 'Rate more anime' },
+          { icon: Tv, label: 'Currently Watching', value: stats.watchStatusCounts.watching, color: chartColorAt(2), micro: stats.watchStatusCounts.watching >= 10 ? 'Multi-watcher' : stats.watchStatusCounts.watching >= 3 ? 'Active viewer' : 'Pick something new' },
+          { icon: Layers, label: 'Completed', value: stats.watchStatusCounts.completed, color: chartColorAt(4), micro: stats.watchStatusCounts.completed >= 50 ? 'Veteran viewer' : stats.watchStatusCounts.completed >= 20 ? 'Solid progress' : 'Finish more shows' },
         ].map((item, i) => {
           const Icon = item.icon;
           return (
@@ -308,12 +296,7 @@ export default function AnimeInsights() {
               className="glass-card p-5"
             >
               <div className="flex items-start justify-between mb-2">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: `color-mix(in srgb, ${item.color} 20%, transparent)` }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: item.color }} />
-                </div>
+                <IconBadge icon={<Icon className="w-full h-full" />} color={item.color} size="md" />
               </div>
               <div className="text-2xl font-bold text-foreground">{item.value}</div>
               <div className="text-sm text-foreground-muted">{item.label}</div>
@@ -406,9 +389,9 @@ export default function AnimeInsights() {
                         <span className="text-foreground-muted text-sm">{value}</span>
                       )}
                     />
-                    <Bar dataKey="Anime" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Donghua" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="H-Ecchi" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Anime" fill={chartColorAt(0)} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Donghua" fill={chartColorAt(1)} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="H-Ecchi" fill={chartColorAt(3)} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

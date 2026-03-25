@@ -185,13 +185,13 @@ Buttons and interactive elements are typically driven by:
 
 ### Genshin Element Colors
 Used in `src/app/genshin/page.tsx`:
-- Pyro: `#ef4444`
-- Hydro: `#3b82f6`
-- Anemo: `#22d3ee`
-- Electro: `#a855f7`
-- Dendro: `#22c55e`
-- Cryo: `#93c5fd`
-- Geo: `#f59e0b`
+- Pyro: `#EC4923`
+- Hydro: `#00BFFF`
+- Anemo: `#359697`
+- Electro: `#945dc4`
+- Dendro: `#608a00`
+- Cryo: `#4682B4`
+- Geo: `#debd6c`
 
 ### Website Category Colors
 Used in `src/app/websites/page.tsx`:

@@ -11,17 +11,19 @@ interface ModalProps {
   title?: string;
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  scrollable?: boolean;
+  bodyClassName?: string;
 }
 
 const sizeStyles = {
   sm: 'max-w-md',
   md: 'max-w-lg',
   lg: 'max-w-2xl max-h-[90vh]',
-  xl: 'max-w-4xl max-h-[95vh]',
+  xl: 'max-w-6xl max-h-[95vh]',
   full: 'max-w-[95vw] h-[90vh]',
 };
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', scrollable = true, bodyClassName = '' }: ModalProps) {
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -81,15 +83,17 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             )}
 
             {/* Body */}
-            <div className={`flex-1 ${
-              size === 'full' 
-                ? 'p-3 sm:p-4 md:p-6 overflow-y-auto' 
-                : size === 'xl' 
-                ? 'px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 overflow-y-auto' 
-                : size === 'lg' 
-                ? 'px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 overflow-y-auto' 
-                : 'p-3 sm:p-4 md:p-6'
-            }`}>
+            <div
+              className={`flex-1 ${
+                size === 'full'
+                  ? 'p-3 sm:p-4 md:p-6'
+                  : size === 'xl'
+                  ? 'px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6'
+                  : size === 'lg'
+                  ? 'px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6'
+                  : 'p-3 sm:p-4 md:p-6'
+              } ${scrollable ? 'overflow-y-auto' : 'overflow-y-hidden'} ${bodyClassName}`}
+            >
               {children}
             </div>
 

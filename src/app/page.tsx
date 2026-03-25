@@ -36,6 +36,8 @@ import { useAuth } from '@/context/AuthContext';
 import { NavCard, Card, MediaCard } from '@/components/ui/Card';
 import { DashboardStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { chartColorAt, CHART_PALETTE } from '@/lib/chartPalette';
 
 const container = {
   hidden: { opacity: 0 },
@@ -268,14 +270,14 @@ export default function Dashboard() {
     ...anime.filter((a) => a.watchStatus === 'Completed' && a.score).slice(0, 3),
   ];
 
-  // Recharts palette helpers (drive all chart strokes/fills from CSS variables)
+  // Recharts palette helpers (fixed chart colors, theme-independent)
   const chartGridStroke = 'color-mix(in srgb, var(--nv-border) 30%, transparent)';
   const chartAxisColor = 'var(--foreground-muted)';
-  const chartSeries1 = 'var(--chart-1)'; // primary accent
-  const chartSeries2 = 'var(--chart-2)'; // textSecondary
-  const chartSeries3 = 'var(--chart-3)'; // surface
-  const chartSeries4 = 'var(--chart-4)'; // border
-  const chartSeries5 = 'var(--chart-5)'; // accent-soft (rgba)
+  const chartSeries1 = chartColorAt(0);
+  const chartSeries2 = chartColorAt(1);
+  const chartSeries3 = chartColorAt(4);
+  const chartSeries4 = chartColorAt(6);
+  const chartSeries5 = chartColorAt(3);
 
   // General palette tokens for non-chart UI in this page
   const pageAccent = 'var(--nv-accent)';
@@ -399,10 +401,10 @@ export default function Dashboard() {
             const totalEntries = stats.anime.total + stats.movies.total + stats.kdrama.total + stats.games.total;
             const currentlyActive = stats.anime.watching + stats.kdrama.watching + stats.games.playing;
             const kpiItems = [
-              { Icon: BarChart3, label: 'Total Entries', value: totalEntries, color: 'var(--chart-1)', micro: totalEntries >= 200 ? 'Massive library' : totalEntries >= 50 ? 'Growing collection' : 'Getting started' },
-              { Icon: Play, label: 'Currently Active', value: currentlyActive, color: 'var(--chart-3)', micro: currentlyActive >= 10 ? 'Multi-tasker' : currentlyActive >= 1 ? 'Focused consumer' : 'Pick something new' },
-              { Icon: Clock, label: 'Hours Watched', value: hoursWatched.toLocaleString(), color: 'var(--chart-4)', micro: hoursWatched >= 500 ? 'Dedicated viewer' : hoursWatched >= 100 ? 'Regular watcher' : 'Just getting started' },
-              { Icon: Star, label: 'Average Score', value: averageScore > 0 ? averageScore.toFixed(1) : '0.0', color: 'var(--chart-5)', micro: averageScore >= 8 ? 'High standards' : averageScore >= 6 ? 'Balanced taste' : 'Rate more content' },
+              { Icon: BarChart3, label: 'Total Entries', value: totalEntries, color: chartSeries1, micro: totalEntries >= 200 ? 'Massive library' : totalEntries >= 50 ? 'Growing collection' : 'Getting started' },
+              { Icon: Play, label: 'Currently Active', value: currentlyActive, color: chartSeries3, micro: currentlyActive >= 10 ? 'Multi-tasker' : currentlyActive >= 1 ? 'Focused consumer' : 'Pick something new' },
+              { Icon: Clock, label: 'Hours Watched', value: hoursWatched.toLocaleString(), color: chartSeries4, micro: hoursWatched >= 500 ? 'Dedicated viewer' : hoursWatched >= 100 ? 'Regular watcher' : 'Just getting started' },
+              { Icon: Star, label: 'Average Score', value: averageScore > 0 ? averageScore.toFixed(1) : '0.0', color: chartSeries5, micro: averageScore >= 8 ? 'High standards' : averageScore >= 6 ? 'Balanced taste' : 'Rate more content' },
             ];
             return kpiItems.map((kpi, i) => (
               <motion.div
@@ -413,12 +415,7 @@ export default function Dashboard() {
                 className="glass-card p-5"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `color-mix(in srgb, ${kpi.color} 20%, transparent)` }}
-                  >
-                    <kpi.Icon className="w-5 h-5" style={{ color: kpi.color }} />
-                  </div>
+                  <IconBadge icon={<kpi.Icon className="w-full h-full" />} color={kpi.color} size="md" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">{kpi.value}</div>
                 <div className="text-sm text-foreground-muted">{kpi.label}</div>
@@ -511,7 +508,11 @@ export default function Dashboard() {
                         tick={{ fill: chartAxisColor, fontSize: 10 }} 
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill={chartSeries1} radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="value" fill="transparent" radius={[0, 4, 4, 0]}>
+                        {genreDistribution.map((_, i) => (
+                          <Cell key={i} fill={chartColorAt(i)} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -586,8 +587,7 @@ export default function Dashboard() {
                           dataKey="value"
                         >
                           {platformDistribution.map((entry, index) => {
-                            const colors = [chartSeries1, chartSeries2, chartSeries3, chartSeries4, chartSeries5, chartSeries2];
-                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                            return <Cell key={`cell-${index}`} fill={chartColorAt(index)} />;
                           })}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
@@ -620,7 +620,11 @@ export default function Dashboard() {
                         <XAxis dataKey="score" stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
                         <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="count" fill={chartSeries4} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="transparent" radius={[4, 4, 0, 0]}>
+                        {scoreDistribution.map((_, i) => (
+                          <Cell key={i} fill={chartColorAt(i)} />
+                        ))}
+                      </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -651,7 +655,11 @@ export default function Dashboard() {
                         />
                         <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor }} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="episodes" fill={chartSeries1} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="episodes" fill="transparent" radius={[4, 4, 0, 0]}>
+                          {contentConsumption.map((_, i) => (
+                            <Cell key={i} fill={chartColorAt(i)} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (

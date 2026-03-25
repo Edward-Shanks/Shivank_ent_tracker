@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
+import { IconBadge } from '@/components/ui/IconBadge';
 
 interface CardProps {
   children: ReactNode;
@@ -53,11 +54,8 @@ export function NavCard({ href, icon: Icon, title, description, color, stats }: 
         />
 
         {/* Icon */}
-        <div
-          className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
-          style={{ backgroundColor: `${color}20` }}
-        >
-          <Icon className="w-7 h-7" style={{ color }} />
+        <div className="mb-4 transition-transform duration-300 group-hover:scale-110">
+          <IconBadge icon={<Icon className="w-full h-full" />} color={color} size="lg" />
         </div>
 
         {/* Content */}
@@ -224,12 +222,7 @@ export function StatCard({ icon: Icon, label, value, change, color = '#e50914' }
   return (
     <div className="glass-card p-5" style={{ transform: 'perspective(1000px) rotateX(0deg)' }}>
       <div className="flex items-start justify-between mb-3">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)` }}
-        >
-          <Icon className="w-5 h-5" style={{ color }} />
-        </div>
+        <IconBadge icon={<Icon className="w-full h-full" />} color={color} size="md" className="rounded-xl" />
         {change && (
           <span
             className={`text-sm font-medium ${
