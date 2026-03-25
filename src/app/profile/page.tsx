@@ -40,8 +40,11 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentPlan = useMemo<Plan>(() => {
-    const plan = (user as any)?.plan as Plan | undefined;
-    return plan ?? 'free';
+    const raw = ((user as any)?.plan ?? 'free') as unknown;
+    const plan = String(raw).toLowerCase().trim();
+    if (plan.includes('premium')) return 'premium';
+    if (plan === 'pro' || plan.includes('pro')) return 'pro';
+    return 'free';
   }, [user]);
 
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({

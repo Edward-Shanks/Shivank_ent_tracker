@@ -14,14 +14,17 @@ export const PALETTES: Array<{
 }> = [
   {
     id: 'midnight-slate',
-    name: 'Midnight Slate',
+    name: 'Gossamer',
     colors: {
-      primary: '#0b3044',
-      surface: '#0f82ab',
-      background: '#d9d4ca',
-      border: '#E5E7E9',
-      textPrimary: '#0B3044',
-      textSecondary: '#E5E7E9',
+      // Tailwind gossamer scale:
+      // 50  #eefbf6, 100 #d5f6e7, 200 #afebd4, 300 #7bdabb, 400 #45c29d,
+      // 500 #22a784, 600 #169375, 700 #106c58, 800 #0f5647, 900 #0e463b, 950 #062822
+      primary: '#22a784', // 500
+      surface: '#0e463b', // 900
+      background: '#062822', // 950
+      border: '#106c58', // 700
+      textPrimary: '#FFFFFF',
+      textSecondary: '#d5f6e7', // 100
     },
   },
   {
