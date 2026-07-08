@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { PageSkeleton } from '@/components/skeletons';
 
 export default function RouteGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -21,16 +22,9 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
     }
   }, [isAuthenticated, isLoading, router, pathname]);
 
-  // Show nothing while checking auth or redirecting
+  // Show a page-shaped skeleton while checking auth or redirecting
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-foreground-muted">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton pathname={pathname} />;
   }
 
   // Allow access to login and register pages when not authenticated

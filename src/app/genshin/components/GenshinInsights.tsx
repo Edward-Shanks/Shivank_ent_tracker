@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import { Sparkles, User, Star, TrendingUp, Swords, Lightbulb, Zap } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { GenshinElement } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { chartColorAt, chartColorAtAlpha } from '@/lib/chartPalette';

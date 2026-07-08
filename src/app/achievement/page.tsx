@@ -21,8 +21,9 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { Card, StatCard } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { StatCard } from '@/components/ui/stat-card';
+import { Button } from '@/components/ui/button';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { chartColorAt } from '@/lib/chartPalette';

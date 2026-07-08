@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,10 +22,10 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 import Link from 'next/link';
 import { 
   WatchStatus,
@@ -37,7 +38,9 @@ import {
   GenshinRarity,
   WebsiteCategory,
 } from '@/types';
-import * as XLSX from 'xlsx';
+// xlsx is large (~400KB) and only needed on export/import actions, so it's
+// loaded lazily inside the handlers. Types are erased at build time.
+import type { WorkBook } from 'xlsx';
 import ProcessFlow from './components/ProcessFlow';
 
 type ReportCategory = 'anime' | 'shows' | 'games' | 'genshin' | 'websites';
@@ -280,7 +283,8 @@ export default function ReportsPage() {
 
   const filteredCount = useCountUp(filteredData.length);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    const XLSX = await import('xlsx');
     const config = categoryConfig[selectedCategory];
     let worksheetData: any[] = [];
 
@@ -448,24 +452,25 @@ export default function ReportsPage() {
       } else if (failCount === totalCount) {
         // All deletions failed
         setIsDeleting(false);
-        alert(`Failed to delete all ${totalCount} items. Please check console for details.`);
+        toast.error(`Failed to delete all ${totalCount} items. Please check console for details.`);
       }
       
       if (failCount > 0 && successCount > 0) {
         // Partial success - show message after success animation
         setTimeout(() => {
-          alert(`Successfully deleted ${successCount} items. Failed to delete ${failCount} items.`);
+          toast.warning(`Successfully deleted ${successCount} items. Failed to delete ${failCount} items.`);
         }, 2100);
       }
     } catch (error) {
       console.error('Error in delete operation:', error);
       setIsDeleting(false);
-      alert('Error deleting items. Please try again.');
+      toast.error('Error deleting items. Please try again.');
     }
   };
 
   // Download template for selected category
-  const downloadTemplate = (category: ReportCategory) => {
+  const downloadTemplate = async (category: ReportCategory) => {
+    const XLSX = await import('xlsx');
     const fields = getPortalFields(category);
     const headers = fields.map(f => f.label);
     
@@ -688,8 +693,9 @@ export default function ReportsPage() {
     setUploadError(null);
 
     try {
+      const XLSX = await import('xlsx');
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      let workbook: XLSX.WorkBook;
+      let workbook: WorkBook;
 
       if (fileExtension === 'csv') {
         const text = await file.text();

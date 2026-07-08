@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useMemo } from 'react';
 import { GameStatus, GamePlatform, Game } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { SearchInput, Select } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Dropdown } from '@/components/ui/dropdown';
+import { SearchInput, Select } from '@/components/ui/input';
 import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { CheckSquare, Square, SortAsc, SortDesc, RefreshCw } from 'lucide-react';
@@ -135,12 +136,12 @@ export default function BulkUpdateGamesModal({
     e.preventDefault();
 
     if (selectedGameIds.size === 0) {
-      alert(t('games.selectAtLeastOneGame') || 'Please select at least one game to update.');
+      toast.error(t('games.selectAtLeastOneGame') || 'Please select at least one game to update.');
       return;
     }
 
     if (Object.keys(updateData).length === 0) {
-      alert(t('games.selectAtLeastOneField') || 'Please select at least one field to update.');
+      toast.error(t('games.selectAtLeastOneField') || 'Please select at least one field to update.');
       return;
     }
 
@@ -171,7 +172,7 @@ export default function BulkUpdateGamesModal({
       onClose();
     } catch (error) {
       console.error('Error bulk updating games:', error);
-      alert(t('msg.failedUpdate') || 'Failed to update games. Please try again.');
+      toast.error(t('msg.failedUpdate') || 'Failed to update games. Please try again.');
     } finally {
       setIsUpdating(false);
     }

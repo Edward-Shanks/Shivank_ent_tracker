@@ -4,9 +4,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Star, Shield, Swords, Sparkles } from 'lucide-react';
 import { GenshinCharacter, GenshinWeapon, GenshinElement } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ElementIcon } from '@/components/genshin/ElementIcon';
 
 interface CharacterDetailModalProps {

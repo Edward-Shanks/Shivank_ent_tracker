@@ -18,7 +18,7 @@ import {
 } from 'recharts';
 import { Film, Tv, Clock, Star, TrendingUp, Calendar } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { chartColorAt } from '@/lib/chartPalette';
 

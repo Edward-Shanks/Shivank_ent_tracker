@@ -1,6 +1,9 @@
 'use client';
 
+import { confirm } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import React, { useState, useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gamepad2,
@@ -24,11 +27,17 @@ import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { GameStatus, GamePlatform, Game } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { MediaCard, StatCard, Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { SearchInput, Select } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
-import GamesInsights from './components/GamesInsights';
+import { Card } from '@/components/ui/card';
+import { MediaCard } from '@/components/ui/media-card';
+import { StatCard } from '@/components/ui/stat-card';
+import { Button } from '@/components/ui/button';
+import { SearchInput, Select } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+// Charts (recharts) are heavy; load the insights view only when it's shown.
+const GamesInsights = dynamic(() => import('./components/GamesInsights'), {
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />,
+});
 import AddGameModal from './components/AddGameModal';
 import EditGameModal from './components/EditGameModal';
 import BulkUpdateGamesModal from './components/BulkUpdateGamesModal';
@@ -610,9 +619,9 @@ export default function GamesPage() {
                                   )}
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
-                                        deleteGame(game.id).catch((e) => { console.error(e); alert(t('msg.failedDelete')); });
+                                    onClick={async () => {
+                                      if (await confirm({ title: `${t('msg.deleteConfirm')} ${game.title}?`, variant: 'danger' })) {
+                                        deleteGame(game.id).catch((e) => { console.error(e); toast.error(t('msg.failedDelete')); });
                                       }
                                     }}
                                     className="p-1.5 rounded-md hover:bg-red-500/20 text-foreground-muted hover:text-red-500"
@@ -660,9 +669,9 @@ export default function GamesPage() {
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => {
-                                          if (window.confirm(`${t('msg.deleteConfirm')} ${game.title}?`)) {
-                                            deleteGame(game.id).catch((e) => { console.error(e); alert(t('msg.failedDelete')); });
+                                        onClick={async () => {
+                                          if (await confirm({ title: `${t('msg.deleteConfirm')} ${game.title}?`, variant: 'danger' })) {
+                                            deleteGame(game.id).catch((e) => { console.error(e); toast.error(t('msg.failedDelete')); });
                                           }
                                         }}
                                         className="p-1.5 rounded-md bg-background/60 hover:bg-red-600/80 text-white"
@@ -730,7 +739,7 @@ export default function GamesPage() {
               setSelectedGame(null);
             } catch (error) {
               console.error('Error updating game:', error);
-              alert('Failed to update game. Please try again.');
+              toast.error('Failed to update game. Please try again.');
             }
           }}
         />

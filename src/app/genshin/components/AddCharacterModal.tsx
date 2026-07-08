@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useEffect, useRef } from 'react';
 import { GenshinElement, GenshinWeapon, GenshinRarity } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { ElementIcon } from '@/components/genshin/ElementIcon';
 import { useData } from '@/context/DataContext';
 import { Swords, Shield, Sparkles } from 'lucide-react';
@@ -181,7 +182,7 @@ export default function AddCharacterModal({ isOpen, onClose }: { isOpen: boolean
       }
     } catch (err: any) {
       console.error('Error adding character:', err);
-      alert(err?.message || 'Failed to add character.');
+      toast.error(err?.message || 'Failed to add character.');
     }
   };
 

@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
 import { Movie, MovieStatus, ReviewType } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface EditMovieModalProps {
@@ -84,7 +85,7 @@ export default function EditMovieModal({ isOpen, onClose, movie, onSave }: EditM
       onClose();
     } catch (error) {
       console.error('Error updating movie:', error);
-      alert(t('msg.failedUpdate'));
+      toast.error(t('msg.failedUpdate'));
     }
   };
 

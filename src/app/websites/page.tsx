@@ -1,5 +1,7 @@
 'use client';
 
+import { confirm } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -26,8 +28,8 @@ import {
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { Website, WebsiteCategory } from '@/types';
-import { Button, IconButton } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Button, IconButton } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import AddWebsiteModal from './components/AddWebsiteModal';
 import EditWebsiteModal from './components/EditWebsiteModal';
 
@@ -99,12 +101,12 @@ export default function WebsitesPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${name}" from your bookmarks?`)) return;
+    if (!(await confirm({ title: `Are you sure you want to delete "${name}" from your bookmarks?`, variant: 'danger' }))) return;
     try {
       await deleteWebsite(id);
     } catch (error) {
       console.error('Error deleting website:', error);
-      alert('Failed to delete website. Please try again.');
+      toast.error('Failed to delete website. Please try again.');
     }
   };
 

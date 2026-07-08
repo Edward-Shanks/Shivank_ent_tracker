@@ -1,6 +1,9 @@
 'use client';
 
+import { confirm } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
@@ -26,11 +29,15 @@ import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { GenshinElement, GenshinWeapon } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ElementIcon } from '@/components/genshin/ElementIcon';
-import GenshinInsights from './components/GenshinInsights';
+// Charts (recharts) are heavy; load the insights view only when it's shown.
+const GenshinInsights = dynamic(() => import('./components/GenshinInsights'), {
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />,
+});
 import AddCharacterModal from './components/AddCharacterModal';
 import CharacterDetailModal from './components/CharacterDetailModal';
 import EditCharacterModal from './components/EditCharacterModal';
@@ -140,14 +147,14 @@ export default function GenshinPage() {
   };
 
   const handleDelete = async () => {
-    if (selectedCharacter && window.confirm(`${t('genshin.deleteCharacter')} ${selectedCharacter.name}?`)) {
+    if (selectedCharacter && (await confirm({ title: `${t('genshin.deleteCharacter')} ${selectedCharacter.name}?`, variant: 'danger' }))) {
       try {
         await deleteGenshinCharacter(selectedCharacter.id);
         setIsDetailModalOpen(false);
         setSelectedCharacter(null);
       } catch (error) {
         console.error('Error deleting character:', error);
-        alert(t('msg.failedDelete'));
+        toast.error(t('msg.failedDelete'));
       }
     }
   };
@@ -159,7 +166,7 @@ export default function GenshinPage() {
         setSelectedCharacter({ ...selectedCharacter, ...updates });
       } catch (error) {
         console.error('Error updating character:', error);
-        alert(t('msg.failedUpdate'));
+        toast.error(t('msg.failedUpdate'));
       }
     }
   };
@@ -730,7 +737,7 @@ export default function GenshinPage() {
             await updateGenshinAccount(updates);
           } catch (error) {
             console.error('Error updating account:', error);
-            alert('Failed to update account. Please try again.');
+            toast.error('Failed to update account. Please try again.');
           }
         }}
       />

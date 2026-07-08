@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { GameStatus, GamePlatform, Game } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Monitor, Smartphone, Gamepad2, Tv, Sparkles } from 'lucide-react';

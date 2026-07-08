@@ -1,93 +1,21 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { LucideIcon } from 'lucide-react';
-import { IconBadge } from '@/components/ui/IconBadge';
-
-interface CardProps {
-  children: ReactNode;
-  className?: string;
-  hover?: boolean;
-  glow?: boolean;
-  onClick?: () => void;
-}
-
-export function Card({ children, className = '', hover = false, glow = false, onClick }: CardProps) {
-  return (
-    <motion.div
-      whileHover={hover ? { y: -4, scale: 1.02 } : undefined}
-      transition={{ duration: 0.2 }}
-      className={`glass-card ${glow ? 'card-glow' : ''} ${className}`}
-      onClick={onClick}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-interface NavCardProps {
-  href: string;
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  color: string;
-  stats?: { label: string; value: number | string }[];
-}
-
-export function NavCard({ href, icon: Icon, title, description, color, stats }: NavCardProps) {
-  return (
-    <Link href={href}>
-      <motion.div
-        whileHover={{ y: -8, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        className="glass-card p-6 cursor-pointer group overflow-hidden relative"
-      >
-        {/* Gradient Background */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-          style={{
-            background: `radial-gradient(circle at 30% 30%, ${color}, transparent 70%)`,
-          }}
-        />
-
-        {/* Icon */}
-        <div className="mb-4 transition-transform duration-300 group-hover:scale-110">
-          <IconBadge icon={<Icon className="w-full h-full" />} color={color} size="lg" />
-        </div>
-
-        {/* Content */}
-        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-          {title}
-        </h3>
-        <p className="text-foreground-muted text-sm mb-4">{description}</p>
-
-        {/* Stats */}
-        {stats && stats.length > 0 && (
-          <div className="flex gap-4 pt-4 border-t border-white/10">
-            {stats.map((stat) => (
-              <div key={stat.label}>
-                <div className="text-xl font-bold" style={{ color }}>
-                  {stat.value}
-                </div>
-                <div className="text-xs text-foreground-muted">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-    </Link>
-  );
-}
 
 interface MediaCardProps {
   image: string;
   title: string;
   subtitle?: string;
   badge?: string;
-  badgeType?: 'watching' | 'completed' | 'planning' | 'dropped' | 'on-hold' | 'Yet to Air for Watch' | 'watch-later';
+  badgeType?:
+    | 'watching'
+    | 'completed'
+    | 'planning'
+    | 'dropped'
+    | 'on-hold'
+    | 'Yet to Air for Watch'
+    | 'watch-later';
   progress?: { current: number; total: number };
   score?: number;
   customFields?: {
@@ -101,6 +29,7 @@ interface MediaCardProps {
   onClick?: () => void;
 }
 
+/** Domain component: poster/media tile used across collection pages. */
 export function MediaCard({
   image,
   title,
@@ -173,7 +102,7 @@ export function MediaCard({
         {title}
       </h4>
       {subtitle && <p className="text-sm text-foreground-muted mt-1 line-clamp-1">{subtitle}</p>}
-      
+
       {/* Custom Fields */}
       {customFields && (
         <div className="mt-2 space-y-1">
@@ -209,34 +138,3 @@ export function MediaCard({
     </motion.div>
   );
 }
-
-interface StatCardProps {
-  icon: LucideIcon;
-  label: string;
-  value: number | string;
-  change?: { value: number; isPositive: boolean };
-  color?: string;
-}
-
-export function StatCard({ icon: Icon, label, value, change, color = '#e50914' }: StatCardProps) {
-  return (
-    <div className="glass-card p-5" style={{ transform: 'perspective(1000px) rotateX(0deg)' }}>
-      <div className="flex items-start justify-between mb-3">
-        <IconBadge icon={<Icon className="w-full h-full" />} color={color} size="md" className="rounded-xl" />
-        {change && (
-          <span
-            className={`text-sm font-medium ${
-              change.isPositive ? 'text-green-500' : 'text-red-500'
-            }`}
-          >
-            {change.isPositive ? '+' : ''}
-            {change.value}%
-          </span>
-        )}
-      </div>
-      <div className="text-2xl font-bold text-foreground mb-1">{value}</div>
-      <div className="text-sm text-foreground-muted">{label}</div>
-    </div>
-  );
-}
-

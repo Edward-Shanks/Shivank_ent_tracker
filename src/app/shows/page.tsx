@@ -1,6 +1,9 @@
 'use client';
 
+import { confirm } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -13,10 +16,14 @@ import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import type { MovieStatus, KDramaStatus } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { MediaCard } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { SearchInput, Select } from '@/components/ui/Input';
-import ShowsInsights from './components/ShowsInsights';
+import { MediaCard } from '@/components/ui/media-card';
+import { Button } from '@/components/ui/button';
+import { SearchInput, Select } from '@/components/ui/input';
+// Charts (recharts) are heavy; load the insights view only when it's shown.
+const ShowsInsights = dynamic(() => import('./components/ShowsInsights'), {
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />,
+});
 import AddTitleModal from './components/AddTitleModal';
 import EditMovieModal from './components/EditMovieModal';
 import EditKDramaModal from './components/EditKDramaModal';
@@ -207,7 +214,7 @@ export default function ShowsPage() {
   };
 
   const handleDelete = async (show: UnifiedShow) => {
-    if (window.confirm(`${t('msg.deleteConfirm')} "${show.title}"?`)) {
+    if (await confirm({ title: `${t('msg.deleteConfirm')} "${show.title}"?`, variant: 'danger' })) {
       try {
         const id = show.id.replace(`${show.type}-`, '');
         if (show.type === 'movie') {
@@ -217,7 +224,7 @@ export default function ShowsPage() {
         }
       } catch (error) {
         console.error('Error deleting show:', error);
-        alert(t('msg.failedDelete'));
+        toast.error(t('msg.failedDelete'));
       }
     }
   };
@@ -241,7 +248,7 @@ export default function ShowsPage() {
         setSelectedShow(null);
       } catch (error) {
         console.error('Error updating show:', error);
-        alert(t('msg.failedUpdate'));
+        toast.error(t('msg.failedUpdate'));
       }
     }
   };

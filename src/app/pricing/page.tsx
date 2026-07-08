@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Check, Crown, Sparkles } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 
 type PlanId = 'free' | 'pro';
@@ -28,7 +29,7 @@ export default function PricingPage() {
       window.location.href = data.url;
     } catch (e) {
       console.error(e);
-      alert('Unable to start billing checkout. Please try again.');
+      toast.error('Unable to start billing checkout. Please try again.');
     } finally {
       setIsStartingCheckout(false);
     }
@@ -43,7 +44,7 @@ export default function PricingPage() {
       window.location.href = data.url;
     } catch (e) {
       console.error(e);
-      alert('Unable to open billing portal. Please try again.');
+      toast.error('Unable to open billing portal. Please try again.');
     }
   };
 

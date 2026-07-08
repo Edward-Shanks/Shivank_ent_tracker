@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import {
   Anime,
   Movie,
@@ -12,6 +12,7 @@ import {
   DashboardStats,
 } from '@/types';
 import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
 
 interface DataContextType {
   // Anime
@@ -64,6 +65,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [anime, setAnime] = useState<Anime[]>([]);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [kdrama, setKDrama] = useState<KDrama[]>([]);
@@ -74,7 +76,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all data on mount
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -119,14 +121,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchAllData();
   }, []);
 
+  // Only fetch collections once the user is authenticated. On public/unauth
+  // pages (e.g. /login, /register) we skip the network work entirely and clear
+  // any previously loaded data.
+  useEffect(() => {
+    if (isAuthLoading) return;
+
+    if (isAuthenticated) {
+      fetchAllData();
+    } else {
+      setAnime([]);
+      setMovies([]);
+      setKDrama([]);
+      setGames([]);
+      setGenshinAccount(null);
+      setWebsites([]);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, isAuthLoading, fetchAllData]);
+
   // ===== ANIME FUNCTIONS =====
-  const addAnime = async (newAnime: Omit<Anime, 'id'>) => {
+  const addAnime = useCallback(async (newAnime: Omit<Anime, 'id'>) => {
     try {
       const created = await apiClient.post<Anime>('/anime', newAnime);
       setAnime((prev) => [...prev, created]);
@@ -134,9 +151,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding anime:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateAnime = async (id: string, updates: Partial<Anime>) => {
+  const updateAnime = useCallback(async (id: string, updates: Partial<Anime>) => {
     try {
       const updated = await apiClient.patch<Anime>(`/anime/${id}`, updates);
       setAnime((prev) =>
@@ -146,9 +163,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating anime:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteAnime = async (id: string) => {
+  const deleteAnime = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/anime/${id}`);
       setAnime((prev) => prev.filter((item) => item.id !== id));
@@ -156,19 +173,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting anime:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const getAnimeStats = async (): Promise<AnimeStats> => {
+  const getAnimeStats = useCallback(async (): Promise<AnimeStats> => {
     try {
       return await apiClient.get<AnimeStats>('/anime/stats');
     } catch (err) {
       console.error('Error fetching anime stats:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== MOVIE FUNCTIONS =====
-  const addMovie = async (newMovie: Omit<Movie, 'id'>) => {
+  const addMovie = useCallback(async (newMovie: Omit<Movie, 'id'>) => {
     try {
       const created = await apiClient.post<Movie>('/movies', newMovie);
       setMovies((prev) => [...prev, created]);
@@ -176,9 +193,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding movie:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateMovie = async (id: string, updates: Partial<Movie>) => {
+  const updateMovie = useCallback(async (id: string, updates: Partial<Movie>) => {
     try {
       const updated = await apiClient.patch<Movie>(`/movies/${id}`, updates);
       setMovies((prev) =>
@@ -188,9 +205,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating movie:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteMovie = async (id: string) => {
+  const deleteMovie = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/movies/${id}`);
       setMovies((prev) => prev.filter((item) => item.id !== id));
@@ -198,10 +215,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting movie:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== K-DRAMA FUNCTIONS =====
-  const addKDrama = async (newDrama: Omit<KDrama, 'id'>) => {
+  const addKDrama = useCallback(async (newDrama: Omit<KDrama, 'id'>) => {
     try {
       const created = await apiClient.post<KDrama>('/kdrama', newDrama);
       setKDrama((prev) => [...prev, created]);
@@ -209,9 +226,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding k-drama:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateKDrama = async (id: string, updates: Partial<KDrama>) => {
+  const updateKDrama = useCallback(async (id: string, updates: Partial<KDrama>) => {
     try {
       const updated = await apiClient.patch<KDrama>(`/kdrama/${id}`, updates);
       setKDrama((prev) =>
@@ -221,9 +238,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating k-drama:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteKDrama = async (id: string) => {
+  const deleteKDrama = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/kdrama/${id}`);
       setKDrama((prev) => prev.filter((item) => item.id !== id));
@@ -231,10 +248,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting k-drama:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== GAME FUNCTIONS =====
-  const addGame = async (newGame: Omit<Game, 'id'>) => {
+  const addGame = useCallback(async (newGame: Omit<Game, 'id'>) => {
     try {
       const created = await apiClient.post<Game>('/games', newGame);
       setGames((prev) => [...prev, created]);
@@ -242,9 +259,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding game:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateGame = async (id: string, updates: Partial<Game>) => {
+  const updateGame = useCallback(async (id: string, updates: Partial<Game>) => {
     try {
       const updated = await apiClient.patch<Game>(`/games/${id}`, updates);
       setGames((prev) =>
@@ -254,9 +271,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating game:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteGame = async (id: string) => {
+  const deleteGame = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/games/${id}`);
       setGames((prev) => prev.filter((item) => item.id !== id));
@@ -264,10 +281,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting game:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== GENSHIN FUNCTIONS =====
-  const updateGenshinAccount = async (updates: Partial<GenshinAccount>) => {
+  const updateGenshinAccount = useCallback(async (updates: Partial<GenshinAccount>) => {
     try {
       const updated = await apiClient.patch<GenshinAccount>('/genshin', updates);
       setGenshinAccount(updated);
@@ -275,60 +292,61 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating genshin account:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const addGenshinCharacter = async (character: Omit<import('@/types').GenshinCharacter, 'id'>) => {
+  const addGenshinCharacter = useCallback(async (character: Omit<import('@/types').GenshinCharacter, 'id'>) => {
     try {
       const created = await apiClient.post<import('@/types').GenshinCharacter>('/genshin/characters', {
         ...character,
         friendship: character.friendship ?? 0,
       });
-      if (genshinAccount) {
-        setGenshinAccount({
-          ...genshinAccount,
-          characters: [...genshinAccount.characters, created],
-        });
-      }
+      setGenshinAccount((prev) =>
+        prev ? { ...prev, characters: [...prev.characters, created] } : prev
+      );
     } catch (err) {
       console.error('Error adding genshin character:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateGenshinCharacter = async (id: string, updates: Partial<import('@/types').GenshinCharacter>) => {
+  const updateGenshinCharacter = useCallback(async (id: string, updates: Partial<import('@/types').GenshinCharacter>) => {
     try {
       const updated = await apiClient.patch<import('@/types').GenshinCharacter>(`/genshin/characters/${id}`, updates);
-      if (genshinAccount) {
-        setGenshinAccount({
-          ...genshinAccount,
-          characters: genshinAccount.characters.map((char) =>
-            char.id === id ? updated : char
-          ),
-        });
-      }
+      setGenshinAccount((prev) =>
+        prev
+          ? {
+              ...prev,
+              characters: prev.characters.map((char) =>
+                char.id === id ? updated : char
+              ),
+            }
+          : prev
+      );
     } catch (err) {
       console.error('Error updating genshin character:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteGenshinCharacter = async (id: string) => {
+  const deleteGenshinCharacter = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/genshin/characters/${id}`);
-      if (genshinAccount) {
-        setGenshinAccount({
-          ...genshinAccount,
-          characters: genshinAccount.characters.filter((char) => char.id !== id),
-        });
-      }
+      setGenshinAccount((prev) =>
+        prev
+          ? {
+              ...prev,
+              characters: prev.characters.filter((char) => char.id !== id),
+            }
+          : prev
+      );
     } catch (err) {
       console.error('Error deleting genshin character:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== WEBSITE FUNCTIONS =====
-  const addWebsite = async (newWebsite: Omit<Website, 'id'>) => {
+  const addWebsite = useCallback(async (newWebsite: Omit<Website, 'id'>) => {
     try {
       const created = await apiClient.post<Website>('/websites', newWebsite);
       setWebsites((prev) => [...prev, created]);
@@ -336,9 +354,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error adding website:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateWebsite = async (id: string, updates: Partial<Website>) => {
+  const updateWebsite = useCallback(async (id: string, updates: Partial<Website>) => {
     try {
       const updated = await apiClient.patch<Website>(`/websites/${id}`, updates);
       setWebsites((prev) =>
@@ -348,9 +366,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error updating website:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteWebsite = async (id: string) => {
+  const deleteWebsite = useCallback(async (id: string) => {
     try {
       await apiClient.delete(`/websites/${id}`);
       setWebsites((prev) => prev.filter((item) => item.id !== id));
@@ -358,53 +376,87 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting website:', err);
       throw err;
     }
-  };
+  }, []);
 
   // ===== DASHBOARD STATS =====
-  const getDashboardStats = async (): Promise<DashboardStats> => {
+  const getDashboardStats = useCallback(async (): Promise<DashboardStats> => {
     try {
       return await apiClient.get<DashboardStats>('/dashboard/stats');
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
       throw err;
     }
-  };
+  }, []);
+
+  const value = useMemo<DataContextType>(
+    () => ({
+      anime,
+      addAnime,
+      updateAnime,
+      deleteAnime,
+      getAnimeStats,
+      movies,
+      addMovie,
+      updateMovie,
+      deleteMovie,
+      kdrama,
+      addKDrama,
+      updateKDrama,
+      deleteKDrama,
+      games,
+      addGame,
+      updateGame,
+      deleteGame,
+      genshinAccount,
+      updateGenshinAccount,
+      addGenshinCharacter,
+      updateGenshinCharacter,
+      deleteGenshinCharacter,
+      websites,
+      addWebsite,
+      updateWebsite,
+      deleteWebsite,
+      getDashboardStats,
+      isLoading,
+      error,
+      refreshData: fetchAllData,
+    }),
+    [
+      anime,
+      addAnime,
+      updateAnime,
+      deleteAnime,
+      getAnimeStats,
+      movies,
+      addMovie,
+      updateMovie,
+      deleteMovie,
+      kdrama,
+      addKDrama,
+      updateKDrama,
+      deleteKDrama,
+      games,
+      addGame,
+      updateGame,
+      deleteGame,
+      genshinAccount,
+      updateGenshinAccount,
+      addGenshinCharacter,
+      updateGenshinCharacter,
+      deleteGenshinCharacter,
+      websites,
+      addWebsite,
+      updateWebsite,
+      deleteWebsite,
+      getDashboardStats,
+      isLoading,
+      error,
+      fetchAllData,
+    ]
+  );
 
   return (
-    <DataContext.Provider
-      value={{
-        anime,
-        addAnime,
-        updateAnime,
-        deleteAnime,
-        getAnimeStats,
-        movies,
-        addMovie,
-        updateMovie,
-        deleteMovie,
-        kdrama,
-        addKDrama,
-        updateKDrama,
-        deleteKDrama,
-        games,
-        addGame,
-        updateGame,
-        deleteGame,
-        genshinAccount,
-        updateGenshinAccount,
-        addGenshinCharacter,
-        updateGenshinCharacter,
-        deleteGenshinCharacter,
-        websites,
-        addWebsite,
-        updateWebsite,
-        deleteWebsite,
-        getDashboardStats,
-        isLoading,
-        error,
-        refreshData: fetchAllData,
-      }}
-    >
+    <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
   );

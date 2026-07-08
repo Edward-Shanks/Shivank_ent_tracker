@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { Gamepad2, TrendingUp, Trophy, Monitor, Library, Tag } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { chartColorAt, chartColorAtAlpha } from '@/lib/chartPalette';
 
 const COLORS = {
