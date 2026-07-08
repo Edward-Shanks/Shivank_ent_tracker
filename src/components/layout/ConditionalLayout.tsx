@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
+import { CommandPalette } from './CommandPalette';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   return (
     <>
       <Sidebar />
+      <CommandPalette />
       <MainContent>{children}</MainContent>
     </>
   );

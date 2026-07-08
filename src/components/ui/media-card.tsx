@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Skeleton } from './skeleton';
 
 interface MediaCardProps {
   image: string;
@@ -41,6 +42,8 @@ export function MediaCard({
   customFields,
   onClick,
 }: MediaCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -51,11 +54,18 @@ export function MediaCard({
       {/* Image Container */}
       <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-3">
         {image && image.trim() ? (
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
+          <>
+            {!imageLoaded && <Skeleton className="absolute inset-0 rounded-none" />}
+            <img
+              src={image}
+              alt={title}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
             <span className="text-gray-500 text-sm">No Image</span>
@@ -78,22 +88,26 @@ export function MediaCard({
           </div>
         )}
 
-        {/* Progress Bar */}
+        {/* Progress: label reveals on hover, bar is always visible (touch devices never hover) */}
         {progress && (
-          <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="flex justify-between text-xs text-white mb-1">
-              <span>Progress</span>
-              <span>
-                {progress.current}/{progress.total}
-              </span>
+          <>
+            <div className="absolute bottom-1.5 left-0 right-0 px-3 pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="flex justify-between text-xs text-white drop-shadow-md">
+                <span>Progress</span>
+                <span>
+                  {progress.current}/{progress.total}
+                </span>
+              </div>
             </div>
-            <div className="h-1 bg-white/30 rounded-full overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
               <div
-                className="h-full bg-primary rounded-full transition-all duration-300"
-                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                className="h-full bg-primary transition-all duration-300"
+                style={{
+                  width: `${Math.min(100, progress.total > 0 ? (progress.current / progress.total) * 100 : 0)}%`,
+                }}
               />
             </div>
-          </div>
+          </>
         )}
       </div>
 

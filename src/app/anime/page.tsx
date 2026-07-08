@@ -15,6 +15,7 @@ import {
   Edit,
   Trash2,
   Star,
+  Clapperboard,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Anime, WatchStatus } from '@/types';
@@ -22,6 +23,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SearchInput, Select } from '@/components/ui/input';
+import { EmptyState } from '@/components/ui/empty-state';
 // Charts (recharts) are heavy; load the insights view only when it's shown.
 const AnimeInsights = dynamic(() => import('./components/AnimeInsights'), {
   ssr: false,
@@ -525,16 +527,31 @@ export default function AnimePage() {
                   })}
                 </motion.div>
               </div>
+              ) : anime.length === 0 ? (
+                <EmptyState
+                  icon={Clapperboard}
+                  title="Your anime library is empty"
+                  description="Start tracking what you watch — add your first anime and it will show up here."
+                  action={{
+                    label: t('anime.addAnime'),
+                    onClick: () => setIsAddModalOpen(true),
+                  }}
+                  className="py-16"
+                />
               ) : (
-                <div className="text-center py-16">
-                  <div className="text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    No Search Result Found
-                  </h3>
-                  <p className="text-foreground-muted">
-                    Try adjusting your search or filters
-                  </p>
-                </div>
+                <EmptyState
+                  title="No matches found"
+                  description="Nothing in your library matches the current search and filters."
+                  secondaryAction={{
+                    label: 'Clear search & filters',
+                    onClick: () => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                      setCombinedFilter('a-z');
+                    },
+                  }}
+                  className="py-16"
+                />
               )}
             </motion.div>
           )}
