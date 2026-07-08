@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState } from 'react';
 import { WebsiteCategory } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input, Select } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { useData } from '@/context/DataContext';
 
 interface AddWebsiteModalProps {
@@ -58,7 +59,7 @@ export default function AddWebsiteModal({ isOpen, onClose }: AddWebsiteModalProp
       onClose();
     } catch (error) {
       console.error('Error adding website:', error);
-      alert('Failed to add website. Please try again.');
+      toast.error('Failed to add website. Please try again.');
     }
   };
 

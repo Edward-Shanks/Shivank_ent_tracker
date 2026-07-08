@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
 import { KDrama, KDramaStatus } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 
 interface EditKDramaModalProps {
   isOpen: boolean;
@@ -86,7 +87,7 @@ export default function EditKDramaModal({ isOpen, onClose, kdrama, onSave }: Edi
       onClose();
     } catch (error) {
       console.error('Error updating K-Drama:', error);
-      alert('Failed to update K-Drama. Please try again.');
+      toast.error('Failed to update K-Drama. Please try again.');
     }
   };
 

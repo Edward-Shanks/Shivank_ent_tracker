@@ -134,6 +134,8 @@
   filter: blur(10px) saturate(1.1);
   opacity: 0.95;
   transform: translate3d(0, 0, 0);
+  /* Hint the compositor so the infinite animation stays off the main thread. */
+  will-change: transform;
   animation: nvArcanaSwirl 16s ease-in-out infinite alternate;
 }
 
@@ -141,6 +143,15 @@
   0% { transform: translate3d(-12px, -10px, 0) scale(1.02); }
   50% { transform: translate3d(14px, 8px, 0) scale(1.04); }
   100% { transform: translate3d(-6px, 12px, 0) scale(1.03); }
+}
+
+/* Respect users who prefer reduced motion: stop the perpetual swirl entirely,
+   which also removes its continuous GPU repaint cost. */
+@media (prefers-reduced-motion: reduce) {
+  .nv-arcana-nebula {
+    animation: none;
+    will-change: auto;
+  }
 }
 
 .nv-arcana-sidebar {
@@ -448,31 +459,31 @@ body {
 
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 }
 
 .glass-subtle {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
 }
 
 .glass-strong {
   background: var(--glass-bg);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 }
 
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -929,8 +940,8 @@ body {
 
 .table-glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   position: relative;

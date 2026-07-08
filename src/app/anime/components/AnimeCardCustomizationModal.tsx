@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
 
 export type AnimeCardField = 'watchStatus' | 'score' | 'episodes' | 'airingStatus' | 'year' | 'season' | 'genres' | 'type';

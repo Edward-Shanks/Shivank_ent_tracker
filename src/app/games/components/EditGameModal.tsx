@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
 import { Game, GameStatus, GamePlatform } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface EditGameModalProps {
@@ -82,7 +83,7 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.platform.length === 0) {
-      alert(t('msg.selectPlatform'));
+      toast.error(t('msg.selectPlatform'));
       return;
     }
     try {
@@ -100,7 +101,7 @@ export default function EditGameModal({ isOpen, onClose, game, onSave }: EditGam
       onClose();
     } catch (error) {
       console.error('Error updating game:', error);
-      alert(t('msg.failedUpdate'));
+      toast.error(t('msg.failedUpdate'));
     }
   };
 

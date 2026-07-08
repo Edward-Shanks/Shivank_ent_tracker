@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import { Tv, Clock, TrendingUp, Film, Layers } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { AnimeStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { IconBadge } from '@/components/ui/IconBadge';

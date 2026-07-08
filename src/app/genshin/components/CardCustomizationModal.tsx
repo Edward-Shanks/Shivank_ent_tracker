@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
 
 export type CardField = 'weapon' | 'constellation' | 'friendship' | 'level' | 'rarity' | 'element';
 

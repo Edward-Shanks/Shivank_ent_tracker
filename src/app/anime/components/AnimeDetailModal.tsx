@@ -4,9 +4,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Star, Calendar, Film, Tv, Globe, BookOpen } from 'lucide-react';
 import { Anime } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Badge, StatusBadge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Badge, StatusBadge } from '@/components/ui/badge';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface AnimeDetailModalProps {

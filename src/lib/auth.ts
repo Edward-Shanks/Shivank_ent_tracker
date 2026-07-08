@@ -6,8 +6,8 @@ import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 
 // Environment variables
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  throw new Error('JWT_SECRET environment variable is required');
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || (() => {
+  throw new Error('JWT_ACCESS_SECRET environment variable is required');
 })();
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (() => {
   throw new Error('JWT_REFRESH_SECRET environment variable is required');
@@ -36,7 +36,7 @@ export interface RefreshTokenPayload {
 }
 
 export async function generateAccessToken(payload: TokenPayload): Promise<string> {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_ACCESS_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY,
   });
 }
@@ -49,7 +49,7 @@ export async function generateRefreshToken(payload: RefreshTokenPayload): Promis
 
 export async function verifyAccessToken(token: string): Promise<TokenPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as TokenPayload;
     return decoded;
   } catch {
     return null;

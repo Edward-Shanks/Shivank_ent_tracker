@@ -1,6 +1,9 @@
 'use client';
 
+import { confirm } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import React, { useState, useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutGrid,
@@ -16,10 +19,14 @@ import {
 import { useData } from '@/context/DataContext';
 import { Anime, WatchStatus } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { SearchInput, Select } from '@/components/ui/Input';
-import AnimeInsights from './components/AnimeInsights';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SearchInput, Select } from '@/components/ui/input';
+// Charts (recharts) are heavy; load the insights view only when it's shown.
+const AnimeInsights = dynamic(() => import('./components/AnimeInsights'), {
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />,
+});
 import AnimeHero from './components/AnimeHero';
 import AddAnimeModal from './components/AddAnimeModal';
 import AnimeDetailModal from './components/AnimeDetailModal';
@@ -456,11 +463,11 @@ export default function AnimePage() {
                                 <Edit className="w-4 h-4 text-foreground" />
                               </button>
                               <button
-                                onClick={() => {
-                                  if (window.confirm(`${t('msg.deleteConfirm') || 'Are you sure you want to delete'} ${item.title}?`)) {
+                                onClick={async () => {
+                                  if (await confirm({ title: `${t('msg.deleteConfirm') || 'Are you sure you want to delete'} ${item.title}?`, variant: 'danger' })) {
                                     deleteAnime(item.id).catch((error) => {
                                       console.error('Error deleting anime:', error);
-                                      alert(t('msg.failedDelete') || 'Failed to delete anime');
+                                      toast.error(t('msg.failedDelete') || 'Failed to delete anime');
                                     });
                                   }
                                 }}
@@ -561,7 +568,7 @@ export default function AnimePage() {
                 setSelectedAnime(null);
               } catch (error) {
                 console.error('Error deleting anime:', error);
-                alert('Failed to delete anime. Please try again.');
+                toast.error('Failed to delete anime. Please try again.');
               }
             }}
           />
@@ -579,7 +586,7 @@ export default function AnimePage() {
                 setSelectedAnime(null);
               } catch (error) {
                 console.error('Error updating anime:', error);
-                alert('Failed to update anime. Please try again.');
+                toast.error('Failed to update anime. Please try again.');
               }
             }}
           />

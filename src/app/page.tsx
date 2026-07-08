@@ -33,7 +33,9 @@ import {
 } from 'recharts';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
-import { NavCard, Card, MediaCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
+import { NavCard } from '@/components/ui/nav-card';
+import { MediaCard } from '@/components/ui/media-card';
 import { DashboardStats } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -261,14 +263,20 @@ export default function Dashboard() {
   }, [anime, movies, kdrama, games]);
 
   // Get currently watching/playing items
-  const currentlyWatching = [
-    ...anime.filter((a) => a.watchStatus === 'Watching').slice(0, 2),
-    ...kdrama.filter((k) => k.status === 'watching').slice(0, 1),
-  ];
+  const currentlyWatching = useMemo(
+    () => [
+      ...anime.filter((a) => a.watchStatus === 'Watching').slice(0, 2),
+      ...kdrama.filter((k) => k.status === 'watching').slice(0, 1),
+    ],
+    [anime, kdrama]
+  );
 
-  const recentlyCompleted = [
-    ...anime.filter((a) => a.watchStatus === 'Completed' && a.score).slice(0, 3),
-  ];
+  const recentlyCompleted = useMemo(
+    () => [
+      ...anime.filter((a) => a.watchStatus === 'Completed' && a.score).slice(0, 3),
+    ],
+    [anime]
+  );
 
   // Recharts palette helpers (fixed chart colors, theme-independent)
   const chartGridStroke = 'color-mix(in srgb, var(--nv-border) 30%, transparent)';

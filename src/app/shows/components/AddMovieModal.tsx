@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState } from 'react';
 import { MovieStatus, ReviewType } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input, Select } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/dropdown';
 import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -80,7 +81,7 @@ export default function AddMovieModal({ isOpen, onClose }: AddMovieModalProps) {
       onClose();
     } catch (error) {
       console.error('Error adding movie:', error);
-      alert(t('msg.failedAdd'));
+      toast.error(t('msg.failedAdd'));
     }
   };
 

@@ -8,6 +8,8 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemePaletteProvider } from '@/context/ThemePaletteContext';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import RouteGuard from '@/components/auth/RouteGuard';
+import { Toaster } from '@/components/ui/sonner';
+import { ConfirmDialogProvider } from '@/components/ui/confirm-dialog';
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-jakarta-sans',
@@ -46,6 +48,8 @@ export default function RootLayout({
               </RouteGuard>
             </DataProvider>
           </AuthProvider>
+          <Toaster />
+          <ConfirmDialogProvider />
         </ThemePaletteProvider>
       </body>
     </html>

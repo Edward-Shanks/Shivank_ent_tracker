@@ -1,11 +1,12 @@
 'use client';
 
+import { toast } from 'sonner';
 import React, { useState, useMemo } from 'react';
 import { Anime, WatchStatus, AnimeType, AiringStatus } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { SearchInput } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Dropdown } from '@/components/ui/dropdown';
+import { SearchInput } from '@/components/ui/input';
 import { useData } from '@/context/DataContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { CheckSquare, Square, RefreshCw } from 'lucide-react';
@@ -128,12 +129,12 @@ export default function BulkUpdateAnimeModal({
     e.preventDefault();
 
     if (selectedAnimeIds.size === 0) {
-      alert('Please select at least one anime to update.');
+      toast.error('Please select at least one anime to update.');
       return;
     }
 
     if (Object.keys(updateData).length === 0) {
-      alert('Please select at least one field to update.');
+      toast.error('Please select at least one field to update.');
       return;
     }
 
@@ -169,7 +170,7 @@ export default function BulkUpdateAnimeModal({
       onClose();
     } catch (error) {
       console.error('Error bulk updating anime:', error);
-      alert(t('msg.failedUpdate') || 'Failed to update anime. Please try again.');
+      toast.error(t('msg.failedUpdate') || 'Failed to update anime. Please try again.');
     } finally {
       setIsUpdating(false);
     }
